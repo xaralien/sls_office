@@ -62,6 +62,7 @@
 	</style>
 	<!-- jQuery -->
 	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
+	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.mask.js"></script>
 </head>
 
 <header class="header_area sticky-header">
@@ -184,67 +185,8 @@
 										<span class="badge bg-red"><?php echo $count_inbox; ?></span>
 									<?php } ?>
 								</a>
-								<!--ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
-									<li>
-									<a>
-										<span class="image"><img src="<?php echo base_url(); ?>assets/images/img.jpg" alt="Profile Image" /></span>
-										<span>
-										<span>John Smith</span>
-										<span class="time">3 mins ago</span>
-										</span>
-										<span class="message">
-										Film festivals used to be do-or-die moments for movie makers. They were where...
-										</span>
-									</a>
-									</li>
-									<li>
-									<a>
-										<span class="image"><img src="<?php echo base_url(); ?>assets/images/img.jpg" alt="Profile Image" /></span>
-										<span>
-										<span>John Smith</span>
-										<span class="time">3 mins ago</span>
-										</span>
-										<span class="message">
-										Film festivals used to be do-or-die moments for movie makers. They were where...
-										</span>
-									</a>
-									</li>
-									<li>
-									<a>
-										<span class="image"><img src="<?php echo base_url(); ?>assets/images/img.jpg" alt="Profile Image" /></span>
-										<span>
-										<span>John Smith</span>
-										<span class="time">3 mins ago</span>
-										</span>
-										<span class="message">
-										Film festivals used to be do-or-die moments for movie makers. They were where...
-										</span>
-									</a>
-									</li>
-									<li>
-									<a>
-										<span class="image"><img src="<?php echo base_url(); ?>assets/images/img.jpg" alt="Profile Image" /></span>
-										<span>
-										<span>John Smith</span>
-										<span class="time">3 mins ago</span>
-										</span>
-										<span class="message">
-										Film festivals used to be do-or-die moments for movie makers. They were where...
-										</span>
-									</a>
-									</li>
-									<li>
-									<div class="text-center">
-										<a>
-										<strong>See All Alerts</strong>
-										<i class="fa fa-angle-right"></i>
-										</a>
-									</div>
-									</li>
-								</ul-->
 							</li>
 							<?php include 'layouts/notif_tello.php' ?>
-
 						</ul>
 					</nav>
 				</div>
@@ -300,6 +242,15 @@
 	<!-- Custom Theme Scripts -->
 	<script src="<?php echo base_url(); ?>assets/build/js/custom.min.js"></script>
 	<script src="<?php echo base_url(); ?>assets/build/js/owl.carousel.min.js"></script>
+	<!-- Sweetalert -->
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!-- Select 2 -->
+	<script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
+	<!-- My Script -->
+	<script src="<?php echo base_url(); ?>assets/js/myscript.js"></script>
+
+
+	<script></script>
 	<script>
 		$('.owl-carousel').owlCarousel({
 			loop: true,
@@ -322,6 +273,29 @@
 				}
 			}
 		});
+	</script>
+
+	<script>
+		$(document).ready(function() {
+			$('#item-0').select2({
+				width: '100%'
+			});
+			var rowCount = 1;
+			$('#add-more-form').click(function() {
+				var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></select></td><td><input type="text" class="form-control uang" name="qty[]" id="qty"></td><td><input type="text" class="form-control uang" name="harga[]" id="price"></td><td><input type="text" class="form-control" name="total[]" id="total" readonly></td><td><button type="button" class="btn btn-danger hapusRow">Hapus</button></td></tr>';
+
+				var previousRow = $('.baris').last();
+				rowCount++;
+				previousRow.after(row);
+
+				$.each($(".select2"), function(index, value) {
+					$('#item-' + index).select2({
+						width: '100%'
+					});
+				});
+
+			});
+		})
 	</script>
 
 </body>
