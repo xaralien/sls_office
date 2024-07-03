@@ -1,0 +1,155 @@
+.la-i{
+	width: 70px;
+	height: 70px;
+	background-position: 0px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.la-i.la-i-s{
+	width: 20px;
+	height: 20px;
+	background-size: 20px 20px;
+}
+.la-i.la-i-s2{
+	width: 30px;
+	height: 30px;
+	background-size: 30px 30px;
+}
+.la-i.la-i-m{
+	width: 40px;
+	height: 40px;
+	background-size: 40px 40px;
+}
+.la-i.la-i-m2{
+	width: 50px;
+	height: 50px;
+	background-size: 50px 50px;
+}
+.la-i.la-i-l{
+	width: 60px;
+	height: 60px;
+	background-size: 60px 60px;
+}
+.la-i.la-i-l2{
+	width: 70px;
+	height: 70px;
+	background-size: 70px 70px;
+}
+
+.la-i-logo{
+	width: 249px;
+	height: 63px;
+	background-position: 0px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 249px 63px;
+}
+.la-i-load{
+	width: 100%;
+	height: 200px;
+	background-color: #FFFFFF;
+	background-position: 0px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 200px 200px;
+}
+
+.la-i-star-on{
+	background-image:url(../img/star-on.png);
+}
+.la-i-star-off{
+	background-image:url(../img/star-off.png);
+}
+.la-i-load{
+	background-image: url('./loading.gif');
+}
+.la-i-search{
+	background-image: url('../img/i-search.png');
+}
+.la-i-fb{
+	background-image: url('../img/i-fb.png');
+}
+.la-i-google{
+	background-image: url('../img/i-google.png');
+}
+.la-i-logo-tui{
+	background-image: url('../img/logo_top_umroh.png');
+}
+.la-i-tui{
+	background-image: url('../img/i-tui.png');
+}
+.la-i-24-h{
+	background-image: url('../img/i-24-h.png');
+}
+.la-i-home{
+	background-image: url('/img/i-home.png');
+}
+.la-i-admin{
+	background-image: url('../img/i-admin.png');
+}
+.la-i-notif{
+	background-image: url('/img/i-notif.png');
+}
+.la-i-order{
+	background-image: url('/img/i-order.png');
+}
+.la-i-akun{
+	background-image: url('/img/i-akun.png');
+}
+.la-i-produk{
+	background-image: url('../img/i-produk.png');
+}
+.la-i-data{
+	background-image: url('../img/i-data.png');
+}
+.la-i-document{
+	background-image: url('../img/i-document.png');
+}
+.la-i-payment{
+	background-image: url('../img/i-payment.png');
+}
+.la-i-sub-menu{
+	background-image: url('../img/i-sub-menu.png');
+}
+.la-i-member{
+	background-image: url('../img/i-member.png');
+}
+.la-i-hotel{
+	background-image: url('../img/i-hotel.png');
+}
+.la-i-oleh-oleh{
+	background-image: url('../img/i-oleh-oleh.png');
+}
+.la-i-paket-h{
+	background-image: url('../img/i-paket-h.png');
+}
+.la-i-paket-la{
+	background-image: url('../img/i-paket-la.png');
+}
+.la-i-paket-u{
+	background-image: url('../img/i-paket-u.png');
+}
+.la-i-paspor{
+	background-image: url('../img/i-paspor.png');
+}
+.la-i-perlengkapan{
+	background-image: url('../img/i-perlengkapan.png');
+}
+.la-i-pesawat{
+	background-image: url('../img/i-pesawat.png');
+}
+.la-i-transportasi{
+	background-image: url('../img/i-transportasi.png');
+}
+.la-i-vfs-tasheel{
+	background-image: url('../img/i-vfs-tasheel.png');
+}
+.la-i-visa{
+	background-image: url('../img/i-visa.png');
+}
+.la-i-handling{
+	background-image: url('../img/i-handling.png');
+}
+.la-i-promo{
+	background-image: url('../img/i-promo.png');
+}
