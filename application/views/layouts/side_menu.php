@@ -168,6 +168,11 @@
                     <?php }
                     if (strpos($a, '301') !== false) { ?>
                         <li>
+                            <a href="<?= base_url(); ?>financial/fe_pending">FE Pending</a>
+                        </li>
+                    <?php }
+                    if (strpos($a, '301') !== false) { ?>
+                        <li>
                             <a href="<?= base_url(); ?>financial/invoice">Invoice</a>
                         </li>
                     <?php }

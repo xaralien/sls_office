@@ -30,26 +30,38 @@
     <div class="row">
         <div class="col-md-12 col-sm-12 col-xs-12">
             <div class="x_panel card">
-                <div class="x_title">
-                    <h2>Financial entry</h2>
+                <!-- <div class="x_title">
+                    <h2>Invoices</h2>
                     <ul class="nav navbar-right panel_toolbox">
                         <li>
                             <button class="btn btn-primary" onclick="document.location='<?= base_url('financial/create_invoice') ?>'">Create Invoice</button>
                         </li>
-                        <!-- <li>
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Create Inv. <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                <li><a class="dropdown-item" href="<?= base_url('financial/create_invoice') ?>">Regular</a>
-                                </li>
-                                <li><a class="dropdown-item" href="<?= base_url('financial/create_invoice_khusus') ?>">Khusus</a>
-                                </li>
-                            </ul>
-                        </li> -->
                     </ul>
-                </div>
+                </div> -->
                 <div class="x_content">
-                    <table id="datatable" class="table table-striped table-bordered" style="width:100%">
+                    <div class="row">
+                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/invoice') ?>">
+                            <!-- <div class="col-md-2">
+                                <h2>Invoices</h2>
+                            </div> -->
+                            <div class="col-md-5 col-12">
+                                <div class="form-group">
+                                    <input type="text" name="keyword" id="keyword" class="form-control" placeholder="Masukkan nomor invoice">
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-12">
+                                <button type="submit" class="btn btn-success">Cari</button>
+                                <a href="<?= base_url('financial/invoice') ?>" class="btn btn-warning">Reset</a>
+                            </div>
+                            <!-- <div class="col-md-1 col-12">
+                            </div> -->
+                            <div class="col-md-5 col-12 text-right">
+                                <a href="<?= base_url('financial/create_invoice') ?>" class="btn btn-primary">Create Invoice</a>
+                            </div>
+                        </form>
+                        <div class="col-md-1"></div>
+                    </div>
+                    <table id="datatable" class="table table-striped" style="width:100%">
                         <thead>
                             <tr>
                                 <th>No.</th>
@@ -57,17 +69,18 @@
                                 <th>Customer</th>
                                 <th>Total</th>
                                 <th>User</th>
-                                <!-- <th>Stt. Pendapatan</th> -->
-                                <!-- <th>Stt. Bayar</th> -->
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
                             if ($invoices) {
-                                foreach ($invoices as $i) : ?>
+                                foreach ($invoices as $i) :
+                                    $month = substr($i['tanggal_invoice'], 5, 2);
+                                    $year = substr($i['tanggal_invoice'], 0, 4); ?>
                                     <tr>
-                                        <td><?= $i['no_invoice'] ?></td>
+
+                                        <td><a href="<?= base_url('financial/show/' . $i['no_invoice']) ?>"><?= $i['no_invoice'] ?>/SLS/INV-GMG/<?= intToRoman($month) ?>/<?= $year ?></a></td>
                                         <td><?= format_indo($i['tanggal_invoice']) ?></td>
                                         <td><?= $i['nama_customer'] ?></td>
                                         <td class="text-right"><?= number_format($i['total_nonpph'], 0) ?></td>
@@ -86,7 +99,7 @@
                                                 <a href="<?= base_url('financial/print_invoice/' . $i['no_invoice']) ?>" class="badge bg-orange" target="_blank" style="vertical-align: top;">
                                                     Cetak
                                                 </a>
-                                                <span class="badge bg-blue">Sudah dibayar</span>
+                                                <span class="badge bg-green">Sudah dibayar</span>
                                             <?php
                                             }
 
@@ -127,15 +140,29 @@
                                                                                 <input type="text" name="nominal_bayar" id="nominal_bayar<?= $i['Id'] ?>" class="form-control" value="<?= number_format(($i['opsi_termin'] == 0) ? $piutang : '0', 0, ',', '.') ?>" <?= ($i['opsi_termin'] == 0) ? 'readonly' : '' ?> required>
                                                                             </div>
                                                                         </div>
-                                                                        <div class="col-sm-8 col-12">
+                                                                        <div class="col-sm-6 col-12">
                                                                             <div class="form-group">
                                                                                 <label for="no_coa" class="form-label">CoA Kas</label>
-                                                                                <select name="no_coa" id="no_coa<?= $i['Id'] ?>" class="form-control" required>
+                                                                                <select name="no_coa" id="no_coa<?= $i['Id'] ?>" class="form-control select2" style="width: 100%" required>
                                                                                     <option value="">:: Pilih CoA Kas</option>
                                                                                     <?php
                                                                                     foreach ($coa_kas as $c) :
                                                                                     ?>
                                                                                         <option value="<?= $c->no_sbb ?>"><?= $c->no_sbb . ' - ' . $c->nama_perkiraan ?></option>
+                                                                                    <?php
+                                                                                    endforeach; ?>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-sm-6 col-12">
+                                                                            <div class="form-group">
+                                                                                <label for="coa_pendapatan" class="form-label">CoA Kas</label>
+                                                                                <select name="coa_pendapatan" id="no_coa<?= $i['Id'] ?>" class="form-control select2" style="width: 100%" required>
+                                                                                    <option value="">:: Pilih CoA Pendapatan</option>
+                                                                                    <?php
+                                                                                    foreach ($coa_pendapatan as $cp) :
+                                                                                    ?>
+                                                                                        <option value="<?= $cp->no_sbb ?>"><?= $cp->no_sbb . ' - ' . $cp->nama_perkiraan ?></option>
                                                                                     <?php
                                                                                     endforeach; ?>
                                                                                 </select>
@@ -224,8 +251,45 @@
                             } ?>
                         </tbody>
                     </table>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>*klik nomor invoice untuk lihat detail invoice</h6>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <?= $this->pagination->create_links() ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<link rel="stylesheet" href="<?= base_url(); ?>assets/select2/css/select2.min.css">
+<script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+        $('.select3').select2();
+    })
+
+    const flashdata = $(".flash-data").data("flashdata");
+    if (flashdata) {
+        Swal.fire({
+            title: "Success!! ",
+            text: '<?= $this->session->flashdata('message_name') ?>',
+            type: "success",
+            icon: "success",
+        });
+    }
+    // const flashdata_error = $('<?= $this->session->flashdata("message_error") ?>').data("flashdata");
+    const flashdata_error = $(".flash-data-error").data("flashdata");
+    // const flashdata_error = $('.flash-data').data('flashdata');
+    if (flashdata_error) {
+        Swal.fire({
+            title: "Error!! ",
+            text: flashdata_error,
+            type: "error",
+            icon: "error",
+        });
+    }
+</script>

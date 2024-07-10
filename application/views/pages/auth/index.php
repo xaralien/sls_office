@@ -66,7 +66,7 @@
 
                 <span class="login100-form-title p-b-41">
 
-                    <img src="<?= base_url(); ?>assets/images/logo_bdl.png" alt="..." width="150" height="100">
+                    <img src="<?= base_url(); ?>assets/img/logo-sls.png" alt="..." width="50%" style="filter:drop-shadow(1px 1px 1px #fff)">
 
                 </span>
 

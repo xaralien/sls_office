@@ -8,12 +8,26 @@
                 <div class="x_title">
                     <h2>Tabel</h2>
                     <ul class="nav navbar-right panel_toolbox">
-                        <li>
-                            <form method="post" action="<?php echo base_url('financial/simpanLR'); ?>">
-                                <button type="submit" class="btn btn-primary" name="simpan_lr" value="1">Simpan LR</button>
-                            </form>
-                            <!-- <button type="button" id="simpan_neraca" class="btn btn-primary">Simpan Neraca</button> -->
-                        </li>
+                        <?php
+                        if ($this->uri->segment(3)) {
+                        ?>
+                            <li>
+                                <button class="btn btn-warning" onclick="document.location='<?= $_SERVER['HTTP_REFERER'] ?>'">Kembali</button>
+                            </li>
+                        <?php
+                        } else {
+                        ?>
+                            <li>
+                                <button class="btn btn-success" onclick="document.location='<?= base_url('financial/lr_tersimpan') ?>'">L/R tersimpan</button>
+                            </li>
+                            <li>
+                                <form method="post" action="<?php echo base_url('financial/simpanLR'); ?>">
+                                    <button type="submit" class="btn btn-primary" name="simpan_lr" value="1">Simpan LR</button>
+                                </form>
+                                <!-- <button type="button" id="simpan_neraca" class="btn btn-primary">Simpan Neraca</button> -->
+                            </li>
+                        <?php
+                        } ?>
                     </ul>
                 </div>
                 <div class="x_content">
@@ -26,21 +40,21 @@
                             </h5>
                         </div>
                         <div class="col-md-6 col-12">
-                            <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/showReport') ?>">
+                            <?php
+                            if (!$this->uri->segment(3)) {
+                            ?>
+                                <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/showReport') ?>">
 
-                                <div class="form-group row">
-                                    <!-- <div class="input-group"> -->
-                                    <select name="jenis_laporan" id="jenis_laporan" class="form-control" onchange="this.form.submit()">
-                                        <option <?= ($this->input->post('jenis_laporan') == "neraca") ? "selected" : "" ?> value="neraca">Neraca</option>
-                                        <option <?= ($this->input->post('jenis_laporan') == "laba_rugi") ? "selected" : "" ?> value="laba_rugi">Laba Rugi</option>
-                                        <!-- <option <?= ($this->input->post('jenis_laporan') == "invoice_nol") ? "selected" : "" ?> value="invoice_nol">Invoice Nol</option> -->
-                                    </select>
-                                    <!-- <span class="input-group-btn">
-                                                        <button type="submit" class="btn btn-primary">Tampilkan</button>
-                                                    </span> -->
-                                    <!-- </div> -->
-                                </div>
-                            </form>
+                                    <div class="form-group row">
+                                        <select name="jenis_laporan" id="jenis_laporan" class="form-control" onchange="this.form.submit()">
+                                            <option <?= ($this->input->post('jenis_laporan') == "neraca") ? "selected" : "" ?> value="neraca">Neraca</option>
+                                            <option <?= ($this->input->post('jenis_laporan') == "laba_rugi") ? "selected" : "" ?> value="laba_rugi">Laba Rugi</option>
+                                            <!-- <option <?= ($this->input->post('jenis_laporan') == "invoice_nol") ? "selected" : "" ?> value="invoice_nol">Invoice Nol</option> -->
+                                        </select>
+                                    </div>
+                                </form>
+                            <?php
+                            } ?>
                         </div>
                     </div>
                     <div class="row">

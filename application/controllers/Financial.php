@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+date_default_timezone_set('Asia/Jakarta');
 
 class Financial extends CI_Controller
 {
@@ -8,7 +9,7 @@ class Financial extends CI_Controller
         parent::__construct();
 
         //$this->load->model('M_cuti');
-        $this->load->model(['m_asset', 'm_coa', 'm_invoice', 'M_Customer']);
+        $this->load->model(['m_coa', 'm_invoice', 'M_Customer']);
         $this->load->library(['form_validation', 'session', 'user_agent', 'Api_Whatsapp', 'pagination', 'pdfgenerator']);
         $this->load->database();
         $this->load->helper(['url', 'form', 'download', 'date', 'number']);
@@ -52,13 +53,181 @@ class Financial extends CI_Controller
             'coa' => $this->m_coa->list_coa(),
             'count_inbox' => $result,
             'count_inbox2' => $result2,
+            'title' => "Financial entry",
+            'pages' => "pages/financial/v_financial_entry",
         ];
 
-        // $this->load->view('financial_entry', $data);
-        $data['title'] = "Financial entry";
-        $data['pages'] = "pages/financial/v_financial_entry";
+        $this->load->view('index', $data);
+    }
+
+    public function store_financial_entry()
+    {
+        $coa_debit = $this->input->post('neraca_debit');
+        $coa_kredit = $this->input->post('neraca_kredit');
+        $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('input_nominal'));
+        $keterangan = trim($this->input->post('input_keterangan'));
+        $tanggal = $this->input->post('tanggal');
+        $file = $_FILES['file_upload']['name'];
+        $upload_path = ($file) ? base_url() . 'assets/img/financial_entry/' : '';
+
+        $max_num = $this->m_invoice->select_max_fe();
+        $bilangan = $max_num['max'] ? $max_num['max'] + 1 : 1;
+        $no_urut = sprintf("%08d", $bilangan);
+        $slug = "FE-" . $no_urut;
+
+        if ($file) {
+            $pathInfo = pathinfo($file);
+            $extension = $pathInfo['extension'];
+            $newFileName = $slug . '.' . $extension;
+
+            $config = [
+                'upload_path' => $upload_path,
+                'allowed_types' => 'xls|xlsx',
+                'overwrite' => TRUE,
+                'file_name' => $newFileName,
+            ];
+
+            // echo "file ditemukan";
+            $this->load->library('upload', $config);
+
+            if (!$this->upload->do_upload('file_upload')) {
+                $this->session->set_flashdata('message_error', 'Error message: ' . $this->upload->display_errors());
+                redirect($_SERVER['HTTP_REFERER']);
+            }
+        }
+
+        $data = [
+            'coa_debit' => $coa_debit,
+            'coa_kredit' => $coa_kredit,
+            'nominal' => $nominal,
+            'keterangan' => $keterangan,
+            'tanggal_transaksi' => $tanggal,
+            'file_path' => isset($file) ? $upload_path : null,
+            'created_by' => $this->session->userdata('nip'),
+            'slug' => $slug,
+            'no_urut' => $bilangan
+        ];
+        // echo '<pre>';
+        // print_r($data);
+        // echo '</pre>';
+        // exit;
+
+        $this->m_invoice->add_fe($data);
+        $this->session->set_flashdata('message_name', 'Financial entry berhasil ditambahkan. Status: Menunggu approval.');
+        redirect('financial/financial_entry');
+    }
+
+    public function fe_pending()
+    {
+        $keyword = trim($this->input->post('keyword', true) ?? '');
+
+        $config = [
+            'base_url' => site_url('financial/fe_pending'),
+            'total_rows' => $this->m_invoice->fe_pending_count($keyword),
+            'per_page' => 20,
+            'uri_segment' => 3,
+            'num_links' => 10,
+            'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+            'full_tag_close' => '</ul>',
+            'first_link' => false,
+            'last_link' => false,
+            'first_tag_open' => '<li>',
+            'first_tag_close' => '</li>',
+            'prev_link' => '«',
+            'prev_tag_open' => '<li class="prev">',
+            'prev_tag_close' => '</li>',
+            'next_link' => '»',
+            'next_tag_open' => '<li>',
+            'next_tag_close' => '</li>',
+            'last_tag_open' => '<li>',
+            'last_tag_close' => '</li>',
+            'cur_tag_open' => '<li class="active"><a href="#">',
+            'cur_tag_close' => '</a></li>',
+            'num_tag_open' => '<li>',
+            'num_tag_close' => '</li>'
+        ];
+
+        $this->pagination->initialize($config);
+
+        $page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
+        $fes = $this->m_invoice->list_fe_pending($config["per_page"], $page, $keyword);
+
+        $nip = $this->session->userdata('nip');
+        $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+        $query = $this->db->query($sql);
+        $result = $query->row_array()['COUNT(Id)'];
+
+        $sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+        $query2 = $this->db->query($sql2);
+        $result2 = $query2->row_array()['COUNT(id)'];
+
+        $data = [
+            'page' => $page,
+            'fes' => $fes,
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'coa' => $this->m_coa->list_coa(),
+            'keyword' => $keyword,
+            'title' => "FE Pending",
+            'pages' => "pages/financial/v_fe_pending"
+        ];
 
         $this->load->view('index', $data);
+    }
+
+    public function approve_fe($slug)
+    {
+        $nip = $this->session->userdata('nip');
+        // print_r($slug);
+        // exit;
+        $fe = $this->m_invoice->detail_fe($slug);
+        $coa_debit = "13010";
+        $coa_kredit = "41101";
+
+        $keterangan = $fe['keterangan'];
+        $nominal = $fe['nominal'];
+        $tanggal_transaksi = $fe['tanggal_transaksi'];
+        $coa_debit = $fe['coa_debit'];
+        $coa_kredit = $fe['coa_kredit'];
+
+        // print_r($coa_debit);
+        // exit;
+
+        $this->posting($coa_debit, $coa_kredit, $keterangan, $nominal, $tanggal_transaksi);
+
+        $data = [
+            'status_approval' => '1',
+            'approve_at' => date('Y-m-d H:i:s'),
+            'approve_by' => $nip,
+        ];
+
+        $this->m_invoice->update_fe($data, $slug);
+
+        $this->session->set_flashdata('message_name', 'Financial entry telah disetujui!');
+
+        redirect('financial/fe_pending');
+    }
+
+    public function reject_fe($slug)
+    {
+        $nip = $this->session->userdata('nip');
+        // print_r($slug);
+        if (!$this->input->post('alasan_ditolak')) {
+            redirect('financial/fe_pending');
+        } else {
+            $data = [
+                'status_approval' => '2',
+                'alasan_ditolak' => trim($this->input->post('alasan_ditolak')),
+                'rejected_at' => date('Y-m-d H:i:s'),
+                'rejected_by' => $nip,
+            ];
+
+            $this->m_invoice->update_fe($data, $slug);
+
+            $this->session->set_flashdata('message_name', 'Financial entry telah ditolak!');
+
+            redirect('financial/fe_pending');
+        }
     }
 
     public function process_financial_entry()
@@ -84,33 +253,60 @@ class Financial extends CI_Controller
 
     public function invoice()
     {
+        $keyword = trim($this->input->post('keyword', true) ?? '');
+
+        $config = [
+            'base_url' => site_url('financial/invoice'),
+            'total_rows' => $this->m_invoice->invoice_count($keyword),
+            'per_page' => 20,
+            'uri_segment' => 3,
+            'num_links' => 10,
+            'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+            'full_tag_close' => '</ul>',
+            'first_link' => false,
+            'last_link' => false,
+            'first_tag_open' => '<li>',
+            'first_tag_close' => '</li>',
+            'prev_link' => '«',
+            'prev_tag_open' => '<li class="prev">',
+            'prev_tag_close' => '</li>',
+            'next_link' => '»',
+            'next_tag_open' => '<li>',
+            'next_tag_close' => '</li>',
+            'last_tag_open' => '<li>',
+            'last_tag_close' => '</li>',
+            'cur_tag_open' => '<li class="active"><a href="#">',
+            'cur_tag_close' => '</a></li>',
+            'num_tag_open' => '<li>',
+            'num_tag_close' => '</li>'
+        ];
+
+        $this->pagination->initialize($config);
+
+        $page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
+        $invoices = $this->m_invoice->list_invoice($config["per_page"], $page, $keyword);
+
         $nip = $this->session->userdata('nip');
         $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
         $query = $this->db->query($sql);
-        $res2 = $query->result_array();
-        $result = $res2[0]['COUNT(Id)'];
+        $result = $query->row_array()['COUNT(Id)'];
 
         $sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
         $query2 = $this->db->query($sql2);
-        $res2 = $query2->result_array();
-        $result2 = $res2[0]['COUNT(id)'];
+        $result2 = $query2->row_array()['COUNT(id)'];
 
         $data = [
-            'title' => 'Invoice',
-            'invoices' => $this->m_invoice->list_invoice(),
+            'page' => $page,
+            'invoices' => $invoices,
             'count_inbox' => $result,
             'count_inbox2' => $result2,
             'coa' => $this->m_coa->list_coa(),
             'coa_kas' => $this->m_coa->getCoaByCode('1201'),
+            'coa_pendapatan' => $this->m_coa->getCoaByCode('410'),
+            'keyword' => $keyword,
+            'title' => "Invoice",
+            'pages' => "pages/financial/v_invoice"
         ];
-        // echo '<pre>';
-        // print_r($data['invoices']);
-        // echo '</pre>';
-        // exit;
-
-        // $this->load->view('invoice', $data);
-        $data['title'] = "Invoice";
-        $data['pages'] = "pages/financial/v_invoice";
 
         $this->load->view('index', $data);
     }
@@ -148,7 +344,11 @@ class Financial extends CI_Controller
             'count_inbox2' => $result2,
         ];
 
-        $this->load->view('invoice_create', $data);
+        // $this->load->view('invoice_create', $data);
+        $data['title'] = "Invoice";
+        $data['pages'] = "pages/financial/v_invoice_create";
+
+        $this->load->view('index', $data);
     }
 
     public function create_invoice_khusus()
@@ -187,7 +387,7 @@ class Financial extends CI_Controller
         $this->load->view('invoice_create_khusus', $data);
     }
 
-    public function store_invoice($jenis)
+    public function store_invoice()
     {
         $id_user = $this->session->userdata('nip');
         $diskon = $this->input->post('diskon');
@@ -196,27 +396,22 @@ class Financial extends CI_Controller
         $besaran_diskon = $this->convertToNumber($this->input->post('besaran_diskon'));
         $besaran_ppn = $this->convertToNumber($this->input->post('besaran_ppn'));
         $besaran_pph = $this->convertToNumber($this->input->post('besaran_pph'));
-        $total_biaya = $this->convertToNumber($this->input->post('total_biaya'));
-        $total_chargeable = $this->convertToNumber($this->input->post('total_chargeable'));
         $total_nonpph = $this->convertToNumber($this->input->post('total_nonpph'));
         $total_denganpph = $this->convertToNumber($this->input->post('total_denganpph'));
         $nominal_pendapatan = $this->convertToNumber($this->input->post('nominal_pendapatan'));
-
-
-        // print_r($nominal_pendapatan);
-        // exit;
+        $nominal_bayar = $this->convertToNumber($this->input->post('nominal_bayar'));
+        $biaya_loading = $this->convertToNumber($this->input->post('biaya_loading'));
+        $bruto = $this->convertToNumber($this->input->post('bruto'));
         $no_inv = $this->input->post('no_invoice');
-
-        // $status_pendapatan = $this->input->post('status_pendapatan');
         $opsi_termin = $this->input->post('opsi_termin');
         $opsi_pph = $this->input->post('opsi_pph');
-        $opsi_ppn = $this->input->post('opsi_ppn');
-        $coa_pendapatan = $this->input->post('coa_pendapatan');
-        $coa_persediaan = $this->input->post('coa_persediaan');
 
-
+        // echo '<pre>';
+        // print_r($_POST);
+        // echo '</pre>';
+        // exit;
         $pph = isset($opsi_pph) ? '0.02' : 0;
-        $ppn = isset($opsi_ppn) ? '0.011' : 0;
+        $ppn = '0.11';
 
         $tgl_invoice = $this->input->post('tgl_invoice');
 
@@ -235,17 +430,14 @@ class Financial extends CI_Controller
             'ppn' => $ppn,
             'besaran_ppn' => $besaran_ppn,
             'opsi_pph23' => isset($opsi_pph) ? $opsi_pph : '0',
-            'opsi_ppn' => isset($opsi_ppn) ? $opsi_ppn : '0',
             'pph' => $pph,
             'besaran_pph' => $besaran_pph,
             'total_nonpph' => $total_nonpph,
             'total_denganpph' => $total_denganpph,
-            'coa_pendapatan' => $coa_pendapatan,
-            'coa_persediaan' => $coa_persediaan,
-            'total_biaya' => $total_biaya,
-            'total_chargeable' => $total_chargeable,
             'nominal_pendapatan' => $nominal_pendapatan,
-            // 'status_pendapatan' => isset($status_pendapatan) ? $status_pendapatan : '0'
+            'nominal_bayar' => $nominal_bayar,
+            'biaya_loading' => $biaya_loading,
+            'bruto' => $bruto,
             'opsi_termin' => isset($opsi_termin) ? $opsi_termin : '0',
             'status_pendapatan' => '1'
         ];
@@ -258,89 +450,39 @@ class Financial extends CI_Controller
         $id_invoice = $this->m_invoice->insert($invoice_data);
 
         $items = $this->input->post('item');
-        $item_dates = $this->input->post('item_date');
-        $biayas = $this->input->post('biaya');
-        $totals = $this->input->post('total');
+        // $item_dates = $this->input->post('item_date');
+        $qtys = $this->input->post('qty');
+        $hargas = $this->input->post('harga');
         $total_amounts = $this->input->post('total_amount');
 
         $detail_data = [];
 
         if (is_array($items)) {
-            if ($jenis == "reguler") {
-                $flight_numbers = $this->input->post('flight_number');
-                $destinations = $this->input->post('destination');
-                $qtys = $this->input->post('qty');
-                $actual_weights = $this->input->post('actual_weight');
-                $chargeable_weights = $this->input->post('chargeable_weight');
-                $hargas = $this->input->post('harga');
-                $awb_fees = $this->input->post('awb_fee');
+            for ($i = 0; $i < count($items); $i++) {
+                $item = trim($items[$i]);
+                $harga = $this->convertToNumber($hargas[$i]);
+                $qty = $this->convertToNumber($qtys[$i]);
+                $total_amount = $this->convertToNumber($total_amounts[$i]);
 
-                for ($i = 0; $i < count($items); $i++) {
-                    $item = trim($items[$i]);
-                    $item_date = $item_dates[$i];
-                    $flight_number = trim($flight_numbers[$i]);
-                    $destination = trim($destinations[$i]);
-                    $qty = $this->convertToNumber($qtys[$i]);
-                    $actual_weight = $this->convertToNumber($actual_weights[$i]);
-                    $chargeable_weight = $this->convertToNumber($chargeable_weights[$i]);
-                    $harga = $this->convertToNumber($hargas[$i]);
-                    $biaya = $this->convertToNumber($biayas[$i]);
-                    $total = $this->convertToNumber($totals[$i]);
-                    $awb_fee = $this->convertToNumber($awb_fees[$i]);
-                    $total_amount = $this->convertToNumber($total_amounts[$i]);
-
-                    $detail_data[] = [
-                        'id_invoice' => $id_invoice,
-                        'item_date' => $item_date,
-                        'item' => $item,
-                        'flight_number' => $flight_number,
-                        'destination' => $destination,
-                        'qty' => $qty,
-                        'actual_weight' => $actual_weight,
-                        'chargeable_weight' => $chargeable_weight,
-                        'harga' => $harga,
-                        'total' => $total,
-                        'biaya' => $biaya,
-                        'awb_fee' => $awb_fee,
-                        'total_amount' => $total_amount,
-                        'created_by' => $id_user
-                    ];
-                }
-            } else if ($jenis == "khusus") {
-                for ($i = 0; $i < count($items); $i++) {
-                    $item = trim($items[$i]);
-                    $item_date = $item_dates[$i];
-                    $total = $this->convertToNumber($totals[$i]);
-                    $biaya = $this->convertToNumber($biayas[$i]);
-                    $total_amount = $this->convertToNumber($total_amounts[$i]);
-
-                    $detail_data[] = [
-                        'id_invoice' => $id_invoice,
-                        'item_date' => $item_date,
-                        'item' => $item,
-                        'total' => $total,
-                        'biaya' => $biaya,
-                        'total_amount' => $total_amount,
-                        'created_by' => $id_user
-                    ];
-                }
+                $detail_data[] = [
+                    'id_invoice' => $id_invoice,
+                    'item' => $item,
+                    'qty' => $qty,
+                    'harga' => $harga,
+                    'total_amount' => $total_amount,
+                    'created_by' => $id_user
+                ];
             }
+
             if (!empty($detail_data)) {
                 $insert = $this->m_invoice->insert_batch($detail_data);
 
                 if ($insert) {
-                    // update 11 Juni 2024 jam 17:07
-                    // Jurnal 1: 13010 - Piutang Usaha bertambah (dari total_biaya), Persediaan (sesuai pilihan) berkurang sebesar total_biaya
-                    $coa_debit = ($jenis == "khusus") ? "20509" : "13010";
-                    $coa_kredit = $coa_persediaan;
+                    // Jurnal 1: 13010 - Piutang Usaha bertambah (pendapatan), 41101 - PAD-Operasional Lainnya bertambah sebesar pendapatan
+                    // $coa_debit = "13010";
+                    // $coa_kredit = "41101";
 
-                    $this->posting($coa_debit, $coa_kredit, $keterangan, $total_biaya, $tgl_invoice);
-
-                    // Jurnal 2: 13010 - Piutang Usaha bertambah (pendapatan), 41101 - PAD-Operasional Lainnya bertambah sebesar pendapatan
-                    $coa_debit = "13010";
-                    $coa_kredit = "41101";
-
-                    $this->posting($coa_debit, $coa_kredit, $keterangan, $nominal_pendapatan, $tgl_invoice);
+                    // $this->posting($coa_debit, $coa_kredit, $keterangan, $total_denganpph, $tgl_invoice);
 
                     $this->session->set_flashdata('message_name', 'The invoice has been successfully created. ' . $no_inv);
                     // After that you need to used redirect function instead of load view such as 
@@ -483,36 +625,47 @@ class Financial extends CI_Controller
         $nominal_bayar = $this->convertToNumber(($this->input->post('nominal_bayar')));
         $keterangan = $this->input->post('keterangan');
         $status_bayar = $this->input->post('status_bayar');
-        $coa_pendapatan = $inv['coa_pendapatan'];
+        $coa_pendapatan = $this->input->post('coa_pendapatan');
+        $tanggal_bayar = $this->input->post('tanggal_bayar');
 
-        $nominal_j2 = $inv['subtotal'] - $inv['besaran_pph'];
-        // print_r($inv['besaran_pph']);
+        // var_dump($inv['bruto'], $inv['total_denganpph'], $inv['besaran_ppn'], $nominal_j2);
         // exit;
 
-        // Jurnal 1: Kas (sesuai pilihan) bertambah sesuai total_denganpph
-        // $j1_coa_debit = $coa_kas;
-        // $j1_coa_kredit = "13010";
-
-        // J1: PAD berkurang sebesar nominal pendapatan, Pendapatan bertambah sebesar nominal pendapatan
-        $j1_coa_debit = "41101";
-        $j1_coa_kredit = $coa_pendapatan;
-        $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['nominal_pendapatan'], $inv['tanggal_invoice']);
-
-        // J2: Kas/Bank bertambah sebesar ppn, ppn keluaran bertambah sebesar ppn keluaran
+        // Versi SLS
+        // J1: Kas/Bank bertambah sebesar besaran_ppn, PPn Keluaran bertambah sebesar besaran_ppn
         $j1_coa_debit = $coa_kas;
         $j1_coa_kredit = "23011";
-        $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['besaran_ppn'], $inv['tanggal_invoice']);
+        $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['besaran_ppn'], $tanggal_bayar);
 
-        // J3: Kas/Bank bertambah sebesar nominal bayar, piutang usaha keluaran berkurang sebesar nominal bayar
-        $j1_coa_debit = $coa_kas;
-        $j1_coa_kredit = "13010";
-        $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $nominal_j2, $inv['tanggal_invoice']);
+        // J2: Kas/Bank bertambah sebesar nominal_pendapatan, PPn Keluaran bertambah sebesar nominal_pendapatan
+        $j2_coa_debit = $coa_kas;
+        $j2_coa_kredit = $coa_pendapatan;
+        $this->posting($j2_coa_debit, $j2_coa_kredit, $keterangan, $inv['nominal_pendapatan'], $tanggal_bayar);
+        // print_r($status_bayar);
+        // exit;
 
-        if ($inv['opsi_pph23'] == '1') {
+        // Versi jika menjadi PAD saat pembuatan invoice
+        // // J1: PAD berkurang sebesar nominal pendapatan, Pendapatan bertambah sebesar nominal pendapatan
+        // $j1_coa_debit = "41101";
+        // $j1_coa_kredit = $coa_pendapatan;
+        // $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['nominal_pendapatan'], $tanggal_bayar);
+
+        // // J2: Kas/Bank bertambah sebesar ppn, ppn keluaran bertambah sebesar ppn
+        // $j2_coa_debit = $coa_kas;
+        // $j2_coa_kredit = "23011";
+        // $this->posting($j2_coa_debit, $j2_coa_kredit, $keterangan, $inv['besaran_ppn'], $tanggal_bayar);
+
+        // // J3: Kas/Bank bertambah sebesar nominal bayar, piutang usaha berkurang sebesar nominal bayar
+        // $j3_coa_debit = $coa_kas;
+        // $j3_coa_kredit = "13010";
+        // $this->posting($j3_coa_debit, $j3_coa_kredit, $keterangan, $inv['bruto'], $tanggal_bayar);
+
+        if ($inv['opsi_pph23'] != '1') {
+            // Apabila opsi potong pph23 tidak dicentang, maka akan terjadi jurnal di bawah ini
             // J4: Kas/Bank bertambah sebesar pph, utang pph 23 bertambah sebesar pph
-            $j1_coa_debit = $coa_kas;
-            $j1_coa_kredit = "23014";
-            $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['besaran_pph'], $inv['tanggal_invoice']);
+            $j4_coa_debit = $coa_kas;
+            $j4_coa_kredit = "23014";
+            $this->posting($j4_coa_debit, $j4_coa_kredit, $keterangan, $inv['besaran_pph'], $tanggal_bayar);
         }
 
         $this->log_pembayaran("invoice", $inv['Id'], $nominal_bayar, $keterangan);
@@ -521,7 +674,7 @@ class Financial extends CI_Controller
             'status_pendapatan' => ($status_bayar == 1) ? '2' : '1',
             'status_bayar' => ($status_bayar == 1) ? '1' : '0',
             'total_termin' => $inv['total_termin'] + $nominal_bayar,
-            'tanggal_bayar' => $this->input->post('tanggal_bayar'),
+            'tanggal_bayar' => $tanggal_bayar,
         ];
 
         $this->m_invoice->update_invoice($inv['Id'], $data_invoice);
@@ -555,6 +708,68 @@ class Financial extends CI_Controller
         } else {
             $this->prepareNeracaReport($data);
         }
+    }
+
+    public function showNeracaTersimpan($id)
+    {
+        $nip = $this->session->userdata('nip');
+
+        // Fetch counts
+        $result = $this->db->query("SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');")->row()->{'COUNT(Id)'};
+        $result2 = $this->db->query("SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` LIKE '%$nip%') AND activity='1'")->row()->{'COUNT(id)'};
+
+        $detail = $this->m_coa->showNeraca($id);
+
+        $data = [
+            'title' => 'Neraca tersimpan',
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'pages' => 'pages/financial/v_neraca',
+            'activa' => json_decode($detail['aktiva']),
+            'pasiva' => json_decode($detail['pasiva']),
+            'neraca' => $detail['nominal_sum_aktiva'] - $detail['nominal_sum_pasiva'],
+            'sum_activa' => $detail['nominal_sum_aktiva'],
+            'sum_pasiva' => $detail['nominal_sum_pasiva'],
+            'laba' => $detail['nominal_laba_th_berjalan']
+        ];
+
+        // echo '<pre>';
+        // print_r($data);
+        // echo '</pre>';
+        // exit;
+
+        $this->load->view('index', $data);
+    }
+
+    public function showLRTersimpan($id)
+    {
+        $nip = $this->session->userdata('nip');
+
+        // Fetch counts
+        $result = $this->db->query("SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');")->row()->{'COUNT(Id)'};
+        $result2 = $this->db->query("SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` LIKE '%$nip%') AND activity='1'")->row()->{'COUNT(id)'};
+
+        $detail = $this->m_coa->showNeraca($id);
+
+        $data = [
+            'title' => 'L/R tersimpan',
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'pages' => 'pages/financial/v_labarugi',
+            'pendapatan' => json_decode($detail['pendapatan']),
+            'biaya' => json_decode($detail['biaya']),
+            'neraca' => $detail['nominal_sum_aktiva'] - $detail['nominal_sum_pasiva'],
+            'sum_pendapatan' => $detail['nominal_sum_pendapatan'],
+            'sum_biaya' => $detail['nominal_sum_biaya'],
+            'selisih' => $detail['nominal_selisih']
+        ];
+
+        // echo '<pre>';
+        // print_r($data);
+        // echo '</pre>';
+        // exit;
+
+        $this->load->view('index', $data);
     }
 
     public function coa_report()
@@ -722,6 +937,122 @@ class Financial extends CI_Controller
         }
 
         redirect($_SERVER['HTTP_REFERER']);
+    }
+
+    public function neraca_tersimpan()
+    {
+        $keyword = trim($this->input->post('keyword', true) ?? '');
+
+        $config = [
+            'base_url' => site_url('financial/neraca_tersimpan'),
+            'total_rows' => $this->m_coa->count_laporan('neraca'),
+            'per_page' => 20,
+            'uri_segment' => 3,
+            'num_links' => 10,
+            'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+            'full_tag_close' => '</ul>',
+            'first_link' => false,
+            'last_link' => false,
+            'first_tag_open' => '<li>',
+            'first_tag_close' => '</li>',
+            'prev_link' => '«',
+            'prev_tag_open' => '<li class="prev">',
+            'prev_tag_close' => '</li>',
+            'next_link' => '»',
+            'next_tag_open' => '<li>',
+            'next_tag_close' => '</li>',
+            'last_tag_open' => '<li>',
+            'last_tag_close' => '</li>',
+            'cur_tag_open' => '<li class="active"><a href="#">',
+            'cur_tag_close' => '</a></li>',
+            'num_tag_open' => '<li>',
+            'num_tag_close' => '</li>'
+        ];
+
+        $this->pagination->initialize($config);
+
+        $page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
+        $neraca = $this->m_coa->list_laporan('neraca', $config["per_page"], $page);
+
+        $nip = $this->session->userdata('nip');
+        $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+        $query = $this->db->query($sql);
+        $result = $query->row_array()['COUNT(Id)'];
+
+        $sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+        $query2 = $this->db->query($sql2);
+        $result2 = $query2->row_array()['COUNT(id)'];
+
+        $data = [
+            'page' => $page,
+            'neraca' => $neraca,
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'coa' => $this->m_coa->list_coa(),
+            'keyword' => $keyword,
+            'title' => "Neraca tersimpan",
+            'pages' => "pages/financial/v_neraca_tersimpan"
+        ];
+
+        $this->load->view('index', $data);
+    }
+
+    public function lr_tersimpan()
+    {
+        $keyword = trim($this->input->post('keyword', true) ?? '');
+
+        $config = [
+            'base_url' => site_url('financial/laba_tersimpan'),
+            'total_rows' => $this->m_coa->count_laporan('labarugi'),
+            'per_page' => 20,
+            'uri_segment' => 3,
+            'num_links' => 10,
+            'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+            'full_tag_close' => '</ul>',
+            'first_link' => false,
+            'last_link' => false,
+            'first_tag_open' => '<li>',
+            'first_tag_close' => '</li>',
+            'prev_link' => '«',
+            'prev_tag_open' => '<li class="prev">',
+            'prev_tag_close' => '</li>',
+            'next_link' => '»',
+            'next_tag_open' => '<li>',
+            'next_tag_close' => '</li>',
+            'last_tag_open' => '<li>',
+            'last_tag_close' => '</li>',
+            'cur_tag_open' => '<li class="active"><a href="#">',
+            'cur_tag_close' => '</a></li>',
+            'num_tag_open' => '<li>',
+            'num_tag_close' => '</li>'
+        ];
+
+        $this->pagination->initialize($config);
+
+        $page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
+        $neraca = $this->m_coa->list_laporan('labarugi', $config["per_page"], $page);
+
+        $nip = $this->session->userdata('nip');
+        $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+        $query = $this->db->query($sql);
+        $result = $query->row_array()['COUNT(Id)'];
+
+        $sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+        $query2 = $this->db->query($sql2);
+        $result2 = $query2->row_array()['COUNT(id)'];
+
+        $data = [
+            'page' => $page,
+            'neraca' => $neraca,
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'coa' => $this->m_coa->list_coa(),
+            'keyword' => $keyword,
+            'title' => "L/R tersimpan",
+            'pages' => "pages/financial/v_lr_tersimpan"
+        ];
+
+        $this->load->view('index', $data);
     }
 
 

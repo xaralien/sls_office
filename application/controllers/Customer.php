@@ -39,7 +39,11 @@ class Customer extends CI_Controller
 
 		$data['customers'] = $this->M_Customer->customer();
 
-		$this->load->view('customer', $data);
+		// $this->load->view('customer', $data);
+		$data['title'] = "Customer";
+		$data['pages'] = "pages/customer/v_customer";
+
+		$this->load->view('index', $data);
 	}
 
 	public function store()
@@ -52,6 +56,7 @@ class Customer extends CI_Controller
 			'alamat_customer' => $this->input->post('alamat_customer'),
 			'telepon_customer' => $this->input->post('telepon_customer'),
 			'status_customer' => $this->input->post('status_customer'),
+			'no_npwp' => $this->input->post('no_npwp'),
 			'slug' => $slug,
 		];
 
@@ -76,19 +81,5 @@ class Customer extends CI_Controller
 		}
 
 		redirect("customer");
-	}
-
-	public function edit($id)
-	{
-		$id = $this->uri->segment(4);
-
-		$data = [
-			'title' => 'Edit Category',
-			'pages' => 'dashboard/pages/category/v_add_category',
-			'category' => $this->M_Category->detail_category($id),
-			'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array()
-		];
-
-		$this->load->view('dashboard/index', $data);
 	}
 }

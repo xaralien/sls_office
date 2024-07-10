@@ -79,4 +79,29 @@ class M_coa extends CI_Model
     {
         return $this->cb->insert('t_log_neraca', $data);
     }
+
+    public function count_laporan($jenis)
+    {
+        return $this->cb->from('t_log_neraca')->where('jenis', $jenis)->count_all_results();
+    }
+    public function list_laporan($jenis, $limit, $from)
+    {
+        $laporan = $this->cb->where('jenis', $jenis)->order_by('tanggal_simpan', 'DESC')->limit($limit, $from)->get('t_log_neraca')->result_array();
+
+        // Ambil semua user dari database bdl_core
+        $users = $this->db->select('id, nip, nama')->get('users')->result_array();
+        $user_map = array_column($users, 'nama', 'nip');  // Menggunakan nama pengguna sebagai nama kolom
+
+        // Gabungkan hasil query
+        foreach ($laporan as &$lp) {
+            $lp['created_by_name'] = isset($user_map[$lp['created_by']]) ? $user_map[$lp['created_by']] : null;
+        }
+
+        return $laporan;
+    }
+
+    public function showNeraca($id)
+    {
+        return $this->cb->where('Id', $id)->get('t_log_neraca')->row_array();
+    }
 }

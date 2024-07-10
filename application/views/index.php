@@ -62,10 +62,11 @@
 	</style>
 	<!-- jQuery -->
 	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
-	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.mask.js"></script>
 </head>
 
 <header class="header_area sticky-header">
+	<div class="flash-data" data-flashdata="<?= $this->session->flashdata('message_name') ?>"></div>
+	<div class="flash-data-error" data-flashdata="<?= $this->session->flashdata('message_error') ?>"></div>
 	<!-- footer menu -->
 	<div class="footer_panel">
 		<div class="container-fluid text-center">
@@ -115,8 +116,8 @@
 		<div class="main_container">
 			<div class="col-md-3 left_col">
 				<div class="left_col scroll-view">
-					<div class="navbar nav_title" style="border: 0;">
-						<a href="<?php echo base_url(); ?>" class="site_title"><img src="<?php echo base_url(); ?>assets/img/boc_logo.png" alt="..." height="42" width="60"><span> S.L.S</span></a>
+					<div class="navbar nav_title text-center" style="border: 0;">
+						<a href="<?php echo base_url(); ?>" class="site_title"><img src="<?php echo base_url(); ?>assets/img/logo-sls.png" alt="..." width="50%" style="filter:drop-shadow(1px 1px 1px #fff)"></a>
 					</div>
 
 					<div class="clearfix"></div>

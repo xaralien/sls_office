@@ -48,7 +48,7 @@
                 </div>
                 <div class="x_content">
                     <!-- <br> -->
-                    <form class="form-label-left input_mask" method="POST" action="<?= base_url('financial/process_financial_entry') ?>">
+                    <form class="form-label-left input_mask" method="POST" action="<?= base_url('financial/store_financial_entry') ?>" enctype="multipart/form-data">
                         <div class="col-md-6 col-12 form-group has-feedback">
                             <label for="" class="form-label">Nominal</label>
                             <!-- <input type="text" class="form-control" name="input_nominal" id="input_nominal" placeholder="Nominal" oninput="format_angka()" onkeypress="return onlyNumberKey(event)" autofocus required> -->
@@ -62,14 +62,14 @@
                             <label for="" class="form-label">Debit</label>
                             <select name="neraca_debit" id="neraca_debit" class="form-control select2" required>
                                 <option value="">-- Pilih pos neraca debit</option>
-                                <?php
-                                foreach ($coa as $c) :
-                                ?>
-                                    <option value="<?= $c->no_sbb ?>" data-nama="<?= $c->nama_perkiraan ?>" data-posisi="<?= $c->posisi ?>"><?= $c->no_sbb . ' - ' . $c->nama_perkiraan ?></option>
-                                <?php
-                                endforeach; ?>
+                                <?php foreach ($coa as $c) : ?>
+                                    <option value="<?= $c->no_sbb ?>" data-nama="<?= $c->nama_perkiraan ?>" data-posisi="<?= $c->posisi ?>">
+                                        <?= $c->no_sbb . ' - ' . $c->nama_perkiraan ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
+
                         <div class="col-md-6 col-12 form-group has-feedback">
                             <label for="" class="form-label">Kredit</label>
                             <select name="neraca_kredit" id="neraca_kredit" class="form-control select2" required>
@@ -86,6 +86,10 @@
                             <label for="" class="form-label">Tanggal</label>
                             <input type="date" name="tanggal" id="tanggal" value="<?= date('Y-m-d') ?>" class="form-control" required>
                         </div>
+                        <div class="col-md-6 col-12 form-group has-feedback">
+                            <label for="file_upload" class="form-label">Upload file (opsional)</label>
+                            <input type="file" name="file_upload" id="file_upload" class="form-control">
+                        </div>
                         <div class="form-group row">
                             <div class="col-md-9 col-sm-9  offset-md-3">
                                 <button type="button" class="btn btn-primary">Cancel</button>
@@ -101,8 +105,13 @@
 </div>
 <link rel="stylesheet" href="<?= base_url(); ?>assets/select2/css/select2.min.css">
 <script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
+
+<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 <script>
     $(document).ready(function() {
+        $('.uang').mask('000.000.000.000.000', {
+            reverse: true
+        });
         $('.select2').select2();
 
         $("form").on("submit", function() {
@@ -115,5 +124,57 @@
                 },
             });
         });
+
+        function formatState(state, colorAktiva, colorPasiva, signAktiva, signPasiva) {
+            if (!state.id) {
+                return state.text;
+            }
+
+            var color = state.element.dataset.posisi == "AKTIVA" ? colorAktiva : colorPasiva;
+            var sign = state.element.dataset.posisi == "AKTIVA" ? signAktiva : signPasiva;
+
+            var $state = $('<span style="background-color: ' + color + ';"><strong>' + state.text + ' ' + sign + '</strong></span>');
+
+            return $state;
+        };
+
+        function formatStateDebit(state) {
+            return formatState(state, '#2ecc71', '#ff7675', '(+)', '(-)');
+        }
+
+        function formatStateKredit(state) {
+            return formatState(state, '#ff7675', '#2ecc71', '(-)', '(+)');
+        }
+
+        $('#neraca_debit').select2({
+            // templateResult: formatStateDebit,
+            templateSelection: formatStateDebit
+        });
+
+        $('#neraca_kredit').select2({
+            // templateResult: formatStateKredit,
+            templateSelection: formatStateKredit
+        });
     });
+
+    const flashdata = $(".flash-data").data("flashdata");
+    if (flashdata) {
+        Swal.fire({
+            title: "Success!! ",
+            text: '<?= $this->session->flashdata('message_name') ?>',
+            type: "success",
+            icon: "success",
+        });
+    }
+
+    const flashdata_error = $(".flash-data-error").data("flashdata");
+    // const flashdata_error = $('.flash-data').data('flashdata');
+    if (flashdata_error) {
+        Swal.fire({
+            title: "Error!! ",
+            text: flashdata_error,
+            type: "error",
+            icon: "error",
+        });
+    }
 </script>

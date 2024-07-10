@@ -10,13 +10,25 @@ class M_invoice extends CI_Model
         $this->load->database();
     }
 
-    public function list_invoice()
+    // private function select_invoice()
+    // {
+    //     // Query dari database corebank
+    //     $this->cb->select('a.*, c.nama_customer');
+    //     $this->cb->from('invoice a');
+    //     return $this->cb->join('customer c', 'a.id_customer = c.id', 'left');
+    // }
+
+    public function list_invoice($limit, $from, $keyword)
     {
-        // Query dari database corebank
         $this->cb->select('a.*, c.nama_customer');
         $this->cb->from('invoice a');
         $this->cb->join('customer c', 'a.id_customer = c.id', 'left');
-        $invoices = $this->cb->order_by('no_invoice', 'DESC')->get()->result_array();
+
+        if ($keyword) {
+            $this->cb->like('no_invoice', $keyword);
+        }
+
+        $invoices = $this->cb->order_by('no_invoice', 'DESC')->limit($limit, $from)->get()->result_array();
 
         // Ambil semua user dari database bdl_core
         $users = $this->db->select('id, nip, nama')->get('users')->result_array();
@@ -29,6 +41,15 @@ class M_invoice extends CI_Model
         }
 
         return $invoices;
+    }
+
+    public function invoice_count($keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('no_invoice', $keyword);
+        }
+
+        return $this->cb->from('invoice')->count_all_results();
     }
 
     public function select_max()
@@ -106,5 +127,57 @@ class M_invoice extends CI_Model
     public function cek_user($id)
     {
         return $this->db->get_where('users', ['nip' => $id])->row_array();
+    }
+
+    public function add_fe($data)
+    {
+        return $this->cb->insert('financial_entry', $data);
+    }
+
+    public function select_max_fe()
+    {
+        return $this->cb->select('max(no_urut) as max')->get('financial_entry')->row_array();
+    }
+
+    public function fe_pending_count($keyword)
+    {
+        // if ($keyword) {
+        //     // $this->cb->like('slug', $keyword);
+        //     $this->cb->or_like('keterangan', $keyword);
+        // }
+
+        return $this->cb->from('invoice')->count_all_results();
+    }
+
+    public function list_fe_pending($limit, $from, $keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('slug', $keyword);
+            $this->cb->or_like('keterangan', $keyword);
+        }
+
+        $fes = $this->cb->order_by('no_urut', 'DESC')->limit($limit, $from)->get('financial_entry')->result_array();
+
+        // Ambil semua user dari database bdl_core
+        $users = $this->db->select('id, nip, nama')->get('users')->result_array();
+        $user_map = array_column($users, 'nama', 'nip');  // Menggunakan nama pengguna sebagai nama kolom
+
+        // Gabungkan hasil query
+        foreach ($fes as &$fe) {
+            $fe['created_by_name'] = isset($user_map[$fe['created_by']]) ? $user_map[$fe['created_by']] : null;
+            $fe['approve_by_name'] = isset($user_map[$fe['approve_by']]) ? $user_map[$fe['approve_by']] : null;
+        }
+
+        return $fes;
+    }
+
+    public function update_fe($data, $slug)
+    {
+        return $this->cb->where('slug', $slug)->update('financial_entry', $data);
+    }
+
+    public function detail_fe($slug)
+    {
+        return $this->cb->where('slug', $slug)->where('status_approval', '0')->get('financial_entry')->row_array();
     }
 }
