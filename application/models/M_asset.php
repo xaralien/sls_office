@@ -85,9 +85,18 @@ class M_asset extends CI_Model
 
 	function get_poList($where)
 	{
-		$this->cb->select('a.no_po, a.tgl_pengajuan, a.posisi, a.total, b.nama, a.status_sarlog, a.status_direksi, a.Id, a.catatan_sarlog, a.catatan_direksi, a.keterangan, a.bukti_bayar, a.user');
-		$this->cb->from('t_preorder as a');
+		$this->cb->select('a.no_po, a.tgl_pengajuan, a.posisi, a.total, b.nama, a.status_sarlog, a.status_direksi, a.Id, a.catatan_sarlog, a.catatan_direksi, a.keterangan, a.bukti_bayar, a.user, a.date_bayar, a.jenis_pembayaran, a.status_pembayaran');
+		$this->cb->from('t_po as a');
 		$this->cb->join('t_vendors as b', 'a.vendor = b.Id', 'left');
+		$this->cb->where($where);
+
+		return $this->cb->get();
+	}
+
+	function get_poOutList($where)
+	{
+		$this->cb->select('a.no_po, a.tgl_pengajuan, a.posisi, a.total, a.asset, a.status_sarlog, a.status_direksi, a.Id, a.catatan_sarlog, a.catatan_direksi, a.keterangan, a.bukti_bayar, a.user, a.date_bayar');
+		$this->cb->from('t_po_out as a');
 		$this->cb->where($where);
 
 		return $this->cb->get();
@@ -95,6 +104,11 @@ class M_asset extends CI_Model
 
 	function count_po($where)
 	{
-		return $this->cb->get_where('t_preorder', $where)->num_rows();
+		return $this->cb->get_where('t_po', $where)->num_rows();
+	}
+
+	function count_po_out($where)
+	{
+		return $this->cb->get_where('t_po_out', $where)->num_rows();
 	}
 }

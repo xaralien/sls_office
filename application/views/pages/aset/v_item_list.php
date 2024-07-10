@@ -2,24 +2,25 @@
 <div class="right_col" role="main" style="height: 100%;">
     <div class="clearfix"></div>
     <div class="x_panel card">
-        <!--div class="alert alert-info">Daftar Surat Kuasa </div-->
-        <div align="center">
+        <div class="x_title">
+            <h2>Financial entry</h2>
+        </div>
+
+        <div class="row">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Item</button>
+            <a href="<?= base_url('asset/export_item') ?>" class="btn btn-success"><i class="fa fa-file-excel-o"></i> Excel</a>
         </div>
         <!-- search -->
-        <form data-parsley-validate action="" method="get" name="form_input" id="form_input">
-            <label class="control-label col-md-1 col-sm-1 col-xs-4" for="cari_nama">Filter
-                <span class="required">*</span>
-            </label>
-            <div class="col-md-6 col-sm-6 col-xs-8">
-                <input type="text" id="search" name="search" class="form-control col-md-7 col-xs-12" placeholder="nama item yang akan dicari" value="<?= $this->input->get('search') ?>">
-            </div>
-            <button type="submit" class="btn btn-primary">Cari</button>
-            <input type="button" class="btn btn-primary" value="Tampilkan Semua" onclick="window.location.href='<?php echo base_url(); ?>asset/item_list'" />
-            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1">Tambah Item</button>
-        </form>
-        <form method="POST" action="<?= base_url('asset/filter_jenis_item') ?>" style="margin-bottom:20px;">
-            <a href="<?= base_url('asset/export_item') ?>" class="btn btn-success">Excel <i class="fa fa-file-excel-o"></i></a>
-        </form>
+        <div class="row" style="margin-left: auto;">
+            <form action="">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode item..." value="<?= $this->input->get('search') ?>">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
+                    </span>
+                </div><!-- /input-group -->
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
@@ -28,9 +29,11 @@
                         <th>Kode</th>
                         <th>Nama</th>
                         <th>Stok</th>
+                        <th>Jumlah Detail</th>
                         <th>Harga Satuan</th>
                         <th>Total</th>
                         <th>Jenis</th>
+                        <th>#</th>
                     </tr>
                 </thead>
                 <?php
@@ -38,32 +41,39 @@
                 ?>
                     <tbody>
                         <tr align="center">
-                            <td colspan="7"><b>Belum ada data</b></td>
+                            <td colspan="9"><b>Tidak ada data</b></td>
                         </tr>
                     </tbody>
-                    <?php
-                } else {
-                    foreach ($users_data as $data) :
-                    ?>
-                        <!--content here-->
-                        <tbody>
+                <?php
+                } else { ?>
+                    <tbody>
+                        <?php
+                        foreach ($users_data as $data) :
+                            $detail = $this->db->get_where('item_detail', ['kode_item' => $data->Id, 'status' => 'A']);
+                        ?>
+                            <!--content here-->
                             <tr>
-                                <td><?php echo ++$page; ?></td>
+                                <td class="fit"><?php echo ++$page; ?></td>
                                 <td><?php echo $data->nomor; ?></td>
                                 <td><?php echo $data->nama; ?></td>
-                                <td><?php echo $data->stok; ?></td>
+                                <td class="fit"><?php echo $data->stok; ?></td>
+                                <td><?php echo $detail->num_rows(); ?></td>
                                 <td><?php echo number_format($data->harga_sat); ?></td>
                                 <td><?php echo number_format($data->harga_sat * $data->stok); ?></td>
                                 <td><?php echo $data->nama_jenis; ?></td>
+                                <td width="80px">
+                                    <a href="<?= base_url('asset/ubah_item/' . $data->Id) ?>" class="btn btn-success btn-xs"><i class="fa fa-pencil" aria-hidden="true"></i>
+                                    </a>
+                                    <a href="<?= base_url('asset/detail/' . $data->Id) ?>" class="btn btn-warning btn-xs"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                </td>
                             </tr>
-                        </tbody>
-                <?php
-                    endforeach;
-                }
-                ?>
+                    <?php
+                        endforeach;
+                    }
+                    ?>
+                    </tbody>
             </table>
         </div>
-
         <div class="clearfix"></div>
 
         <!--pagination-->
@@ -129,12 +139,13 @@
 
                         <div class="modal-footer">
                             <div style="text-align: center;">
-                                <button type="submit" class="btn btn-primary" id="simpan-item">Simpan</button>
+                                <button type="submit" class="btn btn-primary btn-submit">Simpan</button>
                                 <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
     </form>
 </div>

@@ -54,7 +54,7 @@
             <?php } ?>
           </div>
           <div class="row">
-            <a href="<?= base_url('asset/preorder') ?>" class="btn btn-primary">Create Preorder</a>
+            <a href="<?= base_url('asset/purchaseorder') ?>" class="btn btn-primary">Create PO</a>
           </div>
           <div class="table-responsive">
             <table class="table table-bordered">
@@ -69,10 +69,12 @@
                 </tr>
               </thead>
               <tbody>
-                <?php if (!$preorder) { ?> <tr align="center">
-                    <td colspan="7">Belum ada data</td>
-                  </tr> <?php } else {
-                        foreach ($preorder->result_array() as $value) {  ?>
+                <?php if ($po->num_rows() < 1) { ?>
+                  <tr align="center">
+                    <td colspan="7">Tidak ada data</td>
+                  </tr>
+                  <?php } else {
+                  foreach ($po->result_array() as $value) {  ?>
                     <tr>
                       <td scope="row"><?= $value['no_po'] ?></td>
                       <td scope="row"><?= $value['nama'] ?></td>
@@ -81,10 +83,14 @@
                       <td scope="row"><?= number_format($value['total']) ?></td>
                       </td>
                       <td scope="row">
-                        <?php if ($value['status_sarlog'] == 0 or $value['status_sarlog'] == 2 or $value['status_direksi'] == 2) { ?>
-                          <a href="<?= base_url('pengajuan/ubah/' . $value['Id']) ?>" class="btn btn-success btn-sm">Update</a>
-                        <?php } ?>
+                        <a href="<?= base_url('asset/print/' . $value['Id']) ?>" class="btn btn-primary btn-sm" target="_blank">Print</a>
                         <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal<?= $value['Id'] ?>">View</button>
+                        <?php if ($value['posisi'] == 'Sudah Dibayar' || $value['posisi'] == "Hutang") { ?>
+                          <form action="<?= base_url('asset/add_item_in') ?>" method="post">
+                            <input type="hidden" name="id_po" id="id_po" value="<?= $value['Id'] ?>">
+                            <button class="btn btn-success btn-sm btn-submit">Add to list</button>
+                          </form>
+                        <?php } ?>
                         <!-- Modal Detail -->
                         <div class="modal fade" id="myModal<?= $value['Id'] ?>" role="dialog">
                           <div class="modal-dialog modal-lg">
@@ -92,7 +98,7 @@
                             <div class="modal-content">
                               <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h2 class="modal-title">Preorder <?= $value['no_po'] ?></h2>
+                                <h2 class="modal-title">Purchase Order <?= $value['no_po'] ?></h2>
                               </div>
                               <div class="modal-body">
                                 <table class="table table-bordered">
@@ -103,12 +109,12 @@
                                       <th width="25px">Qty</th>
                                       <th>Price</th>
                                       <th>Total</th>
-                                      <th width="30px">#</th>
+                                      <!-- <th width="30px">#</th> -->
                                     </tr>
                                   </thead>
                                   <tbody>
                                     <?php
-                                    $detail = $this->cb->get_where('t_preorder_detail', ['no_po' => $value['no_po']])->result_array();
+                                    $detail = $this->cb->get_where('t_po_detail', ['no_po' => $value['no_po']])->result_array();
                                     $no = 1;
                                     foreach ($detail as $row) {
                                       $item = $this->db->get_where('item_list', ['Id' => $row['item']])->row_array();
@@ -119,7 +125,6 @@
                                         <td><?= $row['qty'] ?></td>
                                         <td><?= number_format($row['price'], 0) ?></td>
                                         <td><?= number_format($row['total'], 0) ?></td>
-                                        <td><a href="<?= base_url('asset/add_item/' . $item['Id']) ?>" class="btn btn-success btn-xs">Add to list</a></td>
                                       </tr>
                                     <?php } ?>
                                     <tr>
@@ -189,7 +194,7 @@
                       </td>
                     </tr>
                 <?php }
-                      } ?>
+                } ?>
               </tbody>
             </table>
           </div>

@@ -18,7 +18,8 @@
                         <li><a href="<?php echo base_url(); ?>app/create_memo">Create</a></li>
                     <?php } ?>
                     <?php $a = $this->session->userdata('level');
-                    if (strpos($a, '401') !== false) { ?>
+                    if (strpos($a, '401') !== false) {
+                    ?>
                         <li><a href="<?php echo base_url(); ?>app/inbox">Inbox</a></li>
                     <?php } ?>
                     <?php $a = $this->session->userdata('level');
@@ -71,8 +72,10 @@
                     if (strpos($a, '501') !== false) { ?>
                         <li><a href="<?php echo base_url(); ?>app/asset_list">Asset List</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/item_list">Item List</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/preorder">Create PO</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/po_list">Preorder</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/item_out">Item Out</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order IN</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/po_list_out">Purchase Order Out</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/report_asset">Report</a></li>
                     <?php } ?>
                 </ul>
             </li>

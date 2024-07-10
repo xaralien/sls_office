@@ -10,84 +10,100 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="x_panel card">
         <div class="x_title">
-          <h2>Preorder Item</h2>
+          <h2>Purchase Order Item Out</h2>
         </div>
         <div class="x_content">
           <?php if (!$this->uri->segment(3)) { ?>
-            <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po') ?>" enctype="multipart/form-data" id="form-preorder">
+            <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po_out') ?>" enctype="multipart/form-data" id="form-po">
               <div class="row" style="margin-bottom: 30px">
                 <div class="col-md-2">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
                 </div>
-                <div class="col-md-3">
-                  <label for="tanggal" class="form-label">Vendor</label>
-                  <select name="vendor" id="vendor" class="form-control">
-                    <option value="">:: Pilih Vendor</option>
-                    <?php foreach ($vendors->result_array() as $v) { ?>
-                      <option value="<?= $v['Id'] ?>"><?= $v['nama'] ?></option>
+                <div class="col-md-5">
+                  <label for="teknisi" class="form-label">Nama Teknisi</label>
+                  <input type="text" class="form-control" name="teknisi" id="teknisi">
+                </div>
+                <div class="col-md-5">
+                  <label for="tanggal" class="form-label">Asset</label>
+                  <!-- <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>"> -->
+                  <select name="asset" id="asset" class="form-control select2">
+                    <option value=""> :: Pilih Asset :: </option>
+                    <?php
+                    $asset = $this->db->get('asset_list')->result_array();
+                    foreach ($asset as $row) {
+                    ?>
+                      <option value="<?= $row['Id'] ?>"><?= $row['nama_asset'] . ' | ' . $row['kode'] ?></option>
                     <?php } ?>
                   </select>
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-12">
                   <label for="keterangan" class="form-label">Keterangan</label>
                   <textarea name="keterangan" id="keterangan" class="form-control"></textarea>
                 </div>
               </div>
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th style="width: 80px">Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th>#</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <div class="items">
-                    <tr class="baris">
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th style="width: 400px">Item</th>
+                      <th style="width: 80px">Qty</th>
+                      <th>Price</th>
+                      <th>Total</th>
+                      <th>#</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <div class="items">
+                      <tr class="baris">
+                        <td>
+                          <input type="hidden" name="row[]" id="row">
+                          <select name="item[]" id="item-0" class="form-control item-out" width="100%">
+                            <option value=""> :: Pilih Item :: </option>
+                            <?php foreach ($item_list->result_array() as $il) { ?>
+                              <option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option>
+                            <?php } ?>
+                          </select>
+                          <!-- <div style="margin-top: 10px;" id="select-detail-0">
+                            <label for="label" class="form-label">Select Detail</label>
+                            <select name="detail_item[0][]" id="detail-item-0" class="form-control" multiple>
+                              <option value=""></option>
+                            </select>
+                          </div> -->
+                        </td>
+                        <td>
+                          <input type="text" class="form-control uang" name="qty[]" id="qty-0">
+                        </td>
+                        <td>
+                          <input type="text" class="form-control uang" name="harga[]" id="price-0">
+                        </td>
+                        <td>
+                          <input type="text" class="form-control" name="total[]" id="total-0" readonly>
+                        </td>
+                        <td>
+                          <button type="button" class="btn btn-danger remove-form">Hapus</button>
+                        </td>
+                      </tr>
+                    </div>
+                    <tr align="right">
+                      <td colspan="3">TOTAL</td>
                       <td>
-                        <input type="hidden" name="row[]" id="row">
-                        <select name="item[]" id="item-0" class="form-control select2" width="100%">
-                          <option value=""> :: Pilih Item :: </option>
-                          <?php foreach ($item_list->result_array() as $il) { ?>
-                            <option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option>
-                          <?php } ?>
-                        </select>
+                        <input type="text" class="form-control" readonly name="nominal" id="nominal">
                       </td>
-                      <td>
-                        <input type="text" class="form-control uang" name="qty[]" id="qty">
-                      </td>
-                      <td>
-                        <input type="text" class="form-control uang" name="harga[]" id="price">
-                      </td>
-                      <td>
-                        <input type="text" class="form-control" name="total[]" id="total" readonly>
-                      </td>
-                      <td>
-                        <button type="button" class="btn btn-danger hapusRow">Hapus</button>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td colspan="5">
+                        <button type="button" class="btn btn-success btn-sm" id="add-more-form">Add new row</button>
                       </td>
                     </tr>
-                  </div>
-                  <tr align="right">
-                    <td colspan="3">TOTAL</td>
-                    <td>
-                      <input type="text" class="form-control" readonly name="nominal" id="nominal">
-                    </td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td colspan="5">
-                      <button type="button" class="btn btn-success btn-sm" id="add-more-form">Add new row</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
               <div class="row">
                 <div class="col-lg-12 text-end">
                   <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning">Back</a>
-                  <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+                  <button type="submit" class="btn btn-primary btn-submit">Save</button>
                 </div>
               </div>
             </form>
@@ -95,7 +111,7 @@
             <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('pengajuan/update/' . $this->uri->segment(3)) ?>" enctype="multipart/form-data" id="form-pengajuan">
               <div class="row" style="margin-bottom: 30px">
                 <div class="col-md-2">
-                  <label for="tanggal" class="form-label">Tangal</label>
+                  <label for="tanggal" class="form-label">Tanggal</label>
                   <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d', strtotime($pengajuan['created_at'])); ?>">
                 </div>
                 <div class="col-md-3">

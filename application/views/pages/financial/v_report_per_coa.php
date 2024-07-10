@@ -13,7 +13,6 @@
                     <?php
                     if ($this->input->post('no_coa')) { ?>
                         <div class="row">
-
                             <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/coa_report') ?>">
                                 <div class="col-md-5 col-12">
                                     <div class="form-group">
