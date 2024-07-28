@@ -8,6 +8,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" href="images/favicon.ico" type="image/ico" />
+	<link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/img/icon-sls.png" />
 	<title><?= $title ?> | SLS</title>
 	<!-- Bootstrap -->
 	<link href="<?php echo base_url(); ?>assets/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -288,9 +289,9 @@
 				}
 			})
 
-			$('.select2').select2({
-				width: '100%'
-			})
+			// $('.select2').select2({
+			// 	width: '100%'
+			// })
 
 			$('#item-0').select2({
 				width: '100%'
@@ -301,27 +302,7 @@
 			});
 
 			var rowCount = $(".baris").length;
-			$('#add-more-form').click(function() {
-				// var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></select><div style="margin-top: 10px;" id="select-detail-' + rowCount + '"><label for="label" class="form-label">Select Detail</label><select name="detail_item[' + rowCount + '][]" id="detail-item-' + rowCount + '" class="form-control" multiple><option value=""></option></select></div></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><button type="button" class="btn btn-danger remove-form">Hapus</button></td></tr>';
 
-				var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><button type="button" class="btn btn-danger remove-form">Hapus</button></td></tr>';
-
-				var previousRow = $('.baris').last();
-				rowCount++;
-				previousRow.after(row);
-
-				$.each($(".select2"), function(index, value) {
-					$('#item-' + index).select2({
-						width: '100%'
-					});
-
-					$('#detail-item-' + index).select2({
-						width: '100%'
-					});
-				});
-
-				get_detail_item()
-			});
 
 			$(document).on("click", ".remove-form", function() {
 				rowCount--;

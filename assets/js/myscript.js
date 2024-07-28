@@ -1,7 +1,7 @@
 $(document).ready(function () {
-	$(".select2").select2({
-		width: "100%",
-	});
+	// $(".select2").select2({
+	// 	width: "100%",
+	// });
 
 	$(".uang").mask("000.000.000.000.000", {
 		reverse: true,

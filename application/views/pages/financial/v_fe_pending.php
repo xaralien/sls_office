@@ -169,7 +169,7 @@
                                                                     <div class="form-group">
                                                                         <label for="lampiran" class="form-label">Lampiran</label>
                                                                         <p>
-                                                                            <?= ($i['file_path']) ? '<a href="' . base_url() . '">' . $i['slug'] . '</a>' : 'Tidak ada' ?>
+                                                                            <?= ($i['file_path']) ? '<a href="' . base_url($i['file_path']) . '">' . $i['slug'] . '</a>' : 'Tidak ada' ?>
                                                                         </p>
                                                                     </div>
                                                                 </div>

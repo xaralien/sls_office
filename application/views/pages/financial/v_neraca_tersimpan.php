@@ -32,13 +32,20 @@
             <div class="x_panel card">
                 <div class="x_title">
                     <h2>Neraca tersimpan</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li>
+                            <button class="btn btn-primary" onclick="document.location='<?= base_url('financial/showReport') ?>'">Neraca L/R</button>
+                        </li>
+                    </ul>
                 </div>
                 <div class="x_content">
                     <table id="datatable" class="table table-striped" style="width:100%">
                         <thead>
                             <tr>
                                 <th>No.</th>
+                                <th>Kode</th>
                                 <th>Tanggal simpan</th>
+                                <th>Keterangan</th>
                                 <th>User</th>
                             </tr>
                         </thead>
@@ -48,8 +55,10 @@
                                 $no = 1;
                                 foreach ($neraca as $i) : ?>
                                     <tr>
-                                        <td><a href="<?= base_url('financial/showNeracaTersimpan/' . $i['Id']) ?>"><?= $no++ ?>.</a></td>
-                                        <td><a href="<?= base_url('financial/showNeracaTersimpan/' . $i['Id']) ?>"><?= format_indo($i['tanggal_simpan']) ?></a></td>
+                                        <td><?= $no++ ?>.</td>
+                                        <td><a href="<?= base_url('financial/showNeracaTersimpan/' . $i['slug']) ?>"><?= $i['slug'] ?></a></td>
+                                        <td><?= format_indo($i['tanggal_simpan']) ?></td>
+                                        <td style="white-space: pre-line;"><?= ($i['keterangan']) ?></td>
                                         <td><?= isset($i['created_by_name']) ? $i['created_by_name'] : 'N/A' ?></td>
                                     </tr>
 
@@ -58,14 +67,17 @@
                             } else {
                                 ?>
                                 <tr>
-                                    <td colspan="3">Tidak ada data yang ditampilkan</td>
+                                    <td colspan="5">Tidak ada data yang ditampilkan</td>
                                 </tr>
                             <?php
                             } ?>
                         </tbody>
                     </table>
                     <div class="row">
-                        <div class="col-md-12 text-right">
+                        <div class="col-md-6">
+                            <h6>*klik kode untuk lihat neraca tersimpan</h6>
+                        </div>
+                        <div class="col-md-6 text-right">
                             <?= $this->pagination->create_links() ?>
                         </div>
                     </div>
@@ -74,51 +86,3 @@
         </div>
     </div>
 </div>
-<link rel="stylesheet" href="<?= base_url(); ?>assets/select2/css/select2.min.css">
-<script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('.select2').select2();
-        $('.select3').select2();
-    })
-
-    const flashdata = $(".flash-data").data("flashdata");
-    if (flashdata) {
-        Swal.fire({
-            title: "Success!! ",
-            text: '<?= $this->session->flashdata('message_name') ?>',
-            type: "success",
-            icon: "success",
-        });
-    }
-    // const flashdata_error = $('<?= $this->session->flashdata("message_error") ?>').data("flashdata");
-    const flashdata_error = $(".flash-data-error").data("flashdata");
-    // const flashdata_error = $('.flash-data').data('flashdata');
-    if (flashdata_error) {
-        Swal.fire({
-            title: "Error!! ",
-            text: flashdata_error,
-            type: "error",
-            icon: "error",
-        });
-    }
-    // $(document).ready(function() {
-    $(".btn-process").on("click", function(e) {
-        e.preventDefault();
-        const url = $(this).data("url");
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, process it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.location.href = url;
-            }
-        });
-    });
-    // });
-</script>

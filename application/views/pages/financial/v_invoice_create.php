@@ -152,7 +152,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="text-right">PPh 2%
-                                        <input type="checkbox" class="icheckbox_flat-green" style="margin-left: 0px;" name="opsi_pph" id="opsi_pph" value="1">
+                                        <input type="checkbox" class="icheckbox_flat-green" style="margin-left: 0px;" name="opsi_pph" id="opsi_pph" value="1" disabled checked>
 
                                     </td>
                                     <td>

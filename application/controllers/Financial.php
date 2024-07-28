@@ -68,7 +68,7 @@ class Financial extends CI_Controller
         $keterangan = trim($this->input->post('input_keterangan'));
         $tanggal = $this->input->post('tanggal');
         $file = $_FILES['file_upload']['name'];
-        $upload_path = ($file) ? base_url() . 'assets/img/financial_entry/' : '';
+        $upload_path = ($file) ? 'assets/img/financial_entry/' : '';
 
         $max_num = $this->m_invoice->select_max_fe();
         $bilangan = $max_num['max'] ? $max_num['max'] + 1 : 1;
@@ -87,10 +87,14 @@ class Financial extends CI_Controller
                 'file_name' => $newFileName,
             ];
 
+            // print_r($config);
+            // exit;
             // echo "file ditemukan";
             $this->load->library('upload', $config);
 
             if (!$this->upload->do_upload('file_upload')) {
+                // print_r($this->upload->display_errors());
+                // exit;
                 $this->session->set_flashdata('message_error', 'Error message: ' . $this->upload->display_errors());
                 redirect($_SERVER['HTTP_REFERER']);
             }
@@ -102,7 +106,7 @@ class Financial extends CI_Controller
             'nominal' => $nominal,
             'keterangan' => $keterangan,
             'tanggal_transaksi' => $tanggal,
-            'file_path' => isset($file) ? $upload_path : null,
+            'file_path' => isset($file) ? $upload_path . $newFileName : null,
             'created_by' => $this->session->userdata('nip'),
             'slug' => $slug,
             'no_urut' => $bilangan
@@ -113,6 +117,12 @@ class Financial extends CI_Controller
         // exit;
 
         $this->m_invoice->add_fe($data);
+
+
+        $msg = "Financial entry: butuh persetujuan. No. " . $slug;
+        $no_whatsapp = "6285240719210";
+        $this->api_whatsapp->wa_notif($msg, $no_whatsapp);
+        // exit;
         $this->session->set_flashdata('message_name', 'Financial entry berhasil ditambahkan. Status: Menunggu approval.');
         redirect('financial/financial_entry');
     }
@@ -178,11 +188,11 @@ class Financial extends CI_Controller
     public function approve_fe($slug)
     {
         $nip = $this->session->userdata('nip');
+        $fe = $this->m_invoice->detail_fe($slug);
         // print_r($slug);
         // exit;
-        $fe = $this->m_invoice->detail_fe($slug);
-        $coa_debit = "13010";
-        $coa_kredit = "41101";
+        // $coa_debit = "13010";
+        // $coa_kredit = "41101";
 
         $keterangan = $fe['keterangan'];
         $nominal = $fe['nominal'];
@@ -190,7 +200,7 @@ class Financial extends CI_Controller
         $coa_debit = $fe['coa_debit'];
         $coa_kredit = $fe['coa_kredit'];
 
-        // print_r($coa_debit);
+        // print_r($coa_kredit);
         // exit;
 
         $this->posting($coa_debit, $coa_kredit, $keterangan, $nominal, $tanggal_transaksi);
@@ -253,11 +263,12 @@ class Financial extends CI_Controller
 
     public function invoice()
     {
+        $customer_id = $this->input->post('customer_id');
         $keyword = trim($this->input->post('keyword', true) ?? '');
 
         $config = [
             'base_url' => site_url('financial/invoice'),
-            'total_rows' => $this->m_invoice->invoice_count($keyword),
+            'total_rows' => $this->m_invoice->invoice_count($keyword, $customer_id),
             'per_page' => 20,
             'uri_segment' => 3,
             'num_links' => 10,
@@ -284,7 +295,7 @@ class Financial extends CI_Controller
         $this->pagination->initialize($config);
 
         $page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
-        $invoices = $this->m_invoice->list_invoice($config["per_page"], $page, $keyword);
+        $invoices = $this->m_invoice->list_invoice($config["per_page"], $page, $keyword, $customer_id);
 
         $nip = $this->session->userdata('nip');
         $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -298,6 +309,7 @@ class Financial extends CI_Controller
         $data = [
             'page' => $page,
             'invoices' => $invoices,
+            'customers' => $this->M_Customer->list_customer('reguler'),
             'count_inbox' => $result,
             'count_inbox2' => $result2,
             'coa' => $this->m_coa->list_coa(),
@@ -393,7 +405,8 @@ class Financial extends CI_Controller
         $diskon = $this->input->post('diskon');
         $ppn = $this->input->post('ppn');
         $nominal = $this->convertToNumber($this->input->post('nominal'));
-        $besaran_diskon = $this->convertToNumber($this->input->post('besaran_diskon'));
+        // $besaran_diskon = $this->convertToNumber($this->input->post('besaran_diskon'));
+        $besaran_diskon = 0;
         $besaran_ppn = $this->convertToNumber($this->input->post('besaran_ppn'));
         $besaran_pph = $this->convertToNumber($this->input->post('besaran_pph'));
         $total_nonpph = $this->convertToNumber($this->input->post('total_nonpph'));
@@ -404,15 +417,16 @@ class Financial extends CI_Controller
         $bruto = $this->convertToNumber($this->input->post('bruto'));
         $no_inv = $this->input->post('no_invoice');
         $opsi_termin = $this->input->post('opsi_termin');
-        $opsi_pph = $this->input->post('opsi_pph');
+        // $opsi_pph = $this->input->post('opsi_pph');
+        $opsi_pph = '1';
 
-        // echo '<pre>';
-        // print_r($_POST);
-        // echo '</pre>';
-        // exit;
         $pph = isset($opsi_pph) ? '0.02' : 0;
         $ppn = '0.11';
 
+        // echo '<pre>';
+        // print_r($besaran_pph);
+        // echo '</pre>';
+        // exit;
         $tgl_invoice = $this->input->post('tgl_invoice');
 
         $keterangan = trim($this->input->post('keterangan'));
@@ -478,11 +492,17 @@ class Financial extends CI_Controller
                 $insert = $this->m_invoice->insert_batch($detail_data);
 
                 if ($insert) {
-                    // Jurnal 1: 13010 - Piutang Usaha bertambah (pendapatan), 41101 - PAD-Operasional Lainnya bertambah sebesar pendapatan
-                    // $coa_debit = "13010";
-                    // $coa_kredit = "41101";
+                    // Jurnal 1: 13010 - Piutang Usaha bertambah, 41101 - PAD-Operasional Lainnya bertambah (sebesar bruto)
+                    $coa_debit = "13010";
+                    $coa_kredit = "41101";
 
-                    // $this->posting($coa_debit, $coa_kredit, $keterangan, $total_denganpph, $tgl_invoice);
+                    $this->posting($coa_debit, $coa_kredit, $keterangan, $bruto, $tgl_invoice);
+
+                    // Jurnal 2: 13010 - Piutang Usaha bertambah, 23020 - Utang PPN bertambah (sebesar besaran_ppn)
+                    $coa_debit = "13010";
+                    $coa_kredit = "23020";
+
+                    $this->posting($coa_debit, $coa_kredit, $keterangan, $besaran_ppn, $tgl_invoice);
 
                     $this->session->set_flashdata('message_name', 'The invoice has been successfully created. ' . $no_inv);
                     // After that you need to used redirect function instead of load view such as 
@@ -528,7 +548,7 @@ class Financial extends CI_Controller
             $kolom_debit = "no_lr_sbb";
         }
 
-        if ($substr_coa_kredit == "1" || $substr_coa_kredit == "2" || $substr_coa_debit == "3") {
+        if ($substr_coa_kredit == "1" || $substr_coa_kredit == "2" || $substr_coa_kredit == "3") {
             $tabel_kredit = "t_coa_sbb";
             $kolom_kredit = "no_sbb";
         } else {
@@ -628,45 +648,42 @@ class Financial extends CI_Controller
         $coa_pendapatan = $this->input->post('coa_pendapatan');
         $tanggal_bayar = $this->input->post('tanggal_bayar');
 
-        // var_dump($inv['bruto'], $inv['total_denganpph'], $inv['besaran_ppn'], $nominal_j2);
-        // exit;
-
-        // Versi SLS
-        // J1: Kas/Bank bertambah sebesar besaran_ppn, PPn Keluaran bertambah sebesar besaran_ppn
-        $j1_coa_debit = $coa_kas;
-        $j1_coa_kredit = "23011";
-        $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['besaran_ppn'], $tanggal_bayar);
-
-        // J2: Kas/Bank bertambah sebesar nominal_pendapatan, PPn Keluaran bertambah sebesar nominal_pendapatan
-        $j2_coa_debit = $coa_kas;
-        $j2_coa_kredit = $coa_pendapatan;
-        $this->posting($j2_coa_debit, $j2_coa_kredit, $keterangan, $inv['nominal_pendapatan'], $tanggal_bayar);
-        // print_r($status_bayar);
-        // exit;
+        $cek = [
+            'bruto' => $inv['bruto'],
+            'besaran_ppn' => $inv['besaran_ppn'],
+            'besaran_pph' => $inv['besaran_pph'],
+            'nominal_bayar' => $nominal_bayar,
+            'nominal_pendapatan' => $inv['nominal_pendapatan'],
+        ];
 
         // Versi jika menjadi PAD saat pembuatan invoice
-        // // J1: PAD berkurang sebesar nominal pendapatan, Pendapatan bertambah sebesar nominal pendapatan
-        // $j1_coa_debit = "41101";
-        // $j1_coa_kredit = $coa_pendapatan;
-        // $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['nominal_pendapatan'], $tanggal_bayar);
+        // J1: PAD berkurang sebesar nominal pendapatan, Pendapatan bertambah sebesar nominal pendapatan
+        $j1_coa_debit = "41101";
+        $j1_coa_kredit = $coa_pendapatan;
+        $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['bruto'], $tanggal_bayar);
 
-        // // J2: Kas/Bank bertambah sebesar ppn, ppn keluaran bertambah sebesar ppn
-        // $j2_coa_debit = $coa_kas;
-        // $j2_coa_kredit = "23011";
-        // $this->posting($j2_coa_debit, $j2_coa_kredit, $keterangan, $inv['besaran_ppn'], $tanggal_bayar);
+        // j2: Kas/Bank bertambah, 13010 - Piutang Usaha berkurang (sebesar nominal bayar)
+        $j2_coa_debit = $coa_kas;
+        $j2_coa_kredit = "13010";
+        $this->posting($j2_coa_debit, $j2_coa_kredit, $keterangan, $nominal_bayar, $tanggal_bayar);
 
-        // // J3: Kas/Bank bertambah sebesar nominal bayar, piutang usaha berkurang sebesar nominal bayar
-        // $j3_coa_debit = $coa_kas;
-        // $j3_coa_kredit = "13010";
-        // $this->posting($j3_coa_debit, $j3_coa_kredit, $keterangan, $inv['bruto'], $tanggal_bayar);
+        // j3: 14306 - U/M PPH bertambah, 13010 - Piutang Usaha berkurang (sebesar besaran pph)
+        $j3_coa_debit = "14306";
+        $j3_coa_kredit = "13010";
+        $this->posting($j3_coa_debit, $j3_coa_kredit, $keterangan, $inv['besaran_pph'], $tanggal_bayar);
 
-        if ($inv['opsi_pph23'] != '1') {
-            // Apabila opsi potong pph23 tidak dicentang, maka akan terjadi jurnal di bawah ini
-            // J4: Kas/Bank bertambah sebesar pph, utang pph 23 bertambah sebesar pph
-            $j4_coa_debit = $coa_kas;
-            $j4_coa_kredit = "23014";
-            $this->posting($j4_coa_debit, $j4_coa_kredit, $keterangan, $inv['besaran_pph'], $tanggal_bayar);
-        }
+        // j4: 14306 - Utang PPN berkurang, PPN Keluaran bertambah (sebesar besaran ppn)
+        $j4_coa_debit = "23020";
+        $j4_coa_kredit = "23011";
+        $this->posting($j4_coa_debit, $j4_coa_kredit, $keterangan, $inv['besaran_ppn'], $tanggal_bayar);
+
+        // if ($inv['opsi_pph23'] != '1') {
+        //     // Apabila opsi potong pph23 tidak dicentang, maka akan terjadi jurnal di bawah ini
+        //     // J4: Kas/Bank bertambah sebesar pph, utang pph 23 bertambah sebesar pph
+        //     $j4_coa_debit = $coa_kas;
+        //     $j4_coa_kredit = "23014";
+        //     $this->posting($j4_coa_debit, $j4_coa_kredit, $keterangan, $inv['besaran_pph'], $tanggal_bayar);
+        // }
 
         $this->log_pembayaran("invoice", $inv['Id'], $nominal_bayar, $keterangan);
 
@@ -679,7 +696,7 @@ class Financial extends CI_Controller
 
         $this->m_invoice->update_invoice($inv['Id'], $data_invoice);
 
-        $this->session->set_flashdata('message_name', 'The invoice has been successfully updated. ' . $no_inv);
+        $this->session->set_flashdata('message_name', 'The invoice has been successfully updated. Invoice status: PAID' . $no_inv);
         // After that you need to used redirect function instead of load view such as 
         redirect("financial/invoice");
     }
@@ -861,7 +878,17 @@ class Financial extends CI_Controller
 
     public function simpanNeraca()
     {
-        // header('Content-Type: application/json');
+        $max_num = $this->m_coa->select_max('neraca');
+
+        if (!$max_num['max']) {
+            $bilangan = 1; // Nilai Proses
+        } else {
+            $bilangan = $max_num['max'] + 1;
+        }
+
+        $no_urut = sprintf("%06d", $bilangan);
+        $slug = "NR-" . $no_urut;
+
         $nip = $this->session->userdata('nip');
         // Fetch counts
         $result = $this->db->query("SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');")->row()->{'COUNT(Id)'};
@@ -889,6 +916,9 @@ class Financial extends CI_Controller
             'nominal_sum_pasiva' => $data['sum_pasiva'],
             'nominal_selisih' => $data['neraca'],
             'created_by' => $this->session->userdata('nip'),
+            'keterangan' => trim($this->input->post('keterangan')),
+            'no_urut' => $no_urut,
+            'slug' => $slug,
         ];
 
         if ($this->m_coa->simpanLaporan($insert)) {
@@ -902,6 +932,16 @@ class Financial extends CI_Controller
 
     public function simpanLR()
     {
+        $max_num = $this->m_coa->select_max('labarugi');
+
+        if (!$max_num['max']) {
+            $bilangan = 1; // Nilai Proses
+        } else {
+            $bilangan = $max_num['max'] + 1;
+        }
+
+        $no_urut = sprintf("%06d", $bilangan);
+        $slug = "LR-" . $no_urut;
         // header('Content-Type: application/json');
         $nip = $this->session->userdata('nip');
         // Fetch counts
@@ -928,6 +968,9 @@ class Financial extends CI_Controller
             'nominal_sum_pendapatan' => $data['sum_pendapatan'],
             'nominal_selisih' => $selisih,
             'created_by' => $this->session->userdata('nip'),
+            'keterangan' => trim($this->input->post('keterangan')),
+            'no_urut' => $no_urut,
+            'slug' => $slug,
         ];
 
         if ($this->m_coa->simpanLaporan($insert)) {

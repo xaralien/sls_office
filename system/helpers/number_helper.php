@@ -122,11 +122,16 @@ if (!function_exists('terbilang')) {
 			return terbilang(floor($angka / 1000000)) . ' Juta ' . terbilang($angka % 1000000);
 		} else if ($angka < 1000000000000) {
 			return terbilang(floor($angka / 1000000000)) . ' Miliar ' . terbilang($angka % 1000000000);
+		} else if ($angka < 1000000000000000) {
+			return terbilang(floor($angka / 1000000000000)) . ' Triliun ' . terbilang($angka % 1000000000000);
+		} else if ($angka < 1000000000000000000) {
+			return terbilang(floor($angka / 1000000000000000)) . ' Kuadriliun ' . terbilang($angka % 1000000000000000);
 		} else {
 			return 'Angka terlalu besar';
 		}
 	}
 }
+
 
 function intToRoman($num)
 {

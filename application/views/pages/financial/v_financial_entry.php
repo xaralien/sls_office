@@ -1,7 +1,4 @@
 <div class="right_col" role="main">
-    <!--div class="pull-left">
-                    <font color='Grey'>Create New E-Memo </font>
-                </div-->
     <div class="clearfix"></div>
 
     <!-- Start content-->
@@ -61,7 +58,7 @@
                         <div class="col-md-6 col-12 form-group has-feedback">
                             <label for="" class="form-label">Debit</label>
                             <select name="neraca_debit" id="neraca_debit" class="form-control select2" required>
-                                <option value="">-- Pilih pos neraca debit</option>
+                                <option value="">:: Pilih pos neraca debit</option>
                                 <?php foreach ($coa as $c) : ?>
                                     <option value="<?= $c->no_sbb ?>" data-nama="<?= $c->nama_perkiraan ?>" data-posisi="<?= $c->posisi ?>">
                                         <?= $c->no_sbb . ' - ' . $c->nama_perkiraan ?>
@@ -73,7 +70,7 @@
                         <div class="col-md-6 col-12 form-group has-feedback">
                             <label for="" class="form-label">Kredit</label>
                             <select name="neraca_kredit" id="neraca_kredit" class="form-control select2" required>
-                                <option value="">-- Pilih pos neraca kredit</option>
+                                <option value="">:: Pilih pos neraca kredit</option>
                                 <?php
                                 foreach ($coa as $c) :
                                 ?>
@@ -103,6 +100,8 @@
         </div>
     </div>
 </div>
+<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="<?= base_url(); ?>assets/select2/css/select2.min.css">
 <script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
 
@@ -126,6 +125,7 @@
         });
 
         function formatState(state, colorAktiva, colorPasiva, signAktiva, signPasiva) {
+            // console.log(state)
             if (!state.id) {
                 return state.text;
             }
@@ -139,6 +139,7 @@
         };
 
         function formatStateDebit(state) {
+            console.log(state)
             return formatState(state, '#2ecc71', '#ff7675', '(+)', '(-)');
         }
 
