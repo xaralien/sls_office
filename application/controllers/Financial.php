@@ -1166,7 +1166,6 @@ class Financial extends CI_Controller
 
     public function list_coa()
     {
-        // $keyword = trim($this->input->post('keyword', true) ?? $this->session->userdata('search'));
         $keyword = ($this->input->post('keyword')) ? trim($this->input->post('keyword')) : (($this->session->userdata('search')) ? $this->session->userdata('search') : '');
         if ($keyword === null) $keyword = $this->session->userdata('search');
         else $this->session->set_userdata('search', $keyword);
