@@ -190,6 +190,11 @@
                         <li>
                             <a href="<?= base_url(); ?>financial/coa_report">Report per CoA</a>
                         </li>
+                    <?php }
+                    if (strpos($a, '301') !== false) { ?>
+                        <li>
+                            <a href="<?= base_url(); ?>financial/list_coa">List CoA</a>
+                        </li>
                     <?php } ?>
                 </ul>
             </li>

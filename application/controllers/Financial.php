@@ -1163,4 +1163,80 @@ class Financial extends CI_Controller
             redirect("financial/invoice");
         }
     }
+
+    public function list_coa()
+    {
+        // $keyword = trim($this->input->post('keyword', true) ?? $this->session->userdata('search'));
+        $keyword = ($this->input->post('keyword')) ? trim($this->input->post('keyword')) : (($this->session->userdata('search')) ? $this->session->userdata('search') : '');
+        if ($keyword === null) $keyword = $this->session->userdata('search');
+        else $this->session->set_userdata('search', $keyword);
+
+        $config = [
+            'base_url' => site_url('financial/list_coa'),
+            'total_rows' => $this->m_coa->count($keyword, 'v_coa_all'),
+            'per_page' => 10,
+            'uri_segment' => 3,
+            'num_links' => 1,
+            'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+            'full_tag_close' => '</ul>',
+            'first_link' => true,
+            'last_link' => true,
+            'first_tag_open' => '<li>',
+            'first_tag_close' => '</li>',
+            'first_link' => 'First',
+            'prev_link' => '«',
+            'prev_tag_open' => '<li class="prev">',
+            'prev_tag_close' => '</li>',
+            'next_link' => '»',
+            'last_link' => 'Last',
+            'next_tag_open' => '<li>',
+            'next_tag_close' => '</li>',
+            'last_tag_open' => '<li>',
+            'last_tag_close' => '</li>',
+            'cur_tag_open' => '<li class="active"><a href="#">',
+            'cur_tag_close' => '</a></li>',
+            'num_tag_open' => '<li>',
+            'num_tag_close' => '</li>',
+            'use_page_numbers' => TRUE,
+            'enable_query_strings' => TRUE,
+            'page_query_string' => TRUE,
+            'query_string_segment' => 'page'
+        ];
+
+
+        $this->pagination->initialize($config);
+
+        $page = $this->input->get('page') ? ($this->input->get('page') - 1) * $config['per_page'] : 0;
+        // $invoices = $this->m_invoice->list_invoice($config["per_page"], $page, $keyword);
+        $coa = $this->m_coa->list_coa_paginate($config["per_page"], $page, $keyword);
+
+        $nip = $this->session->userdata('nip');
+        $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+        $query = $this->db->query($sql);
+        $result = $query->row_array()['COUNT(Id)'];
+
+        $sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+        $query2 = $this->db->query($sql2);
+        $result2 = $query2->row_array()['COUNT(id)'];
+
+        $data = [
+            'page' => $page,
+            'coa' => $coa,
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'keyword' => $keyword,
+            'title' => "List CoA",
+            'pages' => "pages/financial/v_list_coa"
+        ];
+
+        $this->load->view('index', $data);
+    }
+
+    public function reset($jenis)
+    {
+        $this->session->unset_userdata('search');
+        if ($jenis == "coa") {
+            redirect('financial/list_coa');
+        }
+    }
 }

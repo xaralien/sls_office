@@ -110,4 +110,26 @@ class M_coa extends CI_Model
     {
         return $this->cb->select('max(no_urut) as max')->where('jenis', $jenis)->get('t_log_neraca')->row_array();
     }
+
+    public function count($keyword, $tabel)
+    {
+        if ($keyword) {
+            $this->cb->like('no_sbb', $keyword);
+            $this->cb->or_like('no_bb', $keyword);
+            $this->cb->or_like('nama_perkiraan', $keyword);
+        }
+        return $this->cb->from($tabel)->count_all_results();
+    }
+
+    public function list_coa_paginate($limit, $from, $keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('no_sbb', $keyword);
+            $this->cb->or_like('no_bb', $keyword);
+            $this->cb->or_like('nama_perkiraan', $keyword);
+        }
+        $laporan = $this->cb->order_by('no_sbb', 'ASC')->limit($limit, $from)->get('v_coa_all')->result_array();
+
+        return $laporan;
+    }
 }
