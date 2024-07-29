@@ -23,7 +23,7 @@
                 </thead>
                 <tbody>
                   <?php
-                  $item = $this->cb->get_where('t_po_detail', ['no_po' => $po['no_po']])->result_array();
+                  $item = $this->cb->get_where('t_po_detail', ['no_po' => $po['Id']])->result_array();
                   foreach ($item as $i) {
                     $detail = $this->db->get_where('item_list', ['Id' => $i['item']])->row_array();
                   ?>
@@ -55,6 +55,9 @@
                     </tr>
                     <script>
                       $(document).ready(function() {
+                        $('#coa_debit<?= $i['Id'] ?>').select2({
+                          width: "100%"
+                        })
                         $('#coa_debit<?= $i['Id'] ?>').change(function() {
                           var id = $(this).val();
                           $.ajax({
@@ -117,14 +120,14 @@
                 <div class="form-group">
                   <label for="coa-kredit" class="form-label">COA Kredit</label>
                   <?php if ($po['posisi'] == 'Sudah Dibayar' || $po['posisi'] == "Hutang") { ?>
-                    <select name="coa-kredit" id="coa-kredit" class="form-control select2" disabled>
+                    <select name="coa-kredit" id="coa-kredit" class="form-control" disabled>
                       <option value=""> :: Pilih COA :: </option>
                       <?php foreach ($coa->result_array() as $row) { ?>
                         <option value="<?= $row['no_sbb'] ?>" <?= $row['no_sbb'] == $i['kredit'] ? 'selected' : '' ?>><?= $row['no_sbb'] . ' - ' . $row['nama_perkiraan'] ?></option>
                       <?php } ?>
                     </select>
                   <?php } else { ?>
-                    <select name="coa-kredit" id="coa-kredit" class="form-control select2">
+                    <select name="coa-kredit" id="coa-kredit" class="form-control">
                       <option value=""> :: Pilih COA :: </option>
                       <?php foreach ($coa->result_array() as $row) { ?>
                         <option value="<?= $row['no_sbb'] ?>"><?= $row['no_sbb'] . ' - ' . $row['nama_perkiraan'] ?></option>
@@ -143,6 +146,20 @@
                 </div>
               </div>
             </div>
+            <div class="row" style="margin-bottom: 30px;">
+              <?php if ($po['posisi'] == 'Sudah Dibayar' || $po['posisi'] == "Hutang") { ?>
+                <div class="col-md-6">
+                  <label for="ppn" class="form-label">PPN 11%</label>
+                  <input type="checkbox" class="icheckbox_flat-green" style="margin-left: 0px;" name="opsi_ppn" id="opsi_ppn" value="1" checked readonly>
+                </div>
+              <?php } else { ?>
+                <div class="col-md-6">
+                  <label for="ppn" class="form-label">PPN 11%</label>
+                  <input type="checkbox" class="icheckbox_flat-green" style="margin-left: 0px;" name="opsi_ppn" id="opsi_ppn" value="1">
+                </div>
+              <?php } ?>
+
+            </div>
             <div class="row">
               <a href="<?= base_url('asset/sarlog') ?>" class="btn btn-warning">Back</a>
               <?php if ($po['posisi'] != 'Sudah Dibayar' && $po['posisi'] != 'Hutang') { ?>
@@ -155,3 +172,11 @@
     </div>
   </div>
 </div>
+
+<script>
+  $(document).ready(function() {
+    $('#coa-kredit').select2({
+      width: "100%"
+    })
+  })
+</script>

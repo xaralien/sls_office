@@ -73,6 +73,8 @@ class Asset extends CI_Controller
 			$data['jenis_item'] = $this->db->get('item_jenis');
 			$data['title'] = "Asset item list";
 			$data['pages'] = "pages/aset/v_item_list";
+			$data['total'] = $this->m_asset->total_sparepart();
+			$data['total_repair'] = $this->m_asset->total_repair();
 			$this->load->view('index', $data);
 		}
 	}
@@ -136,6 +138,43 @@ class Asset extends CI_Controller
 
 	public function detail($id)
 	{
+		$search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
+		//pagination settings
+		$config['base_url'] = site_url('asset/detail/' . $id);
+		$config['total_rows'] = $this->m_asset->item_detail_count($search, $id);
+		$config['per_page'] = "20";
+		$config["uri_segment"] = 4;
+		$choice = $config["total_rows"] / $config["per_page"];
+		// $config['enable_query_strings'] = TRUE;
+		// $config['page_query_string'] = TRUE;
+		// $config['use_page_numbers'] = TRUE;
+		// $config['reuse_query_string'] = TRUE;
+		// $config['query_string_segment'] = 'page';
+		//$config["num_links"] = floor($choice);
+		$config["num_links"] = 10;
+		// integrate bootstrap pagination
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li>';
+		$config['first_tag_close'] = '</li>';
+		$config['prev_link'] = '«';
+		$config['prev_tag_open'] = '<li class="prev">';
+		$config['prev_tag_close'] = '</li>';
+		$config['next_link'] = '»';
+		$config['next_tag_open'] = '<li>';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li>';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="active"><a href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+		$this->pagination->initialize($config);
+		$data['page'] = ($this->uri->segment(4)) ? $this->uri->segment(4) : 0;
+		// $data['users_data'] = $this->m_asset->item_get($config["per_page"], $data['page'], $search);
+		$data['pagination'] = $this->pagination->create_links();
 		$nip = $this->session->userdata('nip');
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
 		$query = $this->db->query($sql);
@@ -152,7 +191,8 @@ class Asset extends CI_Controller
 		$data['title'] = "Detail item";
 		$data['pages'] = "pages/aset/v_item_detail";
 		$data['item'] = $this->db->get_where('item_list', ['Id' => $id])->row_array();
-		$data['detail'] = $this->db->get_where('item_detail', ['kode_item' => $id]);
+		// $data['detail'] = $this->db->get_where('item_detail', ['kode_item' => $id]);
+		$data['detail'] = $this->m_asset->item_detail_get($config["per_page"], $data['page'], $search, $id);
 		$this->load->view('index', $data);
 	}
 
@@ -211,10 +251,10 @@ class Asset extends CI_Controller
 		$this->session->set_userdata('filterJenis', $jenis);
 		redirect('asset/item_list');
 	}
-	function export_item()
-	{
-		$this->load->view('pages/aset/export_asset');
-	}
+	// function export_item()
+	// {
+	// 	$this->load->view('pages/aset/export_asset');
+	// }
 
 	function reset_jenis_item()
 	{
@@ -258,18 +298,35 @@ class Asset extends CI_Controller
 	{
 		$id = $this->input->post('id_po');
 		$po = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
-		$detail = $this->cb->get_where('t_po_detail', ['no_po' => $po['no_po']])->result_array();
+		$detail = $this->cb->get_where('t_po_detail', ['no_po' => $po['Id']])->result_array();
 
+		$user = $this->db->get_where('users', ['nip' => $this->session->userdata('nip')])->row_array();
 		$i = 0;
 		foreach ($detail as $d) {
 			$item[] = $this->db->get_where('item_list', ['Id' => $d['item']])->row_array();
 			$item_list_jumlah[] = $item[$i]['stok'];
 			$item_list_hargasat[] = $item[$i]['harga_sat'];
 
-			$total[] = $d['qty'] + $item_list_jumlah[$i];
+			$jml[] = ($d['qty'] * $d['satuan']);
+			$price[] = ($d['qty'] * $d['price']);
 
-			$harga[] = ($d['qty'] * $d['price']) + ($item_list_jumlah[$i] * $item_list_hargasat[$i]);
+			$total[] = $jml[$i] + $item_list_jumlah[$i];
+
+			$harga[] = ($price[$i]) + ($item_list_jumlah[$i] * $item_list_hargasat[$i]);
 			$harga_baru[] = $harga[$i] / $total[$i];
+
+			$ws = [
+				'no_po' => $po['Id'],
+				'item_id' => $d['item'],
+				'harga' => $harga_baru[$i],
+				'jml' => $d['qty'],
+				'stok_awal' => $item_list_jumlah[$i],
+				'stok_akhir' => $total[$i],
+				'user' => $user['nip'],
+				'jenis' => 'IN'
+			];
+
+			$this->db->insert('working_supply', $ws);
 
 			$update = [
 				'stok' => $total[$i],
@@ -302,6 +359,7 @@ class Asset extends CI_Controller
 		$nomor = htmlspecialchars($this->input->post('kode') ?? '', ENT_QUOTES, 'UTF-8');
 		$nama = htmlspecialchars($this->input->post('name'), ENT_QUOTES, 'UTF-8');
 		$jenis = $this->input->post('jenis_item');
+		$catatan = $this->input->post('catatan');
 
 		$this->form_validation->set_rules('kode', 'kode item', 'required|alpha_dash');
 		$this->form_validation->set_rules('name', 'nama item', 'required');
@@ -321,6 +379,7 @@ class Asset extends CI_Controller
 				'stok' => 0,
 				'harga_sat' => 0,
 				'jenis_item' => $jenis,
+				'catatan' => $catatan
 			];
 
 			$this->db->insert('item_list', $insert);
@@ -357,7 +416,7 @@ class Asset extends CI_Controller
 				$data['count_inbox2'] = $result2;
 
 				$data['item_list'] = $this->db->get('item_list');
-				$data['vendors'] = $this->cb->get('t_vendors');
+				$data['vendors'] = $this->db->get('t_vendors');
 				$data['title'] = "Create PO";
 				$data['pages'] = "pages/aset/v_po";
 				$this->load->view('index', $data);
@@ -365,15 +424,135 @@ class Asset extends CI_Controller
 		}
 	}
 
+	public function update_po($id)
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$query = $this->db->query($sql);
+		$res1 = $query->result_array();
+		$result = $res1[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+
+		$sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query2 = $this->db->query($sql2);
+		$res2 = $query2->result_array();
+		$result2 = $res2[0]['COUNT(id)'];
+		$data['count_inbox2'] = $result2;
+
+		$data['item_list'] = $this->db->get('item_list');
+		$data['vendors'] = $this->db->get('t_vendors');
+		$data['po'] = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
+		$data['title'] = "Create PO";
+		$data['pages'] = "pages/aset/v_po";
+		$this->load->view('index', $data);
+	}
+
 	public function save_po()
 	{
 		$nip = $this->session->userdata('nip');
 		$tgl = $this->input->post('tanggal');
 		$vendor = $this->input->post('vendor');
-		$keterangan = $this->input->post('keterangan');
+		// $keterangan = $this->input->post('keterangan');
 		$rows = $this->input->post('row[]');
 		$item = $this->input->post('item[]');
 		$qty = $this->input->post('qty[]');
+		$uoi = $this->input->post('uoi[]');
+		$satuan = $this->input->post('satuan[]');
+		$keterangan = $this->input->post('ket[]');
+		$price = $this->input->post('harga[]');
+		$subtotal = $this->input->post('total[]');
+		$total = $this->input->post('nominal');
+		$now = date('Y-m-d');
+		if (strtotime($tgl) != strtotime($now)) {
+			$tgl = $tgl;
+		} else {
+			$tgl = date('Y-m-d H:i:s');
+		}
+
+		$this->form_validation->set_rules('tanggal', 'tanggal po', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('vendor', 'vendor', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('item[]', 'nama item', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('qty[]', 'qty item', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('harga[]', 'harga item', 'required', ['required' => '%s wajib diisi']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'msg' => array_values($this->form_validation->error_array())[0]
+			];
+		} else {
+			// $sql = "SELECT MAX(nomor) as maximal FROM letter LEFT JOIN jenis_surat ON letter.jenis_surat = jenis_surat.id WHERE jenis_surat.company = '$jenis_surat->company' AND YEAR(date_created) = YEAR(curdate()) AND letter.back_date = 0;";
+			$sql = "SELECT count(a.Id) as jml FROM t_po as a WHERE a.vendor ='$vendor' AND YEAR(tgl_pengajuan) = YEAR(curdate())";
+			$result = $this->cb->query($sql);
+
+			if ($result->num_rows() > 0) {
+				$res = $result->row_array();
+				$nomor = $res['jml'] + 1;
+			} else {
+				$nomor = 1;
+			}
+			$data_vendor = $this->db->get_where('t_vendors', ['Id' => $vendor])->row_array();
+			$array_bln = array(1 => "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII");
+			$bln = $array_bln[date('n')];
+			$no_po = sprintf("%06d", $nomor) . '-' . $data_vendor['kode'];
+			$ref = "PO-" . sprintf("%06d", $nomor) . '/' . $bln . '/' . $data_vendor['kode'] . '/' . date('y');
+
+			// $count = $this->cb->get('t_po')->num_rows();
+			// $count = $count + 1;
+			// $no_po = sprintf("%06d", $count);
+
+			$insert = [
+				'no_po' => $no_po,
+				'referensi' => $ref,
+				'user' => $nip,
+				// 'keterangan' => $keterangan,
+				'tgl_pengajuan' => $tgl,
+				'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
+				'vendor' => $vendor,
+				'posisi' => 'diajukan kepada sarlog'
+			];
+
+			$this->cb->insert('t_po', $insert);
+			$last_id = $this->cb->insert_id();
+
+			for ($i = 0; $i < count($rows); $i++) {
+				$detail = [
+					'no_po' => $last_id,
+					'item' => $item[$i],
+					'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
+					'uoi' => $uoi[$i],
+					'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $price[$i]),
+					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
+					'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
+					'keterangan' => $keterangan[$i]
+				];
+
+				$this->cb->insert('t_po_detail', $detail);
+			}
+
+			$response = [
+				'success' => true,
+				'msg' => 'PO berhasil dibuat!'
+			];
+		}
+
+		echo json_encode($response);
+	}
+
+	public function simpan_update_po($id)
+	{
+		$po = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
+		$nip = $this->session->userdata('nip');
+		$tgl = $this->input->post('tanggal');
+		$vendor = $this->input->post('vendor');
+		// $keterangan = $this->input->post('keterangan');
+		$rows = $this->input->post('row[]');
+		$item = $this->input->post('item[]');
+		$qty = $this->input->post('qty[]');
+		$uoi = $this->input->post('uoi[]');
+		$satuan = $this->input->post('satuan[]');
+		$keterangan = $this->input->post('ket[]');
 		$price = $this->input->post('harga[]');
 		$subtotal = $this->input->post('total[]');
 		$total = $this->input->post('nominal');
@@ -400,25 +579,43 @@ class Asset extends CI_Controller
 			$count = $count + 1;
 			$no_po = sprintf("%06d", $count);
 
-			$insert = [
-				'no_po' => $no_po,
+			$update = [
+				// 'no_po' => $no_po,
 				'user' => $nip,
-				'keterangan' => $keterangan,
+				// 'keterangan' => $keterangan,
 				'tgl_pengajuan' => $tgl,
 				'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
 				'vendor' => $vendor,
-				'posisi' => 'diajukan kepada sarlog'
+				'posisi' => 'diajukan kepada sarlog',
+				'sarlog' => null,
+				'status_sarlog' => 0,
+				'catatan_sarlog' => null,
+				'date_sarlog' => null,
+				'direksi_ops' => null,
+				'date_direksi_ops' => null,
+				'status_direksi_ops' => 0,
+				'catatan_direksi_ops' => null,
+				'dirut' => null,
+				'date_dirut' => null,
+				'status_dirut' => 0,
+				'catatan_dirut' => null
 			];
+			$this->cb->where('Id', $id);
+			$this->cb->update('t_po', $update);
 
-			$this->cb->insert('t_po', $insert);
+			$this->cb->where('no_po',  $po['Id']);
+			$this->cb->delete('t_po_detail');
 
 			for ($i = 0; $i < count($rows); $i++) {
 				$detail = [
-					'no_po' => $no_po,
+					'no_po' => $po['Id'],
 					'item' => $item[$i],
 					'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
+					'uoi' => $uoi[$i],
 					'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $price[$i]),
 					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
+					'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
+					'keterangan' => $keterangan[$i]
 				];
 
 				$this->cb->insert('t_po_detail', $detail);
@@ -426,7 +623,7 @@ class Asset extends CI_Controller
 
 			$response = [
 				'success' => true,
-				'msg' => 'PO berhasil dibuat!'
+				'msg' => 'PO berhasil diubah!'
 			];
 		}
 
@@ -459,8 +656,8 @@ class Asset extends CI_Controller
 		$data['count_inbox2'] = $result4;
 
 		$data['count_sarlog'] = $this->m_asset->count_po(['status_sarlog' => 0]);
-		$data['count_direksi'] = $this->m_asset->count_po(['status_sarlog' => 1, 'direksi' => $this->session->userdata('nip'), 'status_direksi' => 0]);
-		$data['po'] = $this->m_asset->get_poList(['user' => $this->session->userdata('nip')]);
+		// $data['count_direksi'] = $this->m_asset->count_po(['status_sarlog' => 1, 'direksi_ops' => $this->session->userdata('nip'), 'status_direksi' => 0]);
+		$data['po'] = $this->m_asset->get_poList(['user' => $this->session->userdata('nip')], null);
 		$data['title'] = "Purchase Order List";
 		$data['pages'] = "pages/aset/v_po_list";
 		$this->load->view('index', $data);
@@ -468,6 +665,7 @@ class Asset extends CI_Controller
 
 	public function sarlog()
 	{
+		$filter = $this->input->get('vendor');
 		//inbox notif
 		$nip = $this->session->userdata('nip');
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -491,8 +689,9 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['po'] = $this->m_asset->get_poList(['user !=' => $this->session->userdata('nip')]);
+		$data['po'] = $this->m_asset->get_poList(['user !=' => $this->session->userdata('nip')], $filter);
 		$data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
+		$data['hutang'] = $this->m_asset->hutang_vendor($filter);
 		$data['title'] = "PO List Sarlog";
 		$data['pages'] = "pages/aset/v_sarlog";
 		$this->load->view('index', $data);
@@ -503,7 +702,7 @@ class Asset extends CI_Controller
 		$id = $this->input->post('id_po');
 		$tgl = $this->input->post('tanggal');
 		$status = $this->input->post('status');
-		$direksi = $this->input->post('direksi');
+		// $direksi = $this->input->post('direksi');
 		$catatan = $this->input->post('catatan');
 
 		$now = date('Y-m-d');
@@ -515,9 +714,9 @@ class Asset extends CI_Controller
 
 		$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('status', 'status', 'required|in_list[1,2]', ['required' => '%s wajib diisi!']);
-		if ($status == 1) {
-			$this->form_validation->set_rules('direksi', 'direksi', 'required', ['required' => '%s wajib diisi!']);
-		}
+		// if ($status == 1) {
+		// 	$this->form_validation->set_rules('direksi', 'direksi', 'required', ['required' => '%s wajib diisi!']);
+		// }
 
 		if ($this->form_validation->run() == FALSE) {
 			$response = [
@@ -526,11 +725,11 @@ class Asset extends CI_Controller
 			];
 		} else {
 			if ($status == 1) {
-				$posisi = 'diajukan kepada direksi';
-				$direksi = $direksi;
+				$posisi = 'diajukan kepada direktur operasional';
+				// $direksi = $direksi;
 			} else {
 				$posisi = 'ditolak sarlog';
-				$direksi = null;
+				// $direksi = null;
 			}
 			$update = [
 				'status_sarlog' => $status,
@@ -538,7 +737,7 @@ class Asset extends CI_Controller
 				'posisi' => $posisi,
 				'date_sarlog' => $tgl,
 				'catatan_sarlog' => $catatan,
-				'direksi' => $direksi
+				'direksi_ops' => '2176102'
 			];
 
 			$this->cb->where('Id', $id);
@@ -553,7 +752,7 @@ class Asset extends CI_Controller
 		echo json_encode($response);
 	}
 
-	public function direksi()
+	public function direksi_ops()
 	{
 		//inbox notif
 		$nip = $this->session->userdata('nip');
@@ -578,14 +777,46 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['po'] = $this->m_asset->get_poList(['status_sarlog' => 1, 'direksi' => $this->session->userdata('nip')]);
-		$data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
+		$data['po'] = $this->m_asset->get_poList(['status_sarlog' => 1, 'direksi_ops' => $this->session->userdata('nip')], null);
+		// $data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
 		$data['title'] = "PO List Direksi";
 		$data['pages'] = "pages/aset/v_direksi";
 		$this->load->view('index', $data);
 	}
 
-	public function update_direksi()
+	public function dirut()
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+		$data['asset_ruang'] = $asset_ruang;
+		$data['asset_lokasi'] = $asset_lokasi;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['po'] = $this->m_asset->get_poList(['status_sarlog' => 1, 'status_direksi_ops' => 1, 'dirut' => $this->session->userdata('nip')], null);
+		// $data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
+		$data['title'] = "PO List Direksi";
+		$data['pages'] = "pages/aset/v_dirut";
+		$this->load->view('index', $data);
+	}
+
+	public function update_dirut()
 	{
 		$id = $this->input->post('id_po');
 		$tgl = $this->input->post('tanggal');
@@ -609,15 +840,63 @@ class Asset extends CI_Controller
 			];
 		} else {
 			if ($status == 1) {
-				$posisi = 'diarahkan ke pembayaran';
+				$posisi = 'disetujui untuk diproses';
 			} else {
-				$posisi = 'ditolak direksi';
+				$posisi = 'ditolak oleh direktur utama';
 			}
 			$update = [
-				'status_direksi' => $status,
+				'status_dirut' => $status,
 				'posisi' => $posisi,
-				'date_direksi' => $tgl,
-				'catatan_direksi' => $catatan,
+				'date_dirut' => $tgl,
+				'catatan_dirut' => $catatan,
+			];
+
+			$this->cb->where('Id', $id);
+			$this->cb->update('t_po', $update);
+
+			$response = [
+				'success' => true,
+				'msg' => 'Status PO berhasil diubah!'
+			];
+		}
+
+		echo json_encode($response);
+	}
+
+	public function update_direksi_ops()
+	{
+		$id = $this->input->post('id_po');
+		$tgl = $this->input->post('tanggal');
+		$status = $this->input->post('status');
+		$catatan = $this->input->post('catatan');
+
+		$now = date('Y-m-d');
+		if (strtotime($tgl) != strtotime($now)) {
+			$tgl = $tgl;
+		} else {
+			$tgl = date('Y-m-d H:i:s');
+		}
+
+		$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('status', 'status', 'required|in_list[1,2]', ['required' => '%s wajib diisi!']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'msg' => array_values($this->form_validation->error_array())[0]
+			];
+		} else {
+			if ($status == 1) {
+				$posisi = 'diajukan kepada direktur utama';
+			} else {
+				$posisi = 'ditolak oleh direktur operasional';
+			}
+			$update = [
+				'status_direksi_ops' => $status,
+				'posisi' => $posisi,
+				'date_direksi_ops' => $tgl,
+				'catatan_direksi_ops' => $catatan,
+				'dirut' => '2146501'
 			];
 
 			$this->cb->where('Id', $id);
@@ -658,7 +937,7 @@ class Asset extends CI_Controller
 		$data['count_inbox2'] = $result4;
 
 		$data['coa'] = $this->cb->get('v_coa_all');
-		$data['po'] = $this->m_asset->get_poList(['a.Id' => $id])->row_array();
+		$data['po'] = $this->m_asset->get_poList(['a.Id' => $id], null)->row_array();
 		$data['title'] = "Proses PO";
 		$data['pages'] = "pages/aset/v_process";
 		$this->load->view('index', $data);
@@ -674,6 +953,7 @@ class Asset extends CI_Controller
 		$tgl = $this->input->post('tanggal');
 		$now = date('Y-m-d');
 		$jenis_pembayaran = $this->input->post('jenis-pembayaran');
+		$ppn = $this->input->post('opsi_ppn');
 
 		if (strtotime($tgl) != strtotime($now)) {
 			$date_bayar = $tgl;
@@ -696,7 +976,7 @@ class Asset extends CI_Controller
 			$config['allowed_types']        = 'jpg|jpeg|png|pdf';
 			$config['encrypt_name']         = TRUE;
 			$this->load->library('upload', $config);
-
+			$po = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
 			if ($jenis_pembayaran == 'kas') {
 				if (!$this->upload->do_upload('bukti-bayar')) {
 					$response = [
@@ -706,7 +986,8 @@ class Asset extends CI_Controller
 				} else {
 					$upload = $this->upload->data();
 					for ($i = 0; $i < count($rows); $i++) {
-						$item[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
+						$po_detail[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
+						$item[] = $this->db->get_where('item_list', ['Id' => $po_detail[$i]['item']])->row_array();
 						// Update coa debit
 						$detail_coa_debit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_debit[$i]])->row_array();
 						$anggaran_debit[] = $detail_coa_debit[$i]['anggaran'];
@@ -716,11 +997,11 @@ class Asset extends CI_Controller
 						$nominal_debit_baru[] = 0;
 
 						if ($posisi_debit[$i] == "AKTIVA") {
-							$nominal_debit_baru[$i] = $nominal_debit[$i] + $item[$i]['total'];
+							$nominal_debit_baru[$i] = $nominal_debit[$i] + $po_detail[$i]['total'];
 						}
 
 						if ($posisi_debit[$i] == "PASIVA") {
-							$nominal_debit_baru[$i] = $nominal_debit[$i] - $item[$i]['total'];
+							$nominal_debit_baru[$i] = $nominal_debit[$i] - $po_detail[$i]['total'];
 						}
 
 						if ($substr_coa_debit[$i] == "1" || $substr_coa_debit[$i] == "2" || $substr_coa_debit[$i] == "3") {
@@ -746,24 +1027,24 @@ class Asset extends CI_Controller
 						$nominal_credit_baru[] = 0;
 
 						if ($posisi_credit[$i] == "AKTIVA") {
-							$nominal_credit_baru[$i] = $nominal_credit[$i] - $item[$i]['total'];
+							$nominal_credit_baru[$i] = $nominal_credit[$i] - $po_detail[$i]['total'];
 						}
 						if ($posisi_credit[$i] == "PASIVA") {
-							$nominal_credit_baru[$i] = $nominal_credit[$i] + $item[$i]['total'];
+							$nominal_credit_baru[$i] = $nominal_credit[$i] + $po_detail[$i]['total'];
 						}
 
 						if ($substr_coa_credit[$i] == "1" || $substr_coa_credit[$i] == "2" || $substr_coa_credit[$i] == "3") {
 							$table_credit[] = "t_coa_sbb";
 							$kolom_credit[] = "no_sbb";
 						}
-						if ($substr_coa_credit[$i] == "4" || $substr_coa_credit[$i] == "5" || $substr_coa_credit[$i] == "6" || $substr_coa_credit[$i] == "7" || $substr_coa_credit[$i] = "8" || $substr_coa_credit[$i] = "9") {
+
+						if ($substr_coa_credit[$i] == "4" || $substr_coa_credit[$i] == "5" || $substr_coa_credit[$i] == "6" || $substr_coa_credit[$i] == "7" || $substr_coa_credit[$i] == "8" || $substr_coa_credit[$i] == "9") {
 							$table_credit[] = "t_coalr_sbb";
 							$kolom_credit[] = "no_lr_sbb";
 						}
 
 						$this->cb->where([$kolom_credit[$i] => $coa_kredit]);
 						$this->cb->update($table_credit[$i], ['nominal' => $nominal_credit_baru[$i]]);
-
 
 						// update table pengajuan detail
 						$this->cb->where('Id', $id_item[$i]);
@@ -776,12 +1057,61 @@ class Asset extends CI_Controller
 						$jurnal = [
 							'tanggal' => $date_bayar,
 							'akun_debit' => $coa_debit[$i],
-							'jumlah_debit' => $item[$i]['total'],
+							'jumlah_debit' => $po_detail[$i]['total'],
 							'akun_kredit' => $coa_kredit,
-							'jumlah_kredit' => $item[$i]['total'],
+							'jumlah_kredit' => $po_detail[$i]['total'],
 							'saldo_debit' => $nominal_debit_baru[$i],
 							'saldo_kredit' => $nominal_credit_baru[$i],
-							'keterangan' => $item[$i]['item'],
+							'keterangan' => $item[$i]['nama'],
+							'created_by' => $this->session->userdata('nip'),
+						];
+						$this->cb->insert('jurnal_neraca', $jurnal);
+					}
+
+					if ($ppn == 1) {
+						$nominal_ppn = $po['total'] * 0.11;
+						$ppn_masukan = $this->cb->get_where('v_coa_all', ['no_sbb' => '15211'])->row_array();
+						$nominal_ppn_masukan = $ppn_masukan['nominal'];
+						$nominal_ppn_masukan_baru = $nominal_ppn_masukan + $nominal_ppn;
+						$this->cb->where('no_sbb', $ppn_masukan['no_sbb']);
+						$this->cb->update('t_coa_sbb', ['nominal' => $nominal_ppn_masukan_baru]);
+
+						$cr = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kredit])->row_array();
+						$posisi_cr = $cr['posisi'];
+						$nominal_cr = $cr['nominal'];
+						$substr_coa_cr = substr($coa_kredit, 0, 1);
+						$nominal_cr_baru = 0;
+
+						if ($posisi_cr == "AKTIVA") {
+							$nominal_cr_baru = $nominal_cr - $nominal_ppn;
+						}
+						if ($posisi_cr == "PASIVA") {
+							$nominal_cr_baru = $nominal_cr + $nominal_ppn;
+						}
+
+						if ($substr_coa_cr == "1" || $substr_coa_cr == "2" || $substr_coa_cr == "3") {
+							$table_cr = "t_coa_sbb";
+							$kolom_cr = "no_sbb";
+						}
+
+						if ($substr_coa_cr == "4" || $substr_coa_cr == "5" || $substr_coa_cr == "6" || $substr_coa_cr == "7" || $substr_coa_cr == "8" || $substr_coa_cr == "9") {
+							$table_cr = "t_coalr_sbb";
+							$kolom_cr = "no_lr_sbb";
+						}
+
+						$this->cb->where([$kolom_cr => $coa_kredit]);
+						$this->cb->update($table_cr, ['nominal' => $nominal_cr_baru]);
+
+						// create jurnal
+						$jurnal = [
+							'tanggal' => $date_bayar,
+							'akun_debit' => $ppn_masukan['no_sbb'],
+							'jumlah_debit' => $nominal_ppn,
+							'akun_kredit' => $coa_kredit,
+							'jumlah_kredit' => $nominal_ppn,
+							'saldo_debit' => $nominal_ppn_masukan_baru,
+							'saldo_kredit' => $nominal_cr_baru,
+							'keterangan' => 'PPN MASUKAN ' . $po['no_po'],
 							'created_by' => $this->session->userdata('nip'),
 						];
 						$this->cb->insert('jurnal_neraca', $jurnal);
@@ -794,7 +1124,8 @@ class Asset extends CI_Controller
 						'date_bayar' => $date_bayar,
 						'bukti_bayar' => $upload['file_name'],
 						'jenis_pembayaran' => $jenis_pembayaran,
-						'status_pembayaran' => 1
+						'status_pembayaran' => 1,
+						'ppn' => $ppn
 					];
 
 					$this->cb->where(['Id' => $id]);
@@ -807,7 +1138,10 @@ class Asset extends CI_Controller
 				}
 			} else {
 				for ($i = 0; $i < count($rows); $i++) {
-					$item[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
+					$po_detail[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
+					$item[] = $this->db->get_where('item_list', ['Id' => $po_detail[$i]['item']])->row_array();
+					// Update coa debit
+					// $item_detail = $this
 					// Update coa debit
 					$detail_coa_debit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_debit[$i]])->row_array();
 					$anggaran_debit[] = $detail_coa_debit[$i]['anggaran'];
@@ -817,11 +1151,11 @@ class Asset extends CI_Controller
 					$nominal_debit_baru[] = 0;
 
 					if ($posisi_debit[$i] == "AKTIVA") {
-						$nominal_debit_baru[$i] = $nominal_debit[$i] + $item[$i]['total'];
+						$nominal_debit_baru[$i] = $nominal_debit[$i] + $po_detail[$i]['total'];
 					}
 
 					if ($posisi_debit[$i] == "PASIVA") {
-						$nominal_debit_baru[$i] = $nominal_debit[$i] - $item[$i]['total'];
+						$nominal_debit_baru[$i] = $nominal_debit[$i] - $po_detail[$i]['total'];
 					}
 
 					if ($substr_coa_debit[$i] == "1" || $substr_coa_debit[$i] == "2" || $substr_coa_debit[$i] == "3") {
@@ -847,17 +1181,17 @@ class Asset extends CI_Controller
 					$nominal_credit_baru[] = 0;
 
 					if ($posisi_credit[$i] == "AKTIVA") {
-						$nominal_credit_baru[$i] = $nominal_credit[$i] - $item[$i]['total'];
+						$nominal_credit_baru[$i] = $nominal_credit[$i] - $po_detail[$i]['total'];
 					}
 					if ($posisi_credit[$i] == "PASIVA") {
-						$nominal_credit_baru[$i] = $nominal_credit[$i] + $item[$i]['total'];
+						$nominal_credit_baru[$i] = $nominal_credit[$i] + $po_detail[$i]['total'];
 					}
 
 					if ($substr_coa_credit[$i] == "1" || $substr_coa_credit[$i] == "2" || $substr_coa_credit[$i] == "3") {
 						$table_credit[] = "t_coa_sbb";
 						$kolom_credit[] = "no_sbb";
 					}
-					if ($substr_coa_credit[$i] == "4" || $substr_coa_credit[$i] == "5" || $substr_coa_credit[$i] == "6" || $substr_coa_credit[$i] == "7" || $substr_coa_credit[$i] = "8" || $substr_coa_credit[$i] = "9") {
+					if ($substr_coa_credit[$i] == "4" || $substr_coa_credit[$i] == "5" || $substr_coa_credit[$i] == "6" || $substr_coa_credit[$i] == "7" || $substr_coa_credit[$i] == "8" || $substr_coa_credit[$i] == "9") {
 						$table_credit[] = "t_coalr_sbb";
 						$kolom_credit[] = "no_lr_sbb";
 					}
@@ -877,12 +1211,61 @@ class Asset extends CI_Controller
 					$jurnal = [
 						'tanggal' => $date_bayar,
 						'akun_debit' => $coa_debit[$i],
-						'jumlah_debit' => $item[$i]['total'],
+						'jumlah_debit' => $po_detail[$i]['total'],
 						'akun_kredit' => $coa_kredit,
-						'jumlah_kredit' => $item[$i]['total'],
+						'jumlah_kredit' => $po_detail[$i]['total'],
 						'saldo_debit' => $nominal_debit_baru[$i],
 						'saldo_kredit' => $nominal_credit_baru[$i],
-						'keterangan' => $item[$i]['item'],
+						'keterangan' => $item[$i]['nama'],
+						'created_by' => $this->session->userdata('nip'),
+					];
+					$this->cb->insert('jurnal_neraca', $jurnal);
+				}
+
+				if ($ppn == 1) {
+					$nominal_ppn = $po['total'] * 0.11;
+					$ppn_masukan = $this->cb->get_where('v_coa_all', ['no_sbb' => '15211'])->row_array();
+					$nominal_ppn_masukan = $ppn_masukan['nominal'];
+					$nominal_ppn_masukan_baru = $nominal_ppn_masukan + $nominal_ppn;
+					$this->cb->where('no_sbb', $ppn_masukan['no_sbb']);
+					$this->cb->update('t_coa_sbb', ['nominal' => $nominal_ppn_masukan_baru]);
+
+					$cr = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kredit])->row_array();
+					$posisi_cr = $cr['posisi'];
+					$nominal_cr = $cr['nominal'];
+					$substr_coa_cr = substr($coa_kredit, 0, 1);
+					$nominal_cr_baru = 0;
+
+					if ($posisi_cr == "AKTIVA") {
+						$nominal_cr_baru = $nominal_cr - $nominal_ppn;
+					}
+					if ($posisi_cr == "PASIVA") {
+						$nominal_cr_baru = $nominal_cr + $nominal_ppn;
+					}
+
+					if ($substr_coa_cr == "1" || $substr_coa_cr == "2" || $substr_coa_cr == "3") {
+						$table_cr = "t_coa_sbb";
+						$kolom_cr = "no_sbb";
+					}
+
+					if ($substr_coa_cr == "4" || $substr_coa_cr == "5" || $substr_coa_cr == "6" || $substr_coa_cr == "7" || $substr_coa_cr == "8" || $substr_coa_cr == "9") {
+						$table_cr = "t_coalr_sbb";
+						$kolom_cr = "no_lr_sbb";
+					}
+
+					$this->cb->where([$kolom_cr => $coa_kredit]);
+					$this->cb->update($table_cr, ['nominal' => $nominal_cr_baru]);
+
+					// create jurnal
+					$jurnal = [
+						'tanggal' => $date_bayar,
+						'akun_debit' => $ppn_masukan['no_sbb'],
+						'jumlah_debit' => $nominal_ppn,
+						'akun_kredit' => $coa_kredit,
+						'jumlah_kredit' => $nominal_ppn,
+						'saldo_debit' => $nominal_ppn_masukan_baru,
+						'saldo_kredit' => $nominal_cr_baru,
+						'keterangan' => 'PPN MASUKAN ' . $po['no_po'],
 						'created_by' => $this->session->userdata('nip'),
 					];
 					$this->cb->insert('jurnal_neraca', $jurnal);
@@ -893,7 +1276,8 @@ class Asset extends CI_Controller
 					'user_bayar' => $this->session->userdata('nip'),
 					'posisi' => 'Hutang',
 					'jenis_pembayaran' => $jenis_pembayaran,
-					'date_bayar' => $date_bayar
+					'date_bayar' => $date_bayar,
+					'ppn' => $ppn
 				];
 
 				$this->cb->where(['Id' => $id]);
@@ -904,111 +1288,6 @@ class Asset extends CI_Controller
 					'msg' => 'PO berhasil diproses!'
 				];
 			}
-			// if (!$this->upload->do_upload('bukti-bayar')) {
-			// 	$response = [
-			// 		'success' => false,
-			// 		'msg' => $this->upload->display_errors()
-			// 	];
-			// } else {
-			// 	$upload = $this->upload->data();
-			// 	for ($i = 0; $i < count($rows); $i++) {
-			// 		$item[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
-			// 		// Update coa debit
-			// 		$detail_coa_debit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_debit[$i]])->row_array();
-			// 		$anggaran_debit[] = $detail_coa_debit[$i]['anggaran'];
-			// 		$posisi_debit[] = $detail_coa_debit[$i]['posisi'];
-			// 		$nominal_debit[] = $detail_coa_debit[$i]['nominal'];
-			// 		$substr_coa_debit[] = substr($coa_debit[$i], 0, 1);
-			// 		$nominal_debit_baru[] = 0;
-
-			// 		if ($posisi_debit[$i] == "AKTIVA") {
-			// 			$nominal_debit_baru[$i] = $nominal_debit[$i] + $item[$i]['total'];
-			// 		}
-
-			// 		if ($posisi_debit[$i] == "PASIVA") {
-			// 			$nominal_debit_baru[$i] = $nominal_debit[$i] - $item[$i]['total'];
-			// 		}
-
-			// 		if ($substr_coa_debit[$i] == "1" || $substr_coa_debit[$i] == "2" || $substr_coa_debit[$i] == "3") {
-			// 			$table_debit[] = "t_coa_sbb";
-			// 			$kolom_debit[] = "no_sbb";
-			// 		}
-			// 		if ($substr_coa_debit[$i] == "4" || $substr_coa_debit[$i] == "5" || $substr_coa_debit[$i] == "6" || $substr_coa_debit[$i] == "7" || $substr_coa_debit[$i] == "8" || $substr_coa_debit[$i] == "9") {
-			// 			$table_debit[] = "t_coalr_sbb";
-			// 			$kolom_debit[] = "no_lr_sbb";
-			// 		}
-
-			// 		$this->cb->where([$kolom_debit[$i] => $coa_debit[$i]]);
-			// 		$this->cb->update($table_debit[$i], ['nominal' => $nominal_debit_baru[$i]]);
-
-
-			// 		// update coa credit
-			// 		$detail_coa_credit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kredit[$i]])->row_array();
-			// 		$posisi_credit[] = $detail_coa_credit[$i]['posisi'];
-			// 		$anggaran_credit[] = $detail_coa_credit[$i]['anggaran'];
-			// 		$nominal_credit[] = $detail_coa_credit[$i]['nominal'];
-			// 		$substr_coa_credit[] = substr($coa_kredit[$i], 0, 1);
-			// 		$saldo_credit_baru[] = 0;
-			// 		$nominal_credit_baru[] = 0;
-
-			// 		if ($posisi_credit[$i] == "AKTIVA") {
-			// 			$nominal_credit_baru[$i] = $nominal_credit[$i] - $item[$i]['total'];
-			// 		}
-			// 		if ($posisi_credit[$i] == "PASIVA") {
-			// 			$nominal_credit_baru[$i] = $nominal_credit[$i] + $item[$i]['total'];
-			// 		}
-
-			// 		if ($substr_coa_credit[$i] == "1" || $substr_coa_credit[$i] == "2" || $substr_coa_credit[$i] == "3") {
-			// 			$table_credit[] = "t_coa_sbb";
-			// 			$kolom_credit[] = "no_sbb";
-			// 		}
-			// 		if ($substr_coa_credit[$i] == "4" || $substr_coa_credit[$i] == "5" || $substr_coa_credit[$i] == "6" || $substr_coa_credit[$i] == "7" || $substr_coa_credit[$i] = "8" || $substr_coa_credit[$i] = "9") {
-			// 			$table_credit[] = "t_coalr_sbb";
-			// 			$kolom_credit[] = "no_lr_sbb";
-			// 		}
-
-			// 		$this->cb->where([$kolom_credit[$i] => $coa_kredit[$i]]);
-			// 		$this->cb->update($table_credit[$i], ['nominal' => $nominal_credit_baru[$i]]);
-
-
-			// 		// update table pengajuan detail
-			// 		$this->cb->where('Id', $id_item[$i]);
-			// 		$this->cb->update('t_po_detail', [
-			// 			'kredit' => $coa_kredit[$i],
-			// 			'debit' => $coa_debit[$i]
-			// 		]);
-
-			// 		// create jurnal
-			// 		$jurnal = [
-			// 			'tanggal' => $date_bayar,
-			// 			'akun_debit' => $coa_debit[$i],
-			// 			'jumlah_debit' => $item[$i]['total'],
-			// 			'akun_kredit' => $coa_kredit[$i],
-			// 			'jumlah_kredit' => $item[$i]['total'],
-			// 			'saldo_debit' => $nominal_debit_baru[$i],
-			// 			'saldo_kredit' => $nominal_credit_baru[$i],
-			// 			'keterangan' => $item[$i]['item'],
-			// 			'created_by' => $this->session->userdata('nip'),
-			// 		];
-			// 		$this->cb->insert('jurnal_neraca', $jurnal);
-			// 	}
-
-			// 	// Update table pengajuan
-			// 	$update = [
-			// 		'user_bayar' => $this->session->userdata('nip'),
-			// 		'posisi' => 'Sudah Dibayar',
-			// 		'date_bayar' => $date_bayar,
-			// 		'bukti_bayar' => $upload['file_name'],
-			// 	];
-
-			// 	$this->cb->where(['Id' => $id]);
-			// 	$this->cb->update('t_po', $update);
-
-			// 	$response = [
-			// 		'success' => true,
-			// 		'msg' => 'Pengajuan berhasil dibayar!'
-			// 	];
-			// }
 		}
 
 		echo json_encode($response);
@@ -1043,7 +1322,7 @@ class Asset extends CI_Controller
 
 				$this->db->where('stok >', 0);
 				$data['item_list'] = $this->db->get('item_list');
-				$data['vendors'] = $this->cb->get('t_vendors');
+				// $data['vendors'] = $this->db->get('t_vendors');
 				$data['title'] = "Create PO Out";
 				$data['pages'] = "pages/aset/v_po_out";
 				$this->load->view('index', $data);
@@ -1066,8 +1345,6 @@ class Asset extends CI_Controller
 			$option .= "<option value='' selected>Tidak ada data detail</option>";
 		}
 
-
-
 		$response = [
 			'option' => $option,
 			'harga' => $item['harga_sat']
@@ -1078,14 +1355,15 @@ class Asset extends CI_Controller
 	public function save_po_out()
 	{
 		$tanggal = $this->input->post('tanggal');
-		$keterangan = $this->input->post('keterangan');
-		$asset = $this->input->post('asset');
 		$rows = $this->input->post('row[]');
 		$item = $this->input->post('item[]');
-		$qty = $this->input->post('qty[]');
-		$price = $this->input->post('harga[]');
+		$qty = $this->input->post('qty_out[]');
+		$asset = $this->input->post('asset[]');
+		$price = $this->input->post('harga_out[]');
+		$keterangan = $this->input->post('ket[]');
+		$uoi = $this->input->post('uoi_out[]');
 		// $detail_item = $this->input->post('detail_item[]');
-		$sub_total = $this->input->post('total[]');
+		$sub_total = $this->input->post('total_out[]');
 		$total = $this->input->post('nominal');
 		$now = date('Y-m-d');
 		$teknisi = $this->input->post('teknisi');
@@ -1097,10 +1375,11 @@ class Asset extends CI_Controller
 
 		$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('teknisi', 'nama teknisi', 'required|trim', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('asset', 'asset', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('asset[]', 'asset', 'required', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('item[]', 'item', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('qty[]', 'qty', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('harga[]', 'harga', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('qty_out[]', 'qty', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('harga_out[]', 'harga', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('uoi_out[]', 'uoi', 'required', ['required' => '%s wajib diisi!']);
 		// for ($i = 0; $i < count($rows); $i++) {
 		// 	$detail[] = $this->db->get_where('item_detail', ['kode_item' => $item[$i], 'status' => 'A']);
 		// 	if ($detail[$i]->num_rows() > 0) {
@@ -1114,9 +1393,33 @@ class Asset extends CI_Controller
 				'msg' => array_values($this->form_validation->error_array())[0]
 			];
 		} else {
-			$count = $this->cb->get('t_po_out')->num_rows();
-			$count = $count + 1;
-			$no_po = sprintf("%06d", $count);
+			$sql = "SELECT count(a.Id) as jml FROM t_po_out as a WHERE YEAR(tgl_pengajuan) = YEAR(curdate())";
+			$result = $this->cb->query($sql);
+
+			if ($result->num_rows() > 0) {
+				$res = $result->row_array();
+				$nomor = $res['jml'] + 1;
+			} else {
+				$nomor = 1;
+			}
+
+			$array_bln = array(1 => "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII");
+			$bln = $array_bln[date('n')];
+			$no_po = sprintf("%06d", $nomor) . '-OUT';
+			$ref = "PO-" . sprintf("%06d", $nomor) . '/' . $bln . '/OUT' . '/' . date('y');
+
+			$insert = [
+				'tgl_pengajuan' => $tgl,
+				'user' => $this->session->userdata('nip'),
+				'referensi' => $ref,
+				'no_po' => $no_po,
+				'total' => str_replace('.', '', $total),
+				'posisi' => 'Diajukan kepada sarlog',
+				'teknisi' => $teknisi
+			];
+
+			$this->cb->insert('t_po_out', $insert);
+			$last_id = $this->cb->insert_id();
 
 			for ($i = 0; $i < count($rows); $i++) {
 				// $this->db->select('Id, kode_item, serial_number');
@@ -1143,31 +1446,19 @@ class Asset extends CI_Controller
 					return false;
 				}
 
-
 				$insert_detail = [
-					'no_po' => $no_po,
+					'no_po' => $last_id,
 					'item' => $item[$i],
-					'qty' => $qty[$i],
+					'asset' => $asset[$i],
+					'qty' => str_replace('.', '', $qty[$i]),
+					'uoi' => $uoi[$i],
 					'price' => str_replace('.', '', $price[$i]),
 					'total' => str_replace('.', '', $sub_total[$i]),
-					// 'detail' => json_encode($detail_item[$i])
+					'keterangan' => $keterangan[$i]
 				];
 
 				$this->cb->insert('t_po_out_detail', $insert_detail);
 			}
-
-			$insert = [
-				'tgl_pengajuan' => $tgl,
-				'keterangan' => $keterangan,
-				'user' => $this->session->userdata('nip'),
-				'asset' => $asset,
-				'no_po' => $no_po,
-				'total' => str_replace('.', '', $total),
-				'posisi' => 'Diajukan kepada sarlog',
-				'teknisi' => $teknisi
-			];
-
-			$this->cb->insert('t_po_out', $insert);
 
 			$response = [
 				'success' => true,
@@ -1203,7 +1494,7 @@ class Asset extends CI_Controller
 		$data['count_inbox2'] = $result4;
 
 		$data['count_sarlog'] = $this->m_asset->count_po_out(['status_sarlog' => 0]);
-		$data['count_direksi'] = $this->m_asset->count_po_out(['status_sarlog' => 1, 'direksi' => $this->session->userdata('nip'), 'status_direksi' => 0]);
+		$data['count_direksi'] = $this->m_asset->count_po_out(['status_sarlog' => 1, 'direksi_ops' => $this->session->userdata('nip'), 'status_direksi_ops' => 0]);
 		$data['po'] = $this->m_asset->get_poOutList(['user' => $this->session->userdata('nip')]);
 		$data['title'] = "PO List Out";
 		$data['pages'] = "pages/aset/v_po_list_out";
@@ -1247,7 +1538,7 @@ class Asset extends CI_Controller
 		$id = $this->input->post('id_po');
 		$tgl = $this->input->post('tanggal');
 		$status = $this->input->post('status');
-		$direksi = $this->input->post('direksi');
+		// $direksi = $this->input->post('direksi');
 		$catatan = $this->input->post('catatan');
 
 		$now = date('Y-m-d');
@@ -1259,9 +1550,9 @@ class Asset extends CI_Controller
 
 		$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('status', 'status', 'required|in_list[1,2]', ['required' => '%s wajib diisi!']);
-		if ($status == 1) {
-			$this->form_validation->set_rules('direksi', 'direksi', 'required', ['required' => '%s wajib diisi!']);
-		}
+		// if ($status == 1) {
+		// 	$this->form_validation->set_rules('direksi', 'direksi', 'required', ['required' => '%s wajib diisi!']);
+		// }
 
 		if ($this->form_validation->run() == FALSE) {
 			$response = [
@@ -1270,11 +1561,11 @@ class Asset extends CI_Controller
 			];
 		} else {
 			if ($status == 1) {
-				$posisi = 'diajukan kepada direksi';
-				$direksi = $direksi;
+				$posisi = 'diajukan kepada direktur operasional';
+				$direksi_ops = '2176102';
 			} else {
 				$posisi = 'ditolak sarlog';
-				$direksi = null;
+				$direksi_ops = null;
 			}
 
 			$update = [
@@ -1283,7 +1574,7 @@ class Asset extends CI_Controller
 				'posisi' => $posisi,
 				'date_sarlog' => $tgl,
 				'catatan_sarlog' => $catatan,
-				'direksi' => $direksi
+				'direksi_ops' => $direksi_ops
 			];
 
 			$this->cb->where('Id', $id);
@@ -1298,7 +1589,7 @@ class Asset extends CI_Controller
 		echo json_encode($response);
 	}
 
-	public function direksi_out()
+	public function direksi_ops_out()
 	{
 		$nip = $this->session->userdata('nip');
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -1322,14 +1613,14 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['po'] = $this->m_asset->get_poOutList(['status_sarlog' => 1, 'direksi' => $this->session->userdata('nip')]);
+		$data['po'] = $this->m_asset->get_poOutList(['status_sarlog' => 1, 'direksi_ops' => $this->session->userdata('nip')]);
 		$data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
 		$data['title'] = "List PO Item Out Direksi";
-		$data['pages'] = "pages/aset/v_direksi_out";
+		$data['pages'] = "pages/aset/v_direksi_ops_out";
 		$this->load->view('index', $data);
 	}
 
-	public function update_direksi_out()
+	public function update_direksi_ops_out()
 	{
 		$id = $this->input->post('id_po');
 		$tgl = $this->input->post('tanggal');
@@ -1353,15 +1644,15 @@ class Asset extends CI_Controller
 			];
 		} else {
 			if ($status == 1) {
-				$posisi = 'Disetujui Direksi';
+				$posisi = 'Disetujui Direktur Operasional';
 			} else {
-				$posisi = 'ditolak direksi';
+				$posisi = 'Ditolak Direktur Operasional';
 			}
 			$update = [
-				'status_direksi' => $status,
+				'status_direksi_ops' => $status,
 				'posisi' => $posisi,
-				'date_direksi' => $tgl,
-				'catatan_direksi' => $catatan,
+				'date_direksi_ops' => $tgl,
+				'catatan_direksi_ops' => $catatan,
 			];
 
 			$this->cb->where('Id', $id);
@@ -1375,6 +1666,83 @@ class Asset extends CI_Controller
 
 		echo json_encode($response);
 	}
+
+	public function dirut_out()
+	{
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+		$data['asset_ruang'] = $asset_ruang;
+		$data['asset_lokasi'] = $asset_lokasi;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['po'] = $this->m_asset->get_poOutList(['status_sarlog' => 1, 'status_direksi_ops' => 1, 'dirut' => $this->session->userdata('nip')]);
+		$data['title'] = "List PO Item Out Direktur Utama";
+		$data['pages'] = "pages/aset/v_dirut_out";
+		$this->load->view('index', $data);
+	}
+
+	// public function update_dirut_out()
+	// {
+	// 	$id = $this->input->post('id_po');
+	// 	$tgl = $this->input->post('tanggal');
+	// 	$status = $this->input->post('status');
+	// 	$catatan = $this->input->post('catatan');
+
+	// 	$now = date('Y-m-d');
+	// 	if (strtotime($tgl) != strtotime($now)) {
+	// 		$tgl = $tgl;
+	// 	} else {
+	// 		$tgl = date('Y-m-d H:i:s');
+	// 	}
+
+	// 	$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi!']);
+	// 	$this->form_validation->set_rules('status', 'status', 'required|in_list[1,2]', ['required' => '%s wajib diisi!']);
+
+	// 	if ($this->form_validation->run() == FALSE) {
+	// 		$response = [
+	// 			'success' => false,
+	// 			'msg' => array_values($this->form_validation->error_array())[0]
+	// 		];
+	// 	} else {
+	// 		if ($status == 1) {
+	// 			$posisi = 'Disetujui Direktur Utama';
+	// 		} else {
+	// 			$posisi = 'Ditolak Direktur Utama';
+	// 		}
+	// 		$update = [
+	// 			'status_dirut' => $status,
+	// 			'posisi' => $posisi,
+	// 			'date_dirut' => $tgl,
+	// 			'catatan_dirut' => $catatan,
+	// 		];
+
+	// 		$this->cb->where('Id', $id);
+	// 		$this->cb->update('t_po_out', $update);
+
+	// 		$response = [
+	// 			'success' => true,
+	// 			'msg' => 'Status PO berhasil diubah!'
+	// 		];
+	// 	}
+
+	// 	echo json_encode($response);
+	// }
 
 	public function serah_item($id)
 	{
@@ -1440,141 +1808,146 @@ class Asset extends CI_Controller
 				'msg' => array_values($this->form_validation->error_array())[0]
 			];
 		} else {
-			$config['upload_path']          = './upload/po';
-			$config['allowed_types']        = 'jpg|jpeg|png|pdf';
-			$config['encrypt_name']         = TRUE;
-			$this->load->library('upload', $config);
+			// $config['upload_path']          = './upload/po';
+			// $config['allowed_types']        = 'jpg|jpeg|png|pdf';
+			// $config['encrypt_name']         = TRUE;
+			// $this->load->library('upload', $config);
 
-			if (!$this->upload->do_upload('bukti-serah')) {
-				$response = [
-					'success' => false,
-					'msg' => $this->upload->display_errors()
-				];
-			} else {
-				$upload = $this->upload->data();
-				for ($i = 0; $i < count($rows); $i++) {
-					$item[] = $this->cb->get_where('t_po_out_detail', ['Id' => $id_item[$i]])->row_array();
-					$item_list[] = $this->db->get_where('item_list', ['Id' => $item[$i]['item']])->row_array();
-					$stok[] = $item_list[$i]['stok'] - $item[$i]['qty'];
+			// if (!$this->upload->do_upload('bukti-serah')) {
+			// 	$response = [
+			// 		'success' => false,
+			// 		'msg' => $this->upload->display_errors()
+			// 	];
+			// } else {
+			// $upload = $this->upload->data();
+			for ($i = 0; $i < count($rows); $i++) {
+				$item[] = $this->cb->get_where('t_po_out_detail', ['Id' => $id_item[$i]])->row_array();
+				$item_list[] = $this->db->get_where('item_list', ['Id' => $item[$i]['item']])->row_array();
+				$stok_awal[] = $item_list[$i]['stok'];
+				$stok_akhir[] = $stok_awal[$i] - $item[$i]['qty'];
 
-					// update stok item list
-					$this->db->where('Id', $item[$i]['item']);
-					$this->db->update('item_list', ['stok' => $stok[$i]]);
+				// update stok item list
+				$this->db->where('Id', $item[$i]['item']);
+				$this->db->update('item_list', ['stok' => $stok_akhir[$i]]);
 
-					// update statu item detail 
-					$this->db->where_in('Id', $detail_item[$i]);
-					$this->db->update('item_detail', ['status' => 'O']);
+				// update statu item detail 
+				$this->db->where_in('Id', $detail_item[$i]);
+				$this->db->update('item_detail', ['status' => 'O']);
 
-					// debit
-					$detail_coa_beban[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_beban[$i]])->row_array();
-					$anggaran_beban[] = $detail_coa_beban[$i]['anggaran'];
-					$posisi_beban[] = $detail_coa_beban[$i]['posisi'];
-					$nominal_beban[] = $detail_coa_beban[$i]['nominal'];
-					$substr_coa_beban[] = substr($coa_beban[$i], 0, 1);
-					$nominal_beban_baru[] = 0;
+				// debit
+				$detail_coa_beban[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_beban[$i]])->row_array();
+				$anggaran_beban[] = $detail_coa_beban[$i]['anggaran'];
+				$posisi_beban[] = $detail_coa_beban[$i]['posisi'];
+				$nominal_beban[] = $detail_coa_beban[$i]['nominal'];
+				$substr_coa_beban[] = substr($coa_beban[$i], 0, 1);
+				$nominal_beban_baru[] = 0;
 
-					if ($posisi_beban[$i] == "AKTIVA") {
-						$nominal_beban_baru[$i] = $nominal_beban[$i] + $item[$i]['total'];
-					}
-
-					if ($posisi_beban[$i] == "PASIVA") {
-						$nominal_beban_baru[$i] = $nominal_beban[$i] - $item[$i]['total'];
-					}
-
-					if ($substr_coa_beban[$i] == "1" || $substr_coa_beban[$i] == "2" || $substr_coa_beban[$i] == "3") {
-						$table_beban[] = "t_coa_sbb";
-						$kolom_beban[] = "no_sbb";
-					}
-					if ($substr_coa_beban[$i] == "4" || $substr_coa_beban[$i] == "5" || $substr_coa_beban[$i] == "6" || $substr_coa_beban[$i] == "7" || $substr_coa_beban[$i] == "8" || $substr_coa_beban[$i] == "9") {
-						$table_beban[] = "t_coalr_sbb";
-						$kolom_beban[] = "no_lr_sbb";
-					}
-
-					$this->cb->where([$kolom_beban[$i] => $coa_beban[$i]]);
-					$this->cb->update($table_beban[$i], ['nominal' => $nominal_beban_baru[$i]]);
-
-
-					// update coa credit
-					$detail_coa_persediaan[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_persediaan[$i]])->row_array();
-					$posisi_persediaan[] = $detail_coa_persediaan[$i]['posisi'];
-					$anggaran_persediaan[] = $detail_coa_persediaan[$i]['anggaran'];
-					$nominal_persediaan[] = $detail_coa_persediaan[$i]['nominal'];
-					$substr_coa_persediaan[] = substr($coa_persediaan[$i], 0, 1);
-					$saldo_persediaan_baru[] = 0;
-					$nominal_persediaan_baru[] = 0;
-
-					if ($posisi_persediaan[$i] == "AKTIVA") {
-						$nominal_persediaan_baru[$i] = $nominal_persediaan[$i] - $item[$i]['total'];
-					}
-					if ($posisi_persediaan[$i] == "PASIVA") {
-						$nominal_persediaan_baru[$i] = $nominal_persediaan[$i] + $item[$i]['total'];
-					}
-
-					if ($substr_coa_persediaan[$i] == "1" || $substr_coa_persediaan[$i] == "2" || $substr_coa_persediaan[$i] == "3") {
-						$table_persediaan[] = "t_coa_sbb";
-						$kolom_persediaan[] = "no_sbb";
-					}
-					if ($substr_coa_persediaan[$i] == "4" || $substr_coa_persediaan[$i] == "5" || $substr_coa_persediaan[$i] == "6" || $substr_coa_persediaan[$i] == "7" || $substr_coa_persediaan[$i] = "8" || $substr_coa_persediaan[$i] = "9") {
-						$table_persediaan[] = "t_coalr_sbb";
-						$kolom_persediaan[] = "no_lr_sbb";
-					}
-
-					$this->cb->where([$kolom_persediaan[$i] => $coa_persediaan[$i]]);
-					$this->cb->update($table_persediaan[$i], ['nominal' => $nominal_persediaan_baru[$i]]);
-
-
-					// update table pengajuan detail
-					$this->cb->where('Id', $id_item[$i]);
-					$this->cb->update('t_po_out_detail', [
-						'persediaan' => $coa_persediaan[$i],
-						'beban' => $coa_beban[$i]
-					]);
-
-					// create jurnal
-					$jurnal = [
-						'tanggal' => $date_serah,
-						'akun_debit' => $coa_beban[$i],
-						'jumlah_debit' => $item[$i]['total'],
-						'akun_kredit' => $coa_persediaan[$i],
-						'jumlah_kredit' => $item[$i]['total'],
-						'saldo_debit' => $nominal_beban_baru[$i],
-						'saldo_kredit' => $nominal_persediaan_baru[$i],
-						'keterangan' => $item[$i]['item'],
-						'created_by' => $this->session->userdata('nip'),
-					];
-
-					$this->cb->insert('jurnal_neraca', $jurnal);
-
-					// create item out
-					$item_out = [
-						'no_po' => $po['no_po'],
-						'item_id' => $id_item[$i],
-						'asset_id' => $po['asset'],
-						'harga' => $item[$i]['price'],
-						'jml' => $item[$i]['qty'],
-						'status' => 1,
-						'user' => $po['user'],
-						'user_serah' => $this->session->userdata('nip'),
-						'penerima' => $po['teknisi'],
-						'image' => $upload['file_name'],
-						'date_serah' => $date_serah
-					];
-					$this->db->insert('item_out', $item_out);
+				if ($posisi_beban[$i] == "AKTIVA") {
+					$nominal_beban_baru[$i] = $nominal_beban[$i] + $item[$i]['total'];
 				}
 
-				// Update table pengajuan
-				$update = [
-					'posisi' => 'Barang sudah diserahkan!',
+				if ($posisi_beban[$i] == "PASIVA") {
+					$nominal_beban_baru[$i] = $nominal_beban[$i] - $item[$i]['total'];
+				}
+
+				if ($substr_coa_beban[$i] == "1" || $substr_coa_beban[$i] == "2" || $substr_coa_beban[$i] == "3") {
+					$table_beban[] = "t_coa_sbb";
+					$kolom_beban[] = "no_sbb";
+				}
+				if ($substr_coa_beban[$i] == "4" || $substr_coa_beban[$i] == "5" || $substr_coa_beban[$i] == "6" || $substr_coa_beban[$i] == "7" || $substr_coa_beban[$i] == "8" || $substr_coa_beban[$i] == "9") {
+					$table_beban[] = "t_coalr_sbb";
+					$kolom_beban[] = "no_lr_sbb";
+				}
+
+				$this->cb->where([$kolom_beban[$i] => $coa_beban[$i]]);
+				$this->cb->update($table_beban[$i], ['nominal' => $nominal_beban_baru[$i]]);
+
+
+				// update coa credit
+				$detail_coa_persediaan[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_persediaan[$i]])->row_array();
+				$posisi_persediaan[] = $detail_coa_persediaan[$i]['posisi'];
+				$anggaran_persediaan[] = $detail_coa_persediaan[$i]['anggaran'];
+				$nominal_persediaan[] = $detail_coa_persediaan[$i]['nominal'];
+				$substr_coa_persediaan[] = substr($coa_persediaan[$i], 0, 1);
+				$saldo_persediaan_baru[] = 0;
+				$nominal_persediaan_baru[] = 0;
+
+				if ($posisi_persediaan[$i] == "AKTIVA") {
+					$nominal_persediaan_baru[$i] = $nominal_persediaan[$i] - $item[$i]['total'];
+				}
+				if ($posisi_persediaan[$i] == "PASIVA") {
+					$nominal_persediaan_baru[$i] = $nominal_persediaan[$i] + $item[$i]['total'];
+				}
+
+				if ($substr_coa_persediaan[$i] == "1" || $substr_coa_persediaan[$i] == "2" || $substr_coa_persediaan[$i] == "3") {
+					$table_persediaan[] = "t_coa_sbb";
+					$kolom_persediaan[] = "no_sbb";
+				}
+				if ($substr_coa_persediaan[$i] == "4" || $substr_coa_persediaan[$i] == "5" || $substr_coa_persediaan[$i] == "6" || $substr_coa_persediaan[$i] == "7" || $substr_coa_persediaan[$i] == "8" || $substr_coa_persediaan[$i] == "9") {
+					$table_persediaan[] = "t_coalr_sbb";
+					$kolom_persediaan[] = "no_lr_sbb";
+				}
+
+				$this->cb->where([$kolom_persediaan[$i] => $coa_persediaan[$i]]);
+				$this->cb->update($table_persediaan[$i], ['nominal' => $nominal_persediaan_baru[$i]]);
+
+
+				// update table pengajuan detail
+				$this->cb->where('Id', $id_item[$i]);
+				$this->cb->update('t_po_out_detail', [
+					'persediaan' => $coa_persediaan[$i],
+					'beban' => $coa_beban[$i],
+					'detail' => json_encode($detail_item[$i])
+				]);
+
+				// create jurnal
+				$jurnal = [
+					'tanggal' => $date_serah,
+					'akun_debit' => $coa_beban[$i],
+					'jumlah_debit' => $item[$i]['total'],
+					'akun_kredit' => $coa_persediaan[$i],
+					'jumlah_kredit' => $item[$i]['total'],
+					'saldo_debit' => $nominal_beban_baru[$i],
+					'saldo_kredit' => $nominal_persediaan_baru[$i],
+					'keterangan' => $item_list[$i]['nama'],
+					'created_by' => $this->session->userdata('nip'),
 				];
 
-				$this->cb->where(['Id' => $id]);
-				$this->cb->update('t_po_out', $update);
+				$this->cb->insert('jurnal_neraca', $jurnal);
 
-				$response = [
-					'success' => true,
-					'msg' => 'Barang berhasil diserahkan!'
+				// create item out
+				$item_out = [
+					'no_po' => $po['Id'],
+					'item_id' => $item[$i]['item'],
+					'asset_id' => $item[$i]['asset'],
+					'harga' => $item[$i]['price'],
+					'jml' => $item[$i]['qty'],
+					'status' => 1,
+					'user' => $po['user'],
+					'user_serah' => $this->session->userdata('nip'),
+					'penerima' => $po['teknisi'],
+					// 'image' => $upload['file_name'],
+					'date_serah' => $date_serah,
+					'stok_awal' => $stok_awal[$i],
+					'stok_akhir' => $stok_akhir[$i],
+					'jenis' => 'OUT'
 				];
+				$this->db->insert('working_supply', $item_out);
 			}
+
+			// Update table pengajuan
+			$update = [
+				'posisi' => 'Barang sudah diserahkan!',
+			];
+
+			$this->cb->where(['Id' => $id]);
+			$this->cb->update('t_po_out', $update);
+
+			$response = [
+				'success' => true,
+				'msg' => 'Barang berhasil diserahkan!'
+			];
+			// }
 		}
 		echo json_encode($response);
 	}
@@ -1605,7 +1978,7 @@ class Asset extends CI_Controller
 		$data['count_inbox2'] = $result4;
 
 		$data['coa'] = $this->cb->get('v_coa_all');
-		$data['po'] = $this->m_asset->get_poList(['a.Id' => $id])->row_array();
+		$data['po'] = $this->m_asset->get_poList(['a.Id' => $id], null)->row_array();
 		$data['title'] = "Form Bayar";
 		$data['pages'] = "pages/aset/v_bayar";
 		$this->load->view('index', $data);
@@ -1620,6 +1993,8 @@ class Asset extends CI_Controller
 		$tgl = $this->input->post('tanggal');
 		$now = date('Y-m-d');
 		$jenis_pembayaran = $this->input->post('jenis-pembayaran');
+
+		$po = $this->cb->get_where("t_po", ['Id' => $id])->row_array();
 
 		if (strtotime($tgl) != strtotime($now)) {
 			$date_bayar = $tgl;
@@ -1649,22 +2024,22 @@ class Asset extends CI_Controller
 			} else {
 				$upload = $this->upload->data();
 				for ($i = 0; $i < count($rows); $i++) {
-					$item[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
-
+					$po_detail[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
+					$item[] = $this->db->get_where('item_list', ['Id' => $po_detail[$i]['item']])->row_array();
 					// Update coa debit
-					$detail_coa_hutang[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $item[$i]['kredit']])->row_array();
+					$detail_coa_hutang[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $po_detail[$i]['kredit']])->row_array();
 					$anggaran_hutang[] = $detail_coa_hutang[$i]['anggaran'];
 					$posisi_hutang[] = $detail_coa_hutang[$i]['posisi'];
 					$nominal_hutang[] = $detail_coa_hutang[$i]['nominal'];
-					$substr_coa_hutang[] = substr($item[$i]['kredit'], 0, 1);
+					$substr_coa_hutang[] = substr($po_detail[$i]['kredit'], 0, 1);
 					$nominal_hutang_baru[] = 0;
 
 					if ($posisi_hutang[$i] == "AKTIVA") {
-						$nominal_hutang_baru[$i] = $nominal_hutang[$i] + $item[$i]['total'];
+						$nominal_hutang_baru[$i] = $nominal_hutang[$i] + $po_detail[$i]['total'];
 					}
 
 					if ($posisi_hutang[$i] == "PASIVA") {
-						$nominal_hutang_baru[$i] = $nominal_hutang[$i] - $item[$i]['total'];
+						$nominal_hutang_baru[$i] = $nominal_hutang[$i] - $po_detail[$i]['total'];
 					}
 
 					if ($substr_coa_hutang[$i] == "1" || $substr_coa_hutang[$i] == "2" || $substr_coa_hutang[$i] == "3") {
@@ -1676,7 +2051,7 @@ class Asset extends CI_Controller
 						$kolom_hutang[] = "no_lr_sbb";
 					}
 
-					$this->cb->where([$kolom_hutang[$i] => $item[$i]['kredit']]);
+					$this->cb->where([$kolom_hutang[$i] => $po_detail[$i]['kredit']]);
 					$this->cb->update($table_hutang[$i], ['nominal' => $nominal_hutang_baru[$i]]);
 
 
@@ -1690,17 +2065,17 @@ class Asset extends CI_Controller
 					$nominal_kas_baru[] = 0;
 
 					if ($posisi_kas[$i] == "AKTIVA") {
-						$nominal_kas_baru[$i] = $nominal_kas[$i] - $item[$i]['total'];
+						$nominal_kas_baru[$i] = $nominal_kas[$i] - $po_detail[$i]['total'];
 					}
 					if ($posisi_kas[$i] == "PASIVA") {
-						$nominal_kas_baru[$i] = $nominal_kas[$i] + $item[$i]['total'];
+						$nominal_kas_baru[$i] = $nominal_kas[$i] + $po_detail[$i]['total'];
 					}
 
 					if ($substr_coa_kas[$i] == "1" || $substr_coa_kas[$i] == "2" || $substr_coa_kas[$i] == "3") {
 						$table_kas[] = "t_coa_sbb";
 						$kolom_kas[] = "no_sbb";
 					}
-					if ($substr_coa_kas[$i] == "4" || $substr_coa_kas[$i] == "5" || $substr_coa_kas[$i] == "6" || $substr_coa_kas[$i] == "7" || $substr_coa_kas[$i] = "8" || $substr_coa_kas[$i] = "9") {
+					if ($substr_coa_kas[$i] == "4" || $substr_coa_kas[$i] == "5" || $substr_coa_kas[$i] == "6" || $substr_coa_kas[$i] == "7" || $substr_coa_kas[$i] == "8" || $substr_coa_kas[$i] == "9") {
 						$table_kas[] = "t_coalr_sbb";
 						$kolom_kas[] = "no_lr_sbb";
 					}
@@ -1718,13 +2093,84 @@ class Asset extends CI_Controller
 					// create jurnal
 					$jurnal = [
 						'tanggal' => $date_bayar,
-						'akun_debit' => $item[$i]['kredit'],
-						'jumlah_debit' => $item[$i]['total'],
+						'akun_debit' => $po_detail[$i]['kredit'],
+						'jumlah_debit' => $po_detail[$i]['total'],
 						'akun_kredit' => $coa_kas,
-						'jumlah_kredit' => $item[$i]['total'],
+						'jumlah_kredit' => $po_detail[$i]['total'],
 						'saldo_debit' => $nominal_hutang_baru[$i],
 						'saldo_kredit' => $nominal_kas_baru[$i],
-						'keterangan' => $item[$i]['item'],
+						'keterangan' => $item[$i]['nama'],
+						'created_by' => $this->session->userdata('nip'),
+					];
+					$this->cb->insert('jurnal_neraca', $jurnal);
+				}
+
+				if ($po['ppn'] == 1) {
+					$nominal_ppn = $po['total'] * 0.11;
+					$po_detail = $this->cb->get_where('t_po_detail', ['no_po' => $po['Id']])->row_array();
+
+					$coa_utang = $this->cb->get_where('v_coa_all', ['no_sbb' => $po_detail['kredit']])->row_array();
+					$posisi_coa_utang = $coa_utang['posisi'];
+					$nominal_coa_utang = $coa_utang['nominal'];
+					$substr_coa_utang = substr($po_detail['kredit'], 0, 1);
+					$nominal_coa_utang_baru = 0;
+
+					if ($posisi_coa_utang == "AKTIVA") {
+						$nominal_coa_utang_baru = $nominal_coa_utang + $nominal_ppn;
+					}
+					if ($posisi_coa_utang == "PASIVA") {
+						$nominal_coa_utang_baru = $nominal_coa_utang - $nominal_ppn;
+					}
+
+					if ($substr_coa_utang == "1" || $substr_coa_utang == "2" || $substr_coa_utang == "3") {
+						$table_utang = "t_coa_sbb";
+						$kolom_utang = "no_sbb";
+					}
+
+					if ($substr_coa_utang == "4" || $substr_coa_utang == "5" || $substr_coa_utang == "6" || $substr_coa_utang == "7" || $substr_coa_utang == "8" || $substr_coa_utang == "9") {
+						$table_utang = "t_coalr_sbb";
+						$kolom_utang = "no_lr_sbb";
+					}
+
+					$this->cb->where([$kolom_utang => $po_detail['kredit']]);
+					$this->cb->update($table_utang, ['nominal' => $nominal_coa_utang_baru]);
+
+					$cr = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kas])->row_array();
+					$posisi_cr = $cr['posisi'];
+					$nominal_cr = $cr['nominal'];
+					$substr_coa_cr = substr($coa_kas, 0, 1);
+					$nominal_cr_baru = 0;
+
+					if ($posisi_cr == "AKTIVA") {
+						$nominal_cr_baru = $nominal_cr - $nominal_ppn;
+					}
+					if ($posisi_cr == "PASIVA") {
+						$nominal_cr_baru = $nominal_cr + $nominal_ppn;
+					}
+
+					if ($substr_coa_cr == "1" || $substr_coa_cr == "2" || $substr_coa_cr == "3") {
+						$table_cr = "t_coa_sbb";
+						$kolom_cr = "no_sbb";
+					}
+
+					if ($substr_coa_cr == "4" || $substr_coa_cr == "5" || $substr_coa_cr == "6" || $substr_coa_cr == "7" || $substr_coa_cr == "8" || $substr_coa_cr == "9") {
+						$table_cr = "t_coalr_sbb";
+						$kolom_cr = "no_lr_sbb";
+					}
+
+					$this->cb->where([$kolom_cr => $coa_kas]);
+					$this->cb->update($table_cr, ['nominal' => $nominal_cr_baru]);
+
+					// create jurnal
+					$jurnal = [
+						'tanggal' => $date_bayar,
+						'akun_debit' => $po_detail['kredit'],
+						'jumlah_debit' => $nominal_ppn,
+						'akun_kredit' => $coa_kas,
+						'jumlah_kredit' => $nominal_ppn,
+						'saldo_debit' => $nominal_coa_utang_baru,
+						'saldo_kredit' => $nominal_cr_baru,
+						'keterangan' => 'PPN MASUKAN ' . $po['no_po'],
 						'created_by' => $this->session->userdata('nip'),
 					];
 					$this->cb->insert('jurnal_neraca', $jurnal);
@@ -1857,7 +2303,7 @@ class Asset extends CI_Controller
 			];
 
 			$this->db->where('Id', $id);
-			$this->db->update('item_out', $update);
+			$this->db->update('working_supply', $update);
 
 			$response = [
 				'success' => true,
@@ -1898,62 +2344,614 @@ class Asset extends CI_Controller
 		$this->load->view('index', $data);
 	}
 
+	public function working_supply()
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['title'] = "Working Supply";
+		$data['item'] = $this->db->get('item_list');
+		$data['pages'] = 'pages/aset/v_report_item';
+		$this->load->view('index', $data);
+	}
+
+	public function export_item()
+	{
+		$item = $this->input->post('item');
+		$dari = $this->input->post('dari');
+		$sampai = $this->input->post('sampai');
+		if ($item == 'all') {
+			$sql = "SELECT * FROM working_supply JOIN item_list ON item_list.Id = working_supply.item_id WHERE (tanggal >= '$dari' OR tanggal <= '$sampai')";
+			$data['report'] = $this->db->query($sql)->result_array();
+			$data['jenis'] = 'all';
+		} else {
+			$sql = "SELECT * FROM working_supply JOIN item_list ON item_list.Id = working_supply.item_id WHERE item_id = '$item' and (tanggal >= '$dari' OR tanggal <= '$sampai')";
+			$data['report'] = $this->db->query($sql)->result_array();
+			$data['jenis'] = 'not all';
+			$data['item_list'] = $this->db->get_where('item_list', ['Id' => $item])->row_array();
+		}
+
+
+		// $data['item'] = $this->db->get_where('item_list', ['Id' => $item])->row_array();
+		// $file_pdf = 'Penggunaan Item . ' . $data['item']['nama'] . ' | ' . $data['item']['nomor'];
+		// setting paper
+		// $paper = 'A4';
+
+		// //orientasi paper potrait / landscape
+		// $orientation = "landscape";
+
+		// $html = $this->load->view('pages/aset/v_report_asset_pdf', $data, true);
+
+		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		$this->load->view('pages/aset/v_report_item_pdf', $data);
+	}
+
 	public function export_report()
 	{
-		$asset = $this->input->post('asset');
+		$item = $this->input->post('asset');
 		$dari = $this->input->post('dari');
 		$sampai = $this->input->post('sampai');
 
-		$sql = "SELECT * FROM item_out WHERE asset_id = '$asset' and (tanggal >= '$dari' OR tanggal <= '$sampai')";
+		$sql = "SELECT * FROM working_supply WHERE asset_id = '$item' and (tanggal >= '$dari' OR tanggal <= '$sampai')";
 		$data['report'] = $this->db->query($sql)->result_array();
-		$data['asset'] = $this->db->get_where('asset_list', ['Id' => $asset])->row_array();
-		$file_pdf = 'Penggunaan Item Asset . ' . $data['asset']['nama_asset'] . ' | ' . $data['asset']['kode'];
+		$data['asset'] = $this->db->get_where('asset_list', ['Id' => $item])->row_array();
+		// $file_pdf = 'Penggunaan Item . ' . $data['item']['nama'] . ' | ' . $data['item']['nomor'];
 		// setting paper
-		$paper = 'A4';
+		// $paper = 'A4';
 
-		//orientasi paper potrait / landscape
-		$orientation = "portrait";
+		// //orientasi paper potrait / landscape
+		// $orientation = "landscape";
 
-		$html = $this->load->view('pages/aset/v_report_asset_pdf', $data, true);
+		// $html = $this->load->view('pages/aset/v_report_asset_pdf', $data, true);
 
-		$this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		$this->load->view('pages/aset/v_report_asset_pdf', $data);
+		// $this
 	}
+
 
 	public function print($id)
 	{
 		$data['po'] = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
-		// $this->load->view('pages/aset/v_print_po', $data);
+		$this->load->view('pages/aset/v_print_po', $data);
 		// filename dari pdf ketika didownload
-		$file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
+		// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
 
-		// setting paper
-		$paper = 'A4';
+		// // setting paper
+		// $paper = 'A4';
 
-		//orientasi paper potrait / landscape
-		$orientation = "portrait";
+		// //orientasi paper potrait / landscape
+		// $orientation = "landscape";
 
-		$html = $this->load->view('pages/aset/v_print_po', $data, true);
+		// $html = $this->load->view('pages/aset/v_print_po', $data, true);
 
-		// run dompdf
-		$this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		// // run dompdf
+		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
 	}
 
 	public function print_po_out($id)
 	{
 		$data['po'] = $this->cb->get_where('t_po_out', ['Id' => $id])->row_array();
-		// $this->load->view('pages/aset/v_print_po', $data);
+		$this->load->view('pages/aset/v_print_po_out', $data);
 		// filename dari pdf ketika didownload
-		$file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
+		// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
 
-		// setting paper
-		$paper = 'A4';
+		// // setting paper
+		// $paper = 'A4';
 
-		//orientasi paper potrait / landscape
-		$orientation = "portrait";
+		// //orientasi paper potrait / landscape
+		// $orientation = "landscape";
 
-		$html = $this->load->view('pages/aset/v_print_po_out', $data, true);
+		// $html = $this->load->view('pages/aset/v_print_po_out', $data, true);
 
-		// run dompdf
-		$this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		// // run dompdf
+		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+	}
+
+	public function vendors()
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+		$data['asset_ruang'] = $asset_ruang;
+		$data['asset_lokasi'] = $asset_lokasi;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['title'] = "List Vendors";
+		$data['vendors'] = $this->db->get('t_vendors');
+		$data['pages'] = 'pages/aset/v_vendors';
+		$this->load->view('index', $data);
+	}
+
+	public function ubah_vendor($id)
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$query = $this->db->query($sql);
+		$res2 = $query->result_array();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['vendor'] = $this->db->get_where('t_vendors', ['Id' => $id])->row_array();
+		$data['title'] = "Ubah data vendor";
+		$data['pages'] = "pages/aset/v_form_vendor";
+		$this->load->view('index', $data);
+	}
+
+	public function update_vendor($id)
+	{
+		$nama = $this->input->post('nama');
+		$alamat = $this->input->post('alamat');
+		$email = $this->input->post('email');
+		$tlp = $this->input->post('tlp');
+
+		$this->form_validation->set_rules('nama', 'nama vendor', 'required|trim', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('alamat', 'alamat', 'required|trim', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('email', 'alamat', 'required|valid_email|trim', ['required' => '%s wajib diisi!', 'valid_email' => 'email tidak valid']);
+		$this->form_validation->set_rules('tlp', 'No. tlp', 'required|trim|numeric', ['required' => '%s wajib diisi!', 'numeric' => '%s harus berisi angka']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'status' => '401',
+				'msg' => array_values($this->form_validation->error_array())[0],
+			];
+		} else {
+			$update = [
+				'nama' => $nama,
+				'alamat' => $alamat,
+				'email' => $email,
+				'no_telpon' => $tlp
+			];
+
+			$this->db->where('Id', $id);
+			$this->db->update('t_vendors', $update);
+
+			$response = [
+				'success' => true,
+				'msg' => 'Data vendor berhasil diubah!'
+			];
+		}
+
+		echo json_encode($response);
+	}
+
+	public function add_vendor()
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$query = $this->db->query($sql);
+		$res2 = $query->result_array();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['title'] = "Tambah data vendor";
+		$data['pages'] = "pages/aset/v_form_vendor";
+		$this->load->view('index', $data);
+	}
+
+	public function insert_vendor()
+	{
+		$nama = $this->input->post('nama');
+		$alamat = $this->input->post('alamat');
+		$email = $this->input->post('email');
+		$tlp = $this->input->post('tlp');
+
+		$this->form_validation->set_rules('nama', 'nama vendor', 'required|trim', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('alamat', 'alamat', 'required|trim', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('email', 'alamat', 'required|valid_email|trim', ['required' => '%s wajib diisi!', 'valid_email' => 'email tidak valid']);
+		$this->form_validation->set_rules('tlp', 'No. tlp', 'required|trim|numeric', ['required' => '%s wajib diisi!', 'numeric' => '%s harus berisi angka']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'status' => '401',
+				'msg' => array_values($this->form_validation->error_array())[0],
+			];
+		} else {
+			$insert = [
+				'nama' => $nama,
+				'alamat' => $alamat,
+				'email' => $email,
+				'no_telpon' => $tlp
+			];
+
+			$this->db->insert('t_vendors', $insert);
+
+			$response = [
+				'success' => true,
+				'msg' => 'Data vendor berhasil ditambahkan!'
+			];
+		}
+
+		echo json_encode($response);
+	}
+
+	public function revisi($id)
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+		$data['asset_ruang'] = $asset_ruang;
+		$data['asset_lokasi'] = $asset_lokasi;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['coa'] = $this->cb->get('v_coa_all');
+		$data['po'] = $this->m_asset->get_poList(['a.Id' => $id], null)->row_array();
+		$data['title'] = "Revisi PO";
+		$data['pages'] = "pages/aset/v_revisi";
+		$this->load->view('index', $data);
+	}
+
+	public function update_revisi()
+	{
+		$id = $this->input->post('id_po');
+		$id_item = $this->input->post('id_item[]');
+		$rows = $this->input->post('row_item[]');
+		$uoi = $this->input->post('uoi[]');
+		$satuan = $this->input->post('satuan[]');
+		$qty = $this->input->post('qty[]');
+		$harga = $this->input->post('harga[]');
+		$keterangan = $this->input->post('ket[]');
+		$subtotal = $this->input->post('total[]');
+		$total = $this->input->post('nominal');
+
+
+		$this->form_validation->set_rules('qty[]', 'qty', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('harga[]', 'harga', 'required', ['required' => '%s wajib diisi!']);
+		$this->form_validation->set_rules('uoi[]', 'uoi', 'required', ['required' => '%s wajib diisi!']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'msg' => array_values($this->form_validation->error_array())[0]
+			];
+		} else {
+			for ($i = 0; $i < count($rows); $i++) {
+				$item[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
+				$item_list[] = $this->db->get_where('item_list', ['Id' => $item[$i]['item']])->row_array();
+
+				if ($qty[$i] < 1) {
+					$response = [
+						'success' => false,
+						'msg' => 'Stok item ' . $item_list[$i]['nama'] . ' tidak boleh kosong'
+					];
+
+					echo json_encode($response);
+					return false;
+				}
+
+				if ($satuan[$i] < 1) {
+					$response = [
+						'success' => false,
+						'msg' => 'Satuan ' . $item_list[$i]['nama'] . ' tidak boleh kosong'
+					];
+
+					echo json_encode($response);
+					return false;
+				}
+
+				// update table pengajuan detail
+				$this->cb->where('Id', $id_item[$i]);
+				$this->cb->update('t_po_detail', [
+					'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
+					'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $harga[$i]),
+					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
+					'uoi' => $uoi[$i],
+					'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
+					'keterangan' => $keterangan[$i]
+				]);
+			}
+
+			// Update table pengajuan
+			$update = [
+				'posisi' => 'diajukan kepada direktur operasional',
+				'status_direksi_ops' => 0,
+				'date_direksi_ops' => null,
+				'catatan_direksi_ops' => null,
+				'status_dirut' => 0,
+				'date_dirut' => null,
+				'catatan_dirut' => null,
+				'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total)
+			];
+
+			$this->cb->where(['Id' => $id]);
+			$this->cb->update('t_po', $update);
+
+			$response = [
+				'success' => true,
+				'msg' => 'PO berhasil direvisi!'
+			];
+		}
+		echo json_encode($response);
+	}
+
+	public function repair()
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+		$data['asset_ruang'] = $asset_ruang;
+		$data['asset_lokasi'] = $asset_lokasi;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['count_sarlog'] = $this->m_asset->count_po(['status_sarlog' => 0]);
+		$data['list_repair'] = $this->db->get('item_repair');
+		$data['item_list'] = $this->db->get('item_list')->result_array();
+		$data['title'] = "Repair Item";
+		$data['pages'] = "pages/aset/v_repair";
+		$this->load->view('index', $data);
+	}
+
+	public function getSerialNumber()
+	{
+		$id = $this->input->post('id');
+		$serial = $this->db->get_where('item_detail', ['kode_item' => $id, 'status' => 'O'])->result();
+		$option = "";
+		if ($serial) {
+			foreach ($serial as $row) {
+				$option .= "<option value='$row->Id'>$row->serial_number</option>";
+			}
+		} else {
+			$option .= "<option value='' selected>Tidak ada detail</option>";
+		}
+
+		echo json_encode($option);
+	}
+
+	public function add_repair()
+	{
+		$tgl = $this->input->post('tanggal');
+		$item = $this->input->post('item');
+		$serial = $this->input->post('serial-number');
+		$ket = $this->input->post('keterangan');
+
+		$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi']);
+		$this->form_validation->set_rules('item', 'item', 'required', ['required' => '%s wajib diisi']);
+		$this->form_validation->set_rules('serial-number', 'serial number', 'required', ['required' => '%s wajib diisi']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'msg' => array_values($this->form_validation->error_array())[0]
+			];
+		} else {
+			$insert = [
+				'item' => $item,
+				'serial_number' => $serial,
+				'user' => $this->session->userdata('nip'),
+				'tgl_pengajuan' => $tgl,
+				'qty' => 1,
+				'keterangan' => $ket
+			];
+
+			$this->db->insert('item_repair', $insert);
+
+			$item_list = $this->db->get_where('item_list', ['Id' => $item])->row_array();
+			$stok_lama = $item_list['stok'];
+			$stok_baru = $stok_lama + 1;
+
+			$this->db->where('Id', $item);
+			$this->db->update('item_list', ['stok' => $stok_baru]);
+
+			// update status serial number
+			$this->db->where('Id', $serial);
+			$this->db->update('item_detail', ['status' => 'R']);
+
+			// working supply
+			$ws = [
+				'item_id' => $item,
+				'jml' => 1,
+				'stok_awal' => $stok_lama,
+				'stok_akhir' => $stok_baru,
+				'user' => $this->session->userdata('nip'),
+				'jenis' => 'REPAIR'
+			];
+
+			$this->db->insert('working_supply', $ws);
+
+			$response = [
+				'success' => true,
+				'msg' => 'Item repair berhasil ditambahkan!'
+			];
+		}
+
+		echo json_encode($response);
+	}
+
+	public function repair_out()
+	{
+		//inbox notif
+		$nip = $this->session->userdata('nip');
+		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+		$sql2 = "SELECT * FROM asset_ruang";
+		$sql3 = "SELECT * FROM asset_lokasi";
+		$query = $this->db->query($sql);
+		$query2 = $this->db->query($sql2);
+		$query3 = $this->db->query($sql3);
+		$res2 = $query->result_array();
+		$asset_ruang = $query2->result();
+		$asset_lokasi = $query3->result();
+		$result = $res2[0]['COUNT(Id)'];
+		$data['count_inbox'] = $result;
+		$data['asset_ruang'] = $asset_ruang;
+		$data['asset_lokasi'] = $asset_lokasi;
+
+		// Tello
+		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+		$query4 = $this->db->query($sql4);
+		$res4 = $query4->result_array();
+		$result4 = $res4[0]['COUNT(Id)'];
+		$data['count_inbox2'] = $result4;
+
+		$data['count_sarlog'] = $this->m_asset->count_po(['status_sarlog' => 0]);
+		$data['list_repair'] = $this->db->get('item_repair_out');
+		$data['asset'] = $this->db->get('asset_list')->result_array();
+
+		$sql_item = "SELECT item_list.nama, item_repair.Id, item_detail.serial_number FROM item_repair JOIN item_list ON item_list.Id = item_repair.item JOIN item_detail ON item_repair.serial_number = item_detail.Id WHERE item_repair.out = 0";
+		$data['item_list'] = $this->db->query($sql_item)->result_array();
+		$data['title'] = "Repair Item Out";
+		$data['pages'] = "pages/aset/v_repair_out";
+		$this->load->view('index', $data);
+	}
+
+	public function add_repair_out()
+	{
+		$tgl = $this->input->post('tanggal');
+		$asset = $this->input->post('asset');
+		$item = $this->input->post('item');
+		$ket = $this->input->post('keterangan');
+
+		$this->form_validation->set_rules('tanggal', 'tanggal', 'required', ['required' => '%s wajib diisi']);
+		$this->form_validation->set_rules('asset', 'asset', 'required', ['required' => '%s wajib diisi']);
+		$this->form_validation->set_rules('item', 'item', 'required', ['required' => '%s wajib diisi']);
+
+		if ($this->form_validation->run() == FALSE) {
+			$response = [
+				'success' => false,
+				'msg' => array_values($this->form_validation->error_array())[0]
+			];
+		} else {
+			$item_repair = $this->db->get_where('item_repair', ['Id' => $item])->row_array();
+			$insert = [
+				'user' => $this->session->userdata('nip'),
+				'tanggal' => $tgl,
+				'asset' => $asset,
+				'item' => $item_repair['item'],
+				'serial_number' => $item_repair['serial_number'],
+				'keterangan' => $ket
+			];
+
+			$this->db->insert('item_repair_out', $insert);
+
+			$item_list = $this->db->get_where('item_list', ['Id' => $item_repair['item']])->row_array();
+			$stok_lama = $item_list['stok'];
+			$stok_baru = $stok_lama - 1;
+
+			$this->db->where('Id', $item_repair['item']);
+			$this->db->update('item_list', ['stok' => $stok_baru]);
+
+			// update status serial number
+			$this->db->where('Id', $item_repair['serial_number']);
+			$this->db->update('item_detail', ['status' => 'RO']);
+
+			$item_out = [
+				'item_id' => $item_repair['item'],
+				'asset_id' => $asset,
+				'harga' => 0,
+				'jml' => 1,
+				'stok_awal' => $stok_lama,
+				'stok_akhir' => $stok_baru,
+				'user' => $this->session->userdata('nip'),
+				'status' => 1,
+				'jenis' => "RO"
+			];
+
+			$this->db->insert('working_supply', $item_out);
+
+			// $ws = [
+			// 	'item_id' => $item_repair['item'],
+			// 	'jml' => 1,
+			// 	'stok_awal' => $stok_lama,
+			// 	'stok_akhir' => $stok_baru,
+			// 	'user' => $this->session->userdata('nip'),
+			// 	'jenis' => 'RO',
+			// 	'asset_id' => $asset
+			// ];
+
+			// $this->db->insert('working_supply', $ws);
+
+			$this->db->where('Id', $item);
+			$this->db->update('item_repair', ['out' => 1]);
+
+			$response = [
+				'success' => true,
+				'msg' => 'Item repair out berhasil ditambahkan!'
+			];
+		}
+
+		echo json_encode($response);
 	}
 }

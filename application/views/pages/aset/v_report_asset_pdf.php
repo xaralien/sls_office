@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Penggunaan Item Asset <?= $asset['nama_asset'] . ' | ' . $asset['kode'] ?></title>
+  <title>Penggunaan Asset</title>
 
   <style>
     * {
@@ -63,13 +63,17 @@
 </head>
 
 <body>
-  <div class="judul">Penggunaan Item Asset <?= $asset['nama_asset'] . ' | ' . $asset['kode'] ?></div>
+  <div class="judul">Penggunaan Asset <?= $asset['nama_asset'] ?></div>
   <table width="100%" id="item">
     <thead>
       <tr>
         <th>No.</th>
+        <th>Tanggal</th>
+        <th>Keterangan</th>
         <th>Item</th>
         <th>Jumlah</th>
+        <!-- <th>Stok Awal</th>
+        <th>Stok Akhir</th> -->
         <th>Harga Satuan</th>
         <th>Total</th>
       </tr>
@@ -77,17 +81,27 @@
     <tbody>
       <?php
       $no = 1;
+      $total = 0;
       foreach ($report as $r) {
         $item = $this->db->get_where('item_list', ['Id' => $r['item_id']])->row_array();
+        $total += $r['harga'] * $r['jml'];
       ?>
         <tr>
           <td><?= $no++; ?></td>
-          <td><?= $item['nama'] . ' | ' . $item['nomor']; ?></td>
+          <td><?= tgl_indo(date('Y-m-d', strtotime($r['tanggal']))); ?></td>
+          <td><?= $r['jenis'] ?></td>
+          <td><?= $item['nama'] . ' | '; ?></td>
           <td><?= $r['jml'] ?></td>
+          <!-- <td><?= $r['stok_awal'] ?></td>
+          <td><?= $r['stok_akhir'] ?></td> -->
           <td><?= number_format($r['harga']) ?></td>
           <td><?= number_format($r['harga'] * $r['jml']) ?></td>
         </tr>
       <?php } ?>
+      <tr>
+        <td colspan="6" class="text-right">TOTAL</td>
+        <td><?= number_format($total) ?></td>
+      </tr>
     </tbody>
   </table>
 </body>

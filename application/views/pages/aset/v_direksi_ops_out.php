@@ -15,7 +15,7 @@
                 <tr>
                   <th scope="col">No.</th>
                   <th scope="col">User</th>
-                  <th scope="col">Asset</th>
+                  <!-- <th scope="col">Asset</th> -->
                   <th scope="col">Tanggal</th>
                   <th scope="col">Posisi</th>
                   <th scope="col">Status</th>
@@ -31,11 +31,11 @@
                   <?php } else {
                   foreach ($po->result_array() as $value) {
                     $user = $this->db->get_where('users', ['nip' => $value['user']])->row_array();
-                    $asset = $this->db->get_where('asset_list', ['Id' => $value['asset']])->row_array();
-                    if ($value['status_direksi'] == 0) {
+                    // $asset = $this->db->get_where('asset_list', ['Id' => $value['asset']])->row_array();
+                    if ($value['status_direksi_ops'] == 0) {
                       $status = 'Belum diproses';
                       $color = "#e67e22";
-                    } else if ($value['status_direksi'] == 1) {
+                    } else if ($value['status_direksi_ops'] == 1) {
                       $status = 'Disetujui';
                       $color = "#2ecc71";
                     } else {
@@ -46,7 +46,7 @@
                     <tr>
                       <td scope="row"><?= $value['no_po'] ?></td>
                       <td scope="row"><?= $user['nama'] ?></td>
-                      <td scope="row"><?= $asset['nama_asset'] . ' | ' . $asset['kode'] ?></td>
+                      <!-- <td scope="row"><?= $asset['nama_asset'] . ' | ' . $asset['kode'] ?></td> -->
                       <td scope="row"><?= $value['tgl_pengajuan'] ?></td>
                       <td scope="row"><?= $value['posisi'] ?></td>
                       <td scope="row" style="color: <?= $color ?>;"><?= $status ?></td>
@@ -71,13 +71,15 @@
                                       <th>Item</th>
                                       <th>Detail</th>
                                       <th>Qty</th>
+                                      <th>UOI</th>
                                       <th>Price</th>
                                       <th>Total</th>
+                                      <th>Ket</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     <?php
-                                    $detail = $this->cb->get_where('t_po_out_detail', ['no_po' => $value['no_po']])->result_array();
+                                    $detail = $this->cb->get_where('t_po_out_detail', ['no_po' => $value['Id']])->result_array();
                                     $no = 1;
                                     foreach ($detail as $row) {
                                       $item = $this->db->get_where('item_list', ['Id' => $row['item']])->row_array();
@@ -99,25 +101,15 @@
                                           </ol> -->
                                         </td>
                                         <td><?= $row['qty'] ?></td>
+                                        <td><?= $row['uoi'] ?></td>
                                         <td><?= number_format($row['price'], 0) ?></td>
                                         <td><?= number_format($row['total'], 0) ?></td>
+                                        <td><?= $row['keterangan'] ?></td>
                                       </tr>
                                     <?php } ?>
                                     <tr>
                                       <td colspan="5" align="right"><strong>TOTAL</strong></td>
                                       <td><?= number_format($value['total']) ?></td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                                <table style="margin-top: 20px;" class="table table-bordered">
-                                  <thead>
-                                    <tr>
-                                      <th>Keterangan</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td><?= $value['keterangan'] ? $value['keterangan'] : 'Tidak ada keterangan' ?></td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -133,8 +125,20 @@
                                     </tr>
                                   </tbody>
                                 </table>
-                                <?php if ($value['status_direksi'] == 0) { ?>
-                                  <form action="<?= base_url('asset/update_direksi_out') ?>" method="post" id="update-direksi-<?= $value['Id'] ?>">
+                                <table style="margin-top: 20px;" class="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                      <th>Catatan Direktur Operasional</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td><?= $value['catatan_direksi_ops'] ? $value['catatan_direksi_ops'] : 'Tidak ada catatan' ?></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <?php if ($value['status_direksi_ops'] == 0) { ?>
+                                  <form action="<?= base_url('asset/update_direksi_ops_out') ?>" method="post" id="update-direksi-<?= $value['Id'] ?>">
                                     <input type="hidden" name="id_po" id="id_po" value="<?= $value['Id'] ?>">
                                     <div class="row">
                                       <div class="col-md-3">

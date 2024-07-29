@@ -5,18 +5,19 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="x_panel card">
         <div class="x_title">
-          <h2>Report Asset</h2>
+          <h2>Report Item</h2>
         </div>
         <div class="x_content">
-          <form action="<?= base_url('asset/export_report') ?>" method="post" target="_blank">
+          <form action="<?= base_url('asset/export_item') ?>" method="post" target="_blank">
             <div class="row">
               <div class="col-md-4">
                 <div class="form">
-                  <label for="asset">Nama Item</label>
-                  <select name="asset" id="asset" class="form-control select2" required>
+                  <label for="item">Nama Item</label>
+                  <select name="item" id="item" class="form-control select2" required>
                     <option value=""> :: Pilih Item :: </option>
-                    <?php foreach ($asset->result_array() as $a) { ?>
-                      <option value="<?= $a['Id'] ?>"><?= $a['nama_asset'] . ' | ' ?></option>
+                    <option value="all"> All Item </option>
+                    <?php foreach ($item->result_array() as $a) { ?>
+                      <option value="<?= $a['Id'] ?>"><?= $a['nama'] ?></option>
                     <?php } ?>
                   </select>
                 </div>

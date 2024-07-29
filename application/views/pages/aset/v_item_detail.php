@@ -1,48 +1,60 @@
 <div class="right_col" role="main">
   <div class="clearfix"></div>
   <!-- Start content-->
-  <div class="row">
-    <div class="col-md-12 col-sm-12 col-xs-12">
-      <div class="x_panel card">
-        <div class="x_title">
-          <h2>Item Detail <?= $item['nama'] ?></h2>
-        </div>
-        <div class="x_content">
-          <a href="<?= base_url('asset/item_list') ?>" class="btn btn-warning"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</a>
-          <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Item</button>
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th class="fit">No.</th>
-                <th>Kode Item</th>
-                <th>Serial Number</th>
-                <th>Tanggal Masuk</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php if ($detail->num_rows() > 0) {
-                $no = 1;
-                foreach ($detail->result_array() as $d) :
-              ?>
-                  <tr>
-                    <td><?= $no++; ?></td>
-                    <td><?= $item['nomor'] ?></td>
-                    <td><?= $d['serial_number'] ?></td>
-                    <td><?= $d['tanggal_masuk'] ?></td>
-                    <td><?= $d['status'] ?></td>
-                  </tr>
-                <?php
-                endforeach;
-              } else { ?>
-                <tr align="center">
-                  <td colspan="5">Tidak ada data detail</td>
-                </tr>
-              <?php } ?>
-            </tbody>
-          </table>
+  <div class="x_panel card">
+    <div class="x_title">
+      <h2>Item Detail <?= $item['nama'] ?></h2>
+    </div>
+    <div class="x_content">
+      <a href="<?= base_url('asset/item_list') ?>" class="btn btn-warning"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</a>
+      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Serial Number</button>
+
+      <div class="row" style="margin-top: 40px;">
+        <div class="col-md-6" style="padding: 0; margin:0">
+          <form action="">
+            <div class="input-group">
+              <input type="text" class="form-control" id="search" name="search" placeholder="Cari no purchase order" value="<?= $this->input->get('search') ?>">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
+              </span>
+            </div><!-- /input-group -->
+          </form>
         </div>
       </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th class="fit">No.</th>
+            <th>Kode Item</th>
+            <th>Serial Number</th>
+            <th>Tanggal Masuk</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if ($detail->num_rows() > 0) {
+            $no = 1;
+            foreach ($detail->result_array() as $d) :
+          ?>
+              <tr>
+                <td><?= $no++; ?></td>
+                <td><?= $item['nomor'] ?></td>
+                <td><?= $d['serial_number'] ?></td>
+                <td><?= tgl_indo($d['tanggal_masuk']) ?></td>
+                <td><?= $d['status'] ?></td>
+              </tr>
+            <?php
+            endforeach;
+          } else { ?>
+            <tr align="center">
+              <td colspan="5">Tidak ada data detail</td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <div class="row text-center">
+      <?= $pagination ?>
     </div>
   </div>
 </div>
@@ -93,7 +105,7 @@
               <label class="col-form-label col-md-3 col-sm-3 label-align" for="last-name">Tanggal Masuk<span class="required">*</span>
               </label>
               <div class="col-md-9 col-sm-9 col-xs-12">
-                <input id="tanggal" class="form-control col-md-12 col-xs-12" name="tanggal" placeholder="Masukkan serial number item" type="date">
+                <input id="tanggal" class="form-control col-md-12 col-xs-12" name="tanggal" placeholder="Masukkan serial number item" type="date" value="<?= date('Y-m-d') ?>">
               </div>
             </div>
           </div>

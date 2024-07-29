@@ -75,7 +75,11 @@
                         <li><a href="<?php echo base_url(); ?>asset/item_out">Item Out</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order IN</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/po_list_out">Purchase Order Out</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/report_asset">Report</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/report_asset">Report Asset</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/working_supply">Working Supply</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/vendors">Vendors</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/repair">Repair</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/repair_out">Repair Out</a></li>
                     <?php } ?>
                 </ul>
             </li>
@@ -189,6 +193,33 @@
                     if (strpos($a, '301') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/coa_report">Report per CoA</a>
+                        </li>
+                    <?php } ?>
+                    <?php
+                    if (strpos($a, '901') !== false) { ?>
+                        <li>
+                            <a href="<?= base_url(); ?>pengajuan/create">Create Biaya</a>
+                        </li>
+                        <li>
+                            <a href="<?= base_url(); ?>pengajuan/list">List Pengajuan</a>
+                        </li>
+                    <?php }
+                    if (strpos($a, '902') !== FALSE) {
+                    ?>
+                        <li>
+                            <a href="<?= base_url(); ?>pengajuan/approval_spv">Approval Kepala Divisi</a>
+                        </li>
+                    <?php }
+                    if (strpos($a, '903') !== FALSE) {
+                    ?>
+                        <li>
+                            <a href="<?= base_url(); ?>pengajuan/approval_keuangan">Approval Keuangan</a>
+                        </li>
+                    <?php }
+                    if (strpos($a, '904') !== FALSE) {
+                    ?>
+                        <li>
+                            <a href="<?= base_url(); ?>pengajuan/approval_direksi">Approval Direksi</a>
                         </li>
                     <?php } ?>
                 </ul>

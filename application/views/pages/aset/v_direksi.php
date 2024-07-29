@@ -9,6 +9,7 @@
           <h2>List Purchase Order</h2>
         </div>
         <div class="x_content">
+          <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning">Back</a>
           <div class="table-responsive">
             <table class="table table-bordered">
               <thead>
@@ -31,12 +32,16 @@
                   <?php } else {
                   foreach ($po->result_array() as $value) {
                     $user = $this->db->get_where('users', ['nip' => $value['user']])->row_array();
-                    if ($value['status_direksi'] == 0) {
+                    $vendor = $this->db->get_where('t_vendors', ['Id' => $value['vendor']])->row_array();
+                    if ($value['status_direksi_ops'] == 0) {
                       $status = 'Belum diproses';
                       $color = "#e67e22";
-                    } else if ($value['status_direksi'] == 1) {
+                    } else if ($value['status_direksi_ops'] == 1) {
                       $status = 'Disetujui';
                       $color = "#2ecc71";
+                    } else if ($value['status_direksi_ops'] == 2) {
+                      $status = 'Revisi';
+                      $color = "#e74c3c";
                     } else {
                       $status = 'Ditolak';
                       $color = "#e74c3c";
@@ -45,8 +50,8 @@
                     <tr>
                       <td scope="row"><?= $value['no_po'] ?></td>
                       <td scope="row"><?= $user['nama'] ?></td>
-                      <td scope="row"><?= $value['nama'] ?></td>
-                      <td scope="row"><?= $value['tgl_pengajuan'] ?></td>
+                      <td scope="row"><?= $vendor['nama'] ?></td>
+                      <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>
                       <td scope="row"><?= $value['posisi'] ?></td>
                       <td scope="row" style="color: <?= $color ?>;"><?= $status ?></td>
                       <td scope="row"><?= number_format($value['total']) ?></td>
@@ -71,11 +76,12 @@
                                       <th>Qty</th>
                                       <th>Price</th>
                                       <th>Total</th>
+                                      <th>Ket</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     <?php
-                                    $detail = $this->cb->get_where('t_po_detail', ['no_po' => $value['no_po']])->result_array();
+                                    $detail = $this->cb->get_where('t_po_detail', ['no_po' => $value['Id']])->result_array();
                                     $no = 1;
                                     foreach ($detail as $row) {
                                       $item = $this->db->get_where('item_list', ['Id' => $row['item']])->row_array();
@@ -86,23 +92,28 @@
                                         <td><?= $row['qty'] ?></td>
                                         <td><?= number_format($row['price'], 0) ?></td>
                                         <td><?= number_format($row['total'], 0) ?></td>
+                                        <td><?= $row['keterangan'] ?></td>
                                       </tr>
                                     <?php } ?>
                                     <tr>
-                                      <td colspan="4" align="right"><strong>TOTAL</strong></td>
+                                      <td colspan="4" align="right"><strong>SUB TOTAL</strong></td>
                                       <td><?= number_format($value['total']) ?></td>
                                     </tr>
-                                  </tbody>
-                                </table>
-                                <table style="margin-top: 20px;" class="table table-bordered">
-                                  <thead>
                                     <tr>
-                                      <th>Keterangan</th>
+                                      <td colspan="4" align="right"><strong>PPN 11%</strong></td>
+                                      <td>
+                                        <?php if ($value['ppn']) {
+                                          $ppn = $value['total'] * 0.11;
+                                        } else {
+                                          $ppn = 0;
+                                        } ?>
+
+                                        <?= number_format($ppn) ?>
+                                      </td>
                                     </tr>
-                                  </thead>
-                                  <tbody>
                                     <tr>
-                                      <td><?= $value['keterangan'] ? $value['keterangan'] : 'Tidak ada keterangan' ?></td>
+                                      <td colspan="4" align="right"><strong>TOTAL</strong></td>
+                                      <td><?= number_format($value['total'] + $ppn) ?></td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -118,8 +129,20 @@
                                     </tr>
                                   </tbody>
                                 </table>
-                                <?php if ($value['status_direksi'] == 0) { ?>
-                                  <form action="<?= base_url('asset/update_direksi') ?>" method="post" id="update-direksi-<?= $value['Id'] ?>">
+                                <table style="margin-top: 20px;" class="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                      <th>Catatan Direktur Operasional</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td><?= $value['catatan_direksi_ops'] ? $value['catatan_direksi_ops'] : 'Tidak ada catatan' ?></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <?php if ($value['status_direksi_ops'] == 0) { ?>
+                                  <form action="<?= base_url('asset/update_direksi_ops') ?>" method="post" id="update-direksi-ops-<?= $value['Id'] ?>">
                                     <input type="hidden" name="id_po" id="id_po" value="<?= $value['Id'] ?>">
                                     <div class="row">
                                       <div class="col-md-3">
@@ -131,7 +154,8 @@
                                         <select name="status" id="status" class="form-control">
                                           <option value=""> :: Pilih Status ::</option>
                                           <option value="1">Disetujui</option>
-                                          <option value="2">Ditolak</option>
+                                          <option value="2">Revisi</option>
+                                          <option value="3">Ditolak</option>
                                         </select>
                                       </div>
                                     </div>
@@ -163,3 +187,23 @@
   </div>
 </div>
 <!-- Finish content-->
+<script>
+  $(document).ready(function() {
+    $("#status").change(function() {
+      var value = $(this).val();
+      if (value == 3) {
+        $('.btn-submit').removeClass('btn-primary')
+        $('.btn-submit').addClass('btn-danger')
+        $('.btn-submit').html('Reject')
+      } else if (value == 2) {
+        $('.btn-submit').removeClass('btn-primary')
+        $('.btn-submit').addClass('btn-danger')
+        $('.btn-submit').html('Revisi')
+      } else {
+        $('.btn-submit').removeClass('btn-danger')
+        $('.btn-submit').addClass('btn-primary')
+        $('.btn-submit').html('Approve')
+      }
+    })
+  })
+</script>

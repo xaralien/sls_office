@@ -5,7 +5,7 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="x_panel card">
         <div class="x_title">
-          <h2>Detail Purchase Order <?= $po['no_po'] ?></h2>
+          <h2>Detail Permintaan Barang <?= $po['no_po'] ?></h2>
         </div>
         <div class="x_content">
           <a href="<?= base_url('asset/sarlog_out') ?>" class="btn btn-warning">Back</a>
@@ -25,12 +25,12 @@
                 </thead>
                 <tbody>
                   <?php
-                  $item = $this->cb->get_where('t_po_out_detail', ['no_po' => $po['no_po']])->result_array();
+                  $item = $this->cb->get_where('t_po_out_detail', ['no_po' => $po['Id']])->result_array();
                   foreach ($item as $key => $i) {
                     $detail = $this->db->get_where('item_list', ['Id' => $i['item']])->row_array();
                     $this->db->where(['kode_item' => $detail['Id'], 'status' => 'A']);
                     $this->db->order_by('tanggal_masuk', 'ASC');
-                    $this->db->limit($i['qty']);
+                    // $this->db->limit($i['qty']);
                     $item_detail = $this->db->get('item_detail')->result_array();
                   ?>
                     <input type="hidden" class="form-control" name="row_item[]" id="row<?= $i['Id'] ?>">
@@ -38,11 +38,11 @@
                     <tr>
                       <td>
                         <?= $detail['nama'] . ' | ' . $detail['nomor'] ?>
-                        <div style="margin-top: 10px;" id="select-detail-0">
-                          <label for="label" class="form-label">Select Detail</label>
-                          <select name="detail_item[<?= $key ?>][]" id="detail-item-<?= $key ?>" class="form-control select2" multiple>
+                        <div style="margin-top: 10px;" class="row">
+                          <label for="label" class="form-label" class="form-label">Select Detail</label>
+                          <select name="detail_item[<?= $key ?>][]" id="detail-item-<?= $i['Id'] ?>" class="form-control" multiple>
                             <?php if (!$item_detail) { ?>
-                              <option value="0">0</option>
+                              <option value="0" selected>Tidak Ada Serial Number</option>
                             <?php } ?>
                             <?php foreach ($item_detail as $id) { ?>
                               <option value="<?= $id['Id'] ?>"><?= $id['serial_number'] ?></option>
@@ -92,6 +92,9 @@
                     </tr>
                     <script>
                       $(document).ready(function() {
+                        $('#detail-item-<?= $i['Id'] ?>, #coa_beban<?= $i['Id'] ?>, #coa_persediaan<?= $i['Id'] ?>').select2({
+                          width: "100%"
+                        })
                         $('#coa_beban<?= $i['Id'] ?>').change(function() {
                           var id = $(this).val();
                           $.ajax({
@@ -149,7 +152,7 @@
                     <?php } ?>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                   <div class="form-group">
                     <label for="file" class="form-label">Bukti Serah</label>
                     <input type="file" class="form-control" name="bukti-serah" id="bukti-serah">
@@ -157,12 +160,12 @@
                       <span><?= $po['bukti_serah'] ?></span>
                     <?php } ?>
                   </div>
-                </div>
+                </div> -->
               </div>
               <div class="row">
                 <?php if ($po['posisi'] != 'Barang sudah diserahkan') { ?>
                   <button class="btn btn-danger" type="reset">Reset</button>
-                  <button class="btn btn-primary btn-submit" type="submit">Bayar</button>
+                  <button class="btn btn-primary btn-submit" type="submit">Serahkan</button>
                 <?php } ?>
               </div>
             <?php } ?>

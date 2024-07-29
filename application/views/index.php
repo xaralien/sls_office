@@ -62,6 +62,7 @@
 	</style>
 	<!-- jQuery -->
 	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
+	<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 </head>
 
 <header class="header_area sticky-header">
@@ -273,136 +274,6 @@
 			}
 		});
 	</script>
-
-	<script>
-		$(document).ready(function() {
-			get_detail_item();
-
-			$('#select-direksi').hide();
-			$('select[name="status"]').change(function() {
-				var value = $(this).val();
-				if (value == 1) {
-					$('#select-direksi').show();
-				} else {
-					$('#select-direksi').hide();
-				}
-			})
-
-			$('.select2').select2({
-				width: '100%'
-			})
-
-			$('#item-0').select2({
-				width: '100%'
-			});
-
-			$('#detail-item-0').select2({
-				width: '100%'
-			});
-
-			var rowCount = $(".baris").length;
-			$('#add-more-form').click(function() {
-				// var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></select><div style="margin-top: 10px;" id="select-detail-' + rowCount + '"><label for="label" class="form-label">Select Detail</label><select name="detail_item[' + rowCount + '][]" id="detail-item-' + rowCount + '" class="form-control" multiple><option value=""></option></select></div></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><button type="button" class="btn btn-danger remove-form">Hapus</button></td></tr>';
-
-				var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><button type="button" class="btn btn-danger remove-form">Hapus</button></td></tr>';
-
-				var previousRow = $('.baris').last();
-				rowCount++;
-				previousRow.after(row);
-
-				$.each($(".select2"), function(index, value) {
-					$('#item-' + index).select2({
-						width: '100%'
-					});
-
-					$('#detail-item-' + index).select2({
-						width: '100%'
-					});
-				});
-
-				get_detail_item()
-			});
-
-			$(document).on("click", ".remove-form", function() {
-				rowCount--;
-				$(this).parents(".baris").remove();
-				updateTotalItem();
-			});
-		})
-
-		function count_item_out() {
-			const item_out = document.querySelectorAll('.item-out');
-			return item_out;
-		}
-
-		function get_detail_item() {
-			$.each($(".item-out"), function(index, value) {
-				$('#item-' + index).change(function() {
-					$('#qty-' + index).attr('readonly', false);
-					var id = $(this).val();
-					$('#qty-' + index).val(0)
-					$.ajax({
-						url: "<?= base_url('asset/getItemById/') ?>",
-						type: "POST",
-						chace: false,
-						data: {
-							id: id,
-						},
-						dataType: "JSON",
-						success: function(res) {
-							var qty = $('#qty-' + index).val().replace(/\./g, "");
-							var price = res.harga;
-							qty = parseInt(qty);
-							price = parseInt(price);
-							qty = isNaN(qty) ? 0 : qty;
-							price = isNaN(price) ? 0 : price;
-							var total = qty * price;
-							if (res.option) {
-								// $('#select-detail-' + index).show();
-								$('#detail-item-' + index).html(res.option)
-								$('#price-' + index).val(formatNumber(convertToComa(res.harga)))
-								$('#total-' + index).val(formatNumber(convertToComa(total)));
-							} else {
-								// $('#select-detail-' + index).hide();
-								$('#price-' + index).val(formatNumber(convertToComa(res.harga)))
-								$('#total-' + index).val(formatNumber(convertToComa(total)));
-							}
-							updateTotalItem();
-						}
-					})
-				});
-
-				$('#detail-item-' + index).change(function() {
-					var count = $(this).select2('data').length;
-					var price = $('#price-' + index).val().replace(/\./g, "");
-					var total = parseInt(count) * parseInt(price);
-
-					$('#qty-' + index).val(parseInt(count));
-					$('#total-' + index).val(formatNumber(convertToComa(total)));
-					$('#qty-' + index).attr('readonly', true);
-					updateTotalItem();
-				})
-			})
-		}
-
-		function convertToComa(number) {
-			return number.toString().replace('.', ",");
-		}
-
-		function updateTotalItem() {
-			var total_pos_fix = 0;
-			$(".baris").each(function() {
-				var total = $(this).find('input[name="total[]"]').val().replace(/\./g, ""); // Ambil nilai total dari setiap baris
-				total = parseFloat(total); // Ubah string ke angka float
-				if (!isNaN(total)) {
-					// Pastikan total adalah angka
-					total_pos_fix += total; // Tambahkan nilai total ke total_pos_fix
-				}
-			});
-			$("#nominal").val(formatNumber(total_pos_fix)); // Atur nilai input #nominal dengan total_pos_fix
-		}
-	</script>
-
 </body>
 
 </html>

@@ -10,7 +10,7 @@
       margin: 0;
       padding: 0;
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 12pt;
+      font-size: 8pt;
     }
 
     body {
@@ -24,23 +24,23 @@
 
     #item td,
     #item th {
-      border: 1px solid #ddd;
-      padding: 10px;
+      border: 1px solid black;
+      padding: 5px;
     }
 
-    #item tr:nth-child(even) {
+    /* #item tr:nth-child(even) {
       background-color: #f2f2f2;
-    }
+    } */
 
-    #item tr:hover {
+    /* #item tr:hover {
       background-color: #ddd;
-    }
+    } */
 
     #item th {
       padding-top: 12px;
       padding-bottom: 12px;
       text-align: left;
-      background-color: #615e5e;
+      background-color: blue;
       color: white;
     }
 
@@ -51,88 +51,155 @@
     .text-center {
       text-align: center;
     }
+
+    .border-none {
+      border: none !important;
+    }
+
+    .box {
+      padding: 5px;
+      border-bottom: 2px solid black;
+      border-left: 2px solid black;
+      border-right: 2px solid black;
+      border-top: 2px solid black;
+    }
   </style>
 </head>
 
 <body>
   <?php
-  $vendor = $this->cb->get_where('t_vendors', ['Id' => $po['vendor']])->row_array();
-  $detail = $this->cb->get_where('t_po_detail', ['no_po' => $po['no_po']])->result_array();
+  $vendor = $this->db->get_where('t_vendors', ['Id' => $po['vendor']])->row_array();
+  $detail = $this->cb->get_where('t_po_detail', ['no_po' => $po['Id']])->result_array();
+  $user = $this->db->get_where('users', ['nip' => $po['user']])->row_array();
+  $sarlog = $this->db->get_where('users', ['nip' => $po['sarlog']])->row_array();
+  $dirops = $this->db->get_where('users', ['nip' => $po['direksi_ops']])->row_array();
+  $dirut = $this->db->get_where('users', ['nip' => $po['dirut']])->row_array();
   ?>
-  <p class="text-center">Dokumen Purchase Order Item In</p>
-  <table style="margin-top: 20px;">
-    <tbody>
+  <table id="item" class="box">
+    <tr class="box">
+      <td colspan="2" class="border-none"><img src="<?= base_url('assets/images/logo-sls.png') ?>" alt="logo-sls" width="100px"></td>
+      <td colspan="3" class="border-none">PURCHASING ORDER</td>
+      <td colspan="3" class="text-center border-none">
+        <b>PT. SOLUSINDO LINTAS SAMUDERA</b><br>
+        <span>Jl. Toddopulli X Griya Puspita Sari Block B8 No. 2 Makassar</span><br>
+        <span>Tlp: 0411-442717</span><br>
+        <span>Email: SLSulindo@gmail.com</span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="border-none">Kepada</td>
+      <td colspan="4" class="border-none"><b><?= $vendor['nama'] ?></b></td>
+      <td class="border-none">Tanggal :</td>
+      <td class="text-right border-none"><?= tgl_indo(date('Y-m-d', strtotime($po['tgl_pengajuan']))) ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="border-none"></td>
+      <td colspan="4" class="border-none"><?= $vendor['alamat'] ?></td>
+      <td class="border-none">No. PO :</td>
+      <td class="text-right border-none"><?= $po['no_po'] ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="border-none">No. Tlp</td>
+      <td colspan="4" class="border-none"><?= $vendor['no_telpon'] ?></td>
+      <td class="border-none">Ref :</td>
+      <td class="text-right border-none"><?= $po['referensi'] ?></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr>
+      <th width="10px">NO.</th>
+      <th>PART NUMBER</th>
+      <th>NAMA BARANG</th>
+      <th width="10px">QTY</th>
+      <th width="10px">UOI</th>
+      <th>HARGA SATUAN</th>
+      <th>JUMLAH</th>
+      <th>KETERANGAN</th>
+    </tr>
+
+    <?php
+    $no = 1;
+    $total = 0;
+    foreach ($detail as $val) {
+      $item = $this->db->get_where('item_list', ['Id' => $val['item']])->row_array();
+      $total += $val['total'];
+      if ($po['ppn']) {
+        $ppn = ($total * 0.11);
+      } else {
+        $ppn = 0;
+      }
+    ?>
       <tr>
-        <th>No. Referensi</th>
-        <td>:</td>
-        <td><?= $po['no_po'] ?>.IN</td>
+        <td><?= $no++ ?></td>
+        <td><?= $item['nomor'] ?></td>
+        <td><?= $item['nama'] ?></td>
+        <td class="text-right"><?= $val['qty'] ?></td>
+        <td class="text-right"><?= $val['uoi'] ?></td>
+        <td class="text-right"><?= number_format($val['price']) ?></td>
+        <td class="text-right"><?= number_format($val['total']) ?></td>
+        <td><?= $val['keterangan'] ?></td>
       </tr>
-      <tr>
-        <th>Tanggal</th>
-        <td>:</td>
-        <td><?= date('d/m/Y', strtotime($po['tgl_pengajuan'])) ?></td>
-      </tr>
-      <tr>
-        <th>Status</th>
-        <td>:</td>
-        <td><?= $po['status_pembayaran'] == 1 ? "Lunas" : "Belum Bayar" ?></td>
-      </tr>
-    </tbody>
+    <?php } ?>
+    <tr>
+      <td colspan="6" class="text-right border-none">SUBTOTAL</td>
+      <td class="text-right"><?= number_format($total) ?></td>
+    </tr>
+    <tr>
+      <td colspan="6" class="text-right border-none">PPN 11%</td>
+      <td class="text-right"><?= number_format($ppn) ?></td>
+    </tr>
+    <tr>
+      <td colspan="6" class="text-right border-none">TOTAL HARGA</td>
+      <td class="text-right"><?= number_format($total + $ppn) ?></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none" style="margin-top: 30px;">
+      <td class="border-none" colspan="3">Lellilef, Rabu 10 Juli 2024</td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none text-center">
+      <td colspan="2" class="border-none">Dibuat Oleh,</td>
+      <td colspan="2" class="border-none">Diketahui Oleh,</td>
+      <td colspan="2" class="border-none">Diketahui Oleh,</td>
+      <td colspan="2" class="border-none">Disetujui Oleh,</td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none">
+      <td rowspan="1" colspan="7" class="border-none"></td>
+    </tr>
+    <tr class="border-none text-center">
+      <td colspan="2" class="border-none"><b><u><?= $user['nama'] ?></u></b></td>
+      <td colspan="2" class="border-none"><b><u><?= $sarlog['nama'] ?></u></b></td>
+      <td colspan="2" class="border-none"><b><u><?= $dirops['nama'] ?></u></b></td>
+      <td colspan="2" class="border-none"><b><u><?= $dirut['nama'] ?></u></b></td>
+    </tr>
+    <tr class="border-none text-center">
+      <td colspan="2" class="border-none"><?= $user['nama_jabatan'] ?></td>
+      <td colspan="2" class="border-none"><?= $sarlog['nama_jabatan'] ?></td>
+      <td colspan="2" class="border-none"><?= $dirops['nama_jabatan'] ?></td>
+      <td colspan="2" class="border-none"><?= $dirut['nama_jabatan'] ?></td>
+    </tr>
   </table>
-  <table style="width: 100%; margin-top: 30px;">
-    <tbody>
-      <tr style="vertical-align: top;">
-        <td>
-          <h4>Info Perusahaan</h4>
-          <hr width="50%">
-          <div style="margin-top: 20px;">
-            <h4>Nama Perusahaan</h4>
-            <p style="margin-top: 10px;">Alamat Perusahaan</p>
-            <p>Telp. Perusahaan</p>
-            <p>example@gmail.com</p>
-          </div>
-        </td>
-        <td style="margin-left: auto;">
-          <h4>Order Kepada</h4>
-          <hr width="90%">
-          <div style="margin-top: 20px">
-            <h4><?= $vendor['nama'] ?></h4>
-            <p style="margin-top: 10px;">Alamat vendor</p>
-            <p>Telp. vendor</p>
-            <p>Email. vendor</p>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <table style="width: 100%; margin-top: 30px;" id="item">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Qty</th>
-        <th>Harga Satuan</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($detail as $val) {
-        $item = $this->db->get_where('item_list', ['Id' => $val['item']])->row_array();
-      ?>
-        <tr>
-          <td><?= $item['nama'] . ' | ' . $item['nomor'] ?></td>
-          <td class="text-right"><?= $val['qty'] ?></td>
-          <td class="text-right"><?= number_format($val['price']) ?></td>
-          <td class="text-right"><?= number_format($val['total']) ?></td>
-        </tr>
-      <?php } ?>
-      <tr>
-        <td colspan="3" class="text-right">
-          <b>Total</b>
-        </td>
-        <td class="text-right"><b><?= number_format($po['total']) ?></b></td>
-      </tr>
-    </tbody>
-  </table>
+
 </body>
 
 </html>

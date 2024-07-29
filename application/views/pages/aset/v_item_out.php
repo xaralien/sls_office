@@ -70,14 +70,14 @@
             <tbody>
               <tr>
                 <td><?php echo $no; ?></td>
-                <td><?php echo $data->nama_asset; ?> (<?= $data->kode ?>)</td>
+                <td><?php echo $data->nama_asset; ?></td>
                 <td><?php echo $data->nama; ?></td>
                 <td><?php echo $data->jml; ?></td>
                 <td><?php echo number_format($data->harga); ?></td>
                 <td>
                   <?php
                   if ($data->status == 1) {
-                    echo "Barah diserahkan";
+                    echo "Barang diserahkan";
                   }
 
                   if ($data->status == 2) {

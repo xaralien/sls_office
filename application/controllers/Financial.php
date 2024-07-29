@@ -528,7 +528,7 @@ class Financial extends CI_Controller
             $kolom_debit = "no_lr_sbb";
         }
 
-        if ($substr_coa_kredit == "1" || $substr_coa_kredit == "2" || $substr_coa_debit == "3") {
+        if ($substr_coa_kredit == "1" || $substr_coa_kredit == "2" || $substr_coa_kredit == "3") {
             $tabel_kredit = "t_coa_sbb";
             $kolom_kredit = "no_sbb";
         } else {

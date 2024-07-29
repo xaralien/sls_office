@@ -16,13 +16,15 @@
                   <tr>
                     <th>Item</th>
                     <th>Qty</th>
+                    <th>UOI</th>
                     <th>Harga</th>
                     <th>Total</th>
+                    <th>Ket</th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php
-                  $item = $this->cb->get_where('t_po_detail', ['no_po' => $po['no_po']])->result_array();
+                  $item = $this->cb->get_where('t_po_detail', ['no_po' => $po['Id']])->result_array();
                   foreach ($item as $i) {
                     $detail = $this->db->get_where('item_list', ['Id' => $i['item']])->row_array();
                   ?>
@@ -31,17 +33,36 @@
                     <tr>
                       <td><?= $detail['nama'] . ' | ' . $detail['nomor'] ?></td>
                       <td><?= $i['qty'] ?></td>
+                      <td><?= $i['uoi'] ?></td>
                       <td><?= number_format($i['price']) ?></td>
                       <td><?= number_format($i['total']) ?></td>
+                      <td><?= $i['keterangan'] ?></td>
                     </tr>
                   <?php } ?>
                   <tr>
-                    <td colspan="3"><b>Total</b></td>
-                    <td colspan="3"><?= number_format($po['total']) ?></td>
+                    <td align="right" colspan="4"><b>SUB TOTAL</b></td>
+                    <td><?= number_format($po['total']) ?></td>
                   </tr>
                   <tr>
-                    <td colspan="3"><b>Terbilang</b></td>
-                    <td colspan="3"><?= terbilang($po['total']) ?></td>
+                    <td align="right" colspan="4"><b>PPN 11%</b></td>
+                    <td>
+                      <?php if ($po['ppn']) {
+                        $ppn = $po['total'] * 0.11;
+                      } else {
+                        $ppn = 0;
+                      } ?>
+
+                      <?= number_format($ppn) ?>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right" colspan="4"><b>TOTAL</b></td>
+                    <td>
+                      <?php
+                      $total = $po['total'] + $ppn;
+                      ?>
+                      <?= number_format($total) ?>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -94,3 +115,11 @@
     </div>
   </div>
 </div>
+
+<script>
+  $(document).ready(function() {
+    $('.select2').select2({
+      width: "100%"
+    })
+  })
+</script>

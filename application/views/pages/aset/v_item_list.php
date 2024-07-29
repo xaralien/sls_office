@@ -1,26 +1,42 @@
 <!-- Start content-->
-<div class="right_col" role="main" style="height: 100%;">
+<div class="right_col" role="main">
     <div class="clearfix"></div>
     <div class="x_panel card">
         <div class="x_title">
-            <h2>Financial entry</h2>
+            <h2>Item List</h2>
         </div>
 
         <div class="row">
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Item</button>
-            <a href="<?= base_url('asset/export_item') ?>" class="btn btn-success"><i class="fa fa-file-excel-o"></i> Excel</a>
+            <!-- <a href="<?= base_url('asset/export_item') ?>" class="btn btn-success"><i class="fa fa-file-excel-o"></i> Excel</a> -->
+        </div>
+        <div class="row">
+            <div class="col-md-3 sol-sm-6 col-xs-12" style="padding: 0 !important; margin: 0 !important">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Total Nilai All Spare Part</div>
+                    <div class="panel-body">
+                        <p style="font-weight: bolder; font-size: 20px"><?= "Rp." . number_format($total['total'] - $total_repair['total']) ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-sm-6 col-xs-12" style="padding: 0 !important; margin: 0 !important">
+                <form action="">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode item..." value="<?= $this->input->get('search') ?>">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
+            </div>
         </div>
         <!-- search -->
-        <div class="row" style="margin-left: auto;">
-            <form action="">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode item..." value="<?= $this->input->get('search') ?>">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
-                    </span>
-                </div><!-- /input-group -->
-            </form>
-        </div>
+        <!-- <div class="row" style="margin-left: auto; width: 40%;">
+
+        </div> -->
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
@@ -49,7 +65,8 @@
                     <tbody>
                         <?php
                         foreach ($users_data as $data) :
-                            $detail = $this->db->get_where('item_detail', ['kode_item' => $data->Id, 'status' => 'A']);
+                            $sql = "SELECT * FROM item_detail WHERE kode_item = '$data->Id' AND (status = 'A' or status = 'R')";
+                            $detail = $this->db->query($sql);
                         ?>
                             <!--content here-->
                             <tr>
@@ -133,6 +150,15 @@
                                             <option value="<?= $value['Id'] ?>"><?= $value['nama_jenis'] ?></option>
                                         <?php } ?>
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="item form-group">
+                                <label class="col-form-label col-md-3 col-sm-3 label-align" for="last-name">Catatan</label>
+                                <div class="col-md-9 col-sm-9 col-xs-12">
+                                    <textarea name="catatan" id="catatan" class="form-control"></textarea>
                                 </div>
                             </div>
                         </div>
