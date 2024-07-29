@@ -84,6 +84,7 @@ class M_coa extends CI_Model
     {
         return $this->cb->from('t_log_neraca')->where('jenis', $jenis)->count_all_results();
     }
+
     public function list_laporan($jenis, $limit, $from)
     {
         $laporan = $this->cb->where('jenis', $jenis)->order_by('tanggal_simpan', 'DESC')->limit($limit, $from)->get('t_log_neraca')->result_array();
@@ -100,8 +101,35 @@ class M_coa extends CI_Model
         return $laporan;
     }
 
-    public function showNeraca($id)
+    public function showNeraca($slug)
     {
-        return $this->cb->where('Id', $id)->get('t_log_neraca')->row_array();
+        return $this->cb->where('slug', $slug)->get('t_log_neraca')->row_array();
+    }
+
+    public function select_max($jenis)
+    {
+        return $this->cb->select('max(no_urut) as max')->where('jenis', $jenis)->get('t_log_neraca')->row_array();
+    }
+
+    public function count($keyword, $tabel)
+    {
+        if ($keyword) {
+            $this->cb->like('no_sbb', $keyword);
+            $this->cb->or_like('no_bb', $keyword);
+            $this->cb->or_like('nama_perkiraan', $keyword);
+        }
+        return $this->cb->from($tabel)->count_all_results();
+    }
+
+    public function list_coa_paginate($limit, $from, $keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('no_sbb', $keyword);
+            $this->cb->or_like('no_bb', $keyword);
+            $this->cb->or_like('nama_perkiraan', $keyword);
+        }
+        $laporan = $this->cb->order_by('no_sbb', 'ASC')->limit($limit, $from)->get('v_coa_all')->result_array();
+
+        return $laporan;
     }
 }

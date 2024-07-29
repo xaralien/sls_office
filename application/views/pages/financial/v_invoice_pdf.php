@@ -108,10 +108,11 @@
         <tbody>
             <?php
             $no = 1;
+
             foreach ($details as $d) :
             ?>
                 <tr>
-                    <td><?= $no++ ?>.</td>
+                    <td><?= $no++ ?></td>
                     <td><?= $d->item ?></td>
                     <td class="text-right"><?= $d->qty ?></td>
                     <td class="text-right"><?= number_format($d->harga) ?></td>
@@ -160,6 +161,12 @@
 
     <table style="width: 100%;">
         <tbody>
+            <tr>
+                <td colspan="5" style="vertical-align: top; white-space: pre-line;">
+                    Keterangan:
+                    <?= $invoice['keterangan'] ?>
+                </td>
+            </tr>
             <tr>
                 <td colspan="3" style="border: 0px; vertical-align: bottom">
                     <p>

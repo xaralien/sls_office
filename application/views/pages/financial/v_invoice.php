@@ -41,9 +41,21 @@
                 <div class="x_content">
                     <div class="row">
                         <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/invoice') ?>">
-                            <!-- <div class="col-md-2">
-                                <h2>Invoices</h2>
-                            </div> -->
+                            <div class="col-md-3 col-12">
+
+                                <div class="form-group">
+                                    <select name="customer_id" id="customer_id" class="form-control">
+                                        <option value="">:: Semua customer</option>
+                                        <?php
+                                        foreach ($customers as $c) :
+                                        ?>
+                                            <option <?= ($customer_id == $c->id) ? "selected" : "" ?> value="<?= $c->id ?>"><?= $c->nama_customer ?></option>
+                                        <?php
+                                        endforeach;
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="col-md-5 col-12">
                                 <div class="form-group">
                                     <input type="text" name="keyword" id="keyword" class="form-control" placeholder="Masukkan nomor invoice">
@@ -55,7 +67,7 @@
                             </div>
                             <!-- <div class="col-md-1 col-12">
                             </div> -->
-                            <div class="col-md-5 col-12 text-right">
+                            <div class="col-md-2 col-12 text-right">
                                 <a href="<?= base_url('financial/create_invoice') ?>" class="btn btn-primary">Create Invoice</a>
                             </div>
                         </form>
@@ -87,6 +99,9 @@
                                         <td><?= isset($i['created_by_name']) ? $i['created_by_name'] : 'N/A' ?></td>
                                         <!-- <td><?= ($i['status_bayar'] == "1") ? "Sudah dibayar" : "Belum dibayar" ?></td> -->
                                         <td>
+                                            <a href="<?= base_url('financial/print_invoice/' . $i['no_invoice']) ?>" class="badge bg-orange" target="_blank" style="vertical-align: top;">
+                                                Cetak
+                                            </a>
                                             <?php
                                             if ($i['status_void'] == "1") {
                                             ?>
@@ -96,9 +111,6 @@
 
                                             if ($i['status_bayar'] == "1") {
                                             ?>
-                                                <a href="<?= base_url('financial/print_invoice/' . $i['no_invoice']) ?>" class="badge bg-orange" target="_blank" style="vertical-align: top;">
-                                                    Cetak
-                                                </a>
                                                 <span class="badge bg-green">Sudah dibayar</span>
                                             <?php
                                             }
@@ -264,6 +276,8 @@
         </div>
     </div>
 </div>
+<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="<?= base_url(); ?>assets/select2/css/select2.min.css">
 <script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
 <script>

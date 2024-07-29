@@ -75,7 +75,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost:3307',
+	'hostname' => 'localhost',
 	'username' => 'root',
 	'password' => '',
 	'database' => 'bdl_core',
@@ -97,7 +97,7 @@ $db['default'] = array(
 
 $db['corebank'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost:3307',
+	'hostname' => 'localhost',
 	'username' => 'root',
 	'password' => '',
 	'database' => 'corebank',

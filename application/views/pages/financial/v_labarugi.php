@@ -1,3 +1,23 @@
+<style>
+    .modal {
+        text-align: center;
+        padding: 0 !important;
+    }
+
+    .modal:before {
+        content: '';
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+        margin-right: -4px;
+    }
+
+    .modal-dialog {
+        display: inline-block;
+        text-align: left;
+        vertical-align: middle;
+    }
+</style>
 <div class="right_col" role="main">
     <div class="clearfix"></div>
 
@@ -21,10 +41,7 @@
                                 <button class="btn btn-success" onclick="document.location='<?= base_url('financial/lr_tersimpan') ?>'">L/R tersimpan</button>
                             </li>
                             <li>
-                                <form method="post" action="<?php echo base_url('financial/simpanLR'); ?>">
-                                    <button type="submit" class="btn btn-primary" name="simpan_lr" value="1">Simpan LR</button>
-                                </form>
-                                <!-- <button type="button" id="simpan_neraca" class="btn btn-primary">Simpan Neraca</button> -->
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#simpanLR">Simpan L/R</button>
                             </li>
                         <?php
                         } ?>
@@ -39,7 +56,8 @@
                                 Laba berjalan: <strong>Rp <?= number_format($total_pendapatan) ?></strong>
                             </h5>
                         </div>
-                        <div class="col-md-6 col-12">
+                        <div class="col-md-2 col-12"></div>
+                        <div class="col-md-4 col-12">
                             <?php
                             if (!$this->uri->segment(3)) {
                             ?>
@@ -113,6 +131,33 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" id="simpanLR">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">
+                    Simpan Laba Rugi
+                </h4>
+            </div>
+            <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/simpanLR') ?>">
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <textarea name="keterangan" id="keterangan" class="form-control" oninput="this.value = this.value.toUpperCase()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">
+                        Simpan neraca
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

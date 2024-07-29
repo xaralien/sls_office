@@ -18,7 +18,7 @@ class M_invoice extends CI_Model
     //     return $this->cb->join('customer c', 'a.id_customer = c.id', 'left');
     // }
 
-    public function list_invoice($limit, $from, $keyword)
+    public function list_invoice($limit, $from, $keyword, $customer_id)
     {
         $this->cb->select('a.*, c.nama_customer');
         $this->cb->from('invoice a');
@@ -26,6 +26,10 @@ class M_invoice extends CI_Model
 
         if ($keyword) {
             $this->cb->like('no_invoice', $keyword);
+        }
+
+        if ($customer_id) {
+            $this->cb->where('id_customer', $customer_id);
         }
 
         $invoices = $this->cb->order_by('no_invoice', 'DESC')->limit($limit, $from)->get()->result_array();
@@ -43,10 +47,14 @@ class M_invoice extends CI_Model
         return $invoices;
     }
 
-    public function invoice_count($keyword)
+    public function invoice_count($keyword, $customer_id)
     {
         if ($keyword) {
             $this->cb->like('no_invoice', $keyword);
+        }
+
+        if ($customer_id) {
+            $this->cb->where('id_customer', $customer_id);
         }
 
         return $this->cb->from('invoice')->count_all_results();
@@ -146,7 +154,7 @@ class M_invoice extends CI_Model
         //     $this->cb->or_like('keterangan', $keyword);
         // }
 
-        return $this->cb->from('invoice')->count_all_results();
+        return $this->cb->from('financial_entry')->where('status_approval', '0')->count_all_results();
     }
 
     public function list_fe_pending($limit, $from, $keyword)
@@ -155,6 +163,7 @@ class M_invoice extends CI_Model
             $this->cb->like('slug', $keyword);
             $this->cb->or_like('keterangan', $keyword);
         }
+        $this->cb->where('status_approval', '0');
 
         $fes = $this->cb->order_by('no_urut', 'DESC')->limit($limit, $from)->get('financial_entry')->result_array();
 

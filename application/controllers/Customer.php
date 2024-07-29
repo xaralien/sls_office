@@ -60,11 +60,11 @@ class Customer extends CI_Controller
 			'slug' => $slug,
 		];
 
+		$old_slug = $this->uri->segment(3);
 		// echo '<pre>';
-		// print_r($data);
+		// print_r($old_slug);
 		// echo '</pre>';
 		// exit;
-		$old_slug = $this->uri->segment(4);
 
 		if ($old_slug) {
 			$this->M_Customer->update($data, $old_slug);
