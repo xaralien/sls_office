@@ -29,17 +29,18 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6" style="padding: 0 !important; margin: 0 !important">
+        <div class="col-md-6 col-sm-12 col-xs-12" style="padding: 0 !important; margin: 0 !important">
           <form action="">
             <div class="input-group">
-              <input type="text" class="form-control" id="search" name="search" placeholder="Cari no purchase order" value="<?= $this->input->get('search') ?>">
+              <input type="text" class="form-control" id="keyword" name="keyword" placeholder="Cari no purchase order" value="<?= $this->input->get('keyword') ?>">
               <span class="input-group-btn">
-                <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
+                <button class="btn btn-default" type="submit">Search</button>
+                <a href="<?= base_url('asset/sarlog') ?>" class="btn btn-warning" style="color:white;">Reset</a>
               </span>
             </div><!-- /input-group -->
           </form>
         </div>
-        <div class="col-md-6" style="padding: 0 !important; margin: 0 !important">
+        <div class="col-md-6 col-sm-12 col-xs-12" style="padding: 0 !important; margin: 0 !important">
           <form method="get" id="form-filter">
             <!-- <label for="filter" class="form-label">Filter berdasarkan</label> -->
             <select name="vendor" id="vendor" class="form-control">
@@ -62,11 +63,69 @@
               <th scope="col">User</th>
               <th scope="col">Vendor</th>
               <th scope="col">Tanggal</th>
-              <th scope="col">Status Pembayaran</th>
               <th scope="col">Status Sarlog</th>
               <th scope="col">Posisi</th>
               <th scope="col">Pembayaran</th>
-              <th scope="col">#</th>
+              <th scope="col">Total</th>
+              <th scope="col">
+                #
+                <!-- <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#batchBayar">Bayar</button> -->
+                <div class="modal fade" id="batchBayar" role="dialog">
+                  <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h2 class="modal-title">Batch Bayar</h2>
+                      </div>
+                      <div class="modal-body">
+                        <form action="<?= base_url('asset/batchBayar') ?>" method="post" id="form-batch-bayar">
+                          <div class="row">
+                            <div class="col-md-12">
+                              <div class="form-group">
+                                <label for="tanggal" class="form-label">Tanggal</label>
+                                <input type="date" class="form-control" name="tanggal_batch" id="tanggal_batch" value="<?= date('Y-m-d') ?>">
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-12">
+                              <div class="form-group">
+                                <label for="po" class="form-label">No. PO</label>
+                                <select name="po_hutang[]" id="po_hutang" class="form-control" multiple>
+                                  <option value="" disabled> :: PILIH NO PO</option>
+                                  <?php
+                                  $po_hutang = $this->cb->get_where('t_po', ['jenis_pembayaran' => 'hutang', 'status_pembayaran' => 0])->result_array();
+                                  foreach ($po_hutang as $ph) {
+                                  ?>
+                                    <option value="<?= $ph['Id'] ?>"><?= $ph['no_po'] ?></option>
+                                  <?php } ?>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-md-12">
+                              <div class="form-group">
+                                <label for="coa-kas" class="form-label">COA Kas</label>
+                                <select name="coa-kas-batch" id="coa-kas-batch" class="form-control select2">
+                                  <option value=""> :: PILIH COA KAS :: </option>
+                                  <?php foreach ($coa->result_array() as $row) { ?>
+                                    <option value="<?= $row['no_sbb'] ?>"><?= $row['no_sbb'] . ' - ' . $row['nama_perkiraan'] ?></option>
+                                  <?php } ?>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row" style="margin-top: 20px;">
+                            <button type="submit" name="batchBayarBtn" class="btn btn-primary btn-sm">Bayar</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -76,8 +135,11 @@
               </tr>
               <?php } else {
               foreach ($po->result_array() as $value) {
-                $user = $this->db->get_where('users', ['nip' => $value['user']])->row_array();
-                $vendor = $this->db->get_where('t_vendors', ['Id' => $value['vendor']])->row_array();
+                if ($value['ppn']) {
+                  $ppn = $value['total'] * 0.11;
+                } else {
+                  $ppn = 0;
+                }
                 if ($value['status_sarlog'] == 0) {
                   $status = 'Belum diproses';
                   $color = "#e67e22";
@@ -91,23 +153,25 @@
               ?>
                 <tr>
                   <td scope="row"><?= $value['no_po'] ?></td>
-                  <td scope="row"><?= $user['nama'] ?></td>
-                  <td scope="row"><?= $vendor['nama'] ?></td>
+                  <td scope="row"><?= $value['nama_user'] ?></td>
+                  <td scope="row"><?= $value['nama_vendor'] ?></td>
                   <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>
-                  <td scope="row"><?= $value['status_pembayaran'] == 0 ? 'Belum bayar' : 'Sudah bayar' ?></td>
                   <td scope="row" style="color: <?= $color ?>;"><?= $status ?></td>
                   <td scope="row"><?= $value['posisi'] ?></td>
                   <td scope="row"><?= $value['jenis_pembayaran'] ?></td>
+                  <td scope="row"><?= number_format($value['total'] + $ppn) ?></td>
                   </td>
                   <td scope="row">
-                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal<?= $value['Id'] ?>">View</button>
-                    <a href="<?= base_url('asset/print/' . $value['Id']) ?>" class="btn btn-primary btn-sm" target="_blank">Print</a>
+                    <button type="button" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#myModal<?= $value['Id'] ?>">View</button>
+                    <?php if ($value['status_dirut'] == 1) { ?>
+                      <a href="<?= base_url('asset/print/' . $value['Id']) ?>" class="btn btn-primary btn-xs" target="_blank">Print</a>
+                    <?php } ?>
                     <?php if ($value['status_dirut'] == 1 && $value['posisi'] == 'disetujui untuk diproses') { ?>
-                      <a href="<?= base_url('asset/process/' . $value['Id']) ?>" class="btn btn-success btn-sm">Process</a>
-                      <a href="<?= base_url('asset/revisi/' . $value['Id']) ?>" class="btn btn-danger btn-sm">Revisi</a>
+                      <a href="<?= base_url('asset/process/' . $value['Id']) ?>" class="btn btn-success btn-xs">Process</a>
+                      <a href="<?= base_url('asset/revisi/' . $value['Id']) ?>" class="btn btn-danger btn-xs">Revisi</a>
                     <?php } ?>
                     <?php if ($value['status_pembayaran'] == 0 && $value['status_dirut'] == 1 && $value['jenis_pembayaran'] == 'hutang') { ?>
-                      <a href="<?= base_url('asset/bayar/' . $value['Id']) ?>" class="btn btn-success btn-sm">Bayar</a>
+                      <a href="<?= base_url('asset/bayar/' . $value['Id']) ?>" class="btn btn-success btn-xs">Bayar</a>
                     <?php } ?>
                     <!-- Modal Detail -->
                     <div class="modal fade" id="myModal<?= $value['Id'] ?>" role="dialog">
@@ -126,6 +190,7 @@
                                     <th>No.</th>
                                     <th>Item</th>
                                     <th>Qty</th>
+                                    <th>UOI</th>
                                     <th>Price</th>
                                     <th>Total</th>
                                     <th>Ket</th>
@@ -140,19 +205,20 @@
                                   ?>
                                     <tr>
                                       <td><?= $no++ ?></td>
-                                      <td><?= $item['nama'] . ' | ' . $item['nomor'] ?></td>
+                                      <td><?= $item['nama'] ?></td>
                                       <td><?= $row['qty'] ?></td>
+                                      <td><?= $row['uoi'] ?></td>
                                       <td><?= number_format($row['price'], 0) ?></td>
                                       <td><?= number_format($row['total'], 0) ?></td>
                                       <td><?= $row['keterangan'] ?></td>
                                     </tr>
                                   <?php } ?>
                                   <tr>
-                                    <td colspan="4" align="right"><strong>SUB TOTAL</strong></td>
+                                    <td colspan="5" align="right"><strong>SUB TOTAL</strong></td>
                                     <td><?= number_format($value['total']) ?></td>
                                   </tr>
                                   <tr>
-                                    <td colspan="4" align="right"><strong>PPN 11%</strong></td>
+                                    <td colspan="5" align="right"><strong>PPN 11%</strong></td>
                                     <td>
                                       <?php if ($value['ppn']) {
                                         $ppn = $value['total'] * 0.11;
@@ -164,7 +230,7 @@
                                     </td>
                                   </tr>
                                   <tr>
-                                    <td colspan="4" align="right"><strong>TOTAL</strong></td>
+                                    <td colspan="5" align="right"><strong>TOTAL</strong></td>
                                     <td><?= number_format($value['total'] + $ppn) ?></td>
                                   </tr>
                                 </tbody>
@@ -206,15 +272,33 @@
                                 </tr>
                               </tbody>
                             </table>
+                            <table style="margin-top: 20px;" class="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th>Attachment Bayar</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <?php if ($value['bukti_bayar']) { ?>
+                                      <a href="<?= base_url('upload/po/' . $value['bukti_bayar']) ?>" class="btn btn-success btn-xs" download="">Download</a>
+                                    <?php } else { ?>
+                                      <span> -</span>
+                                    <?php } ?>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                             <?php if ($value['status_sarlog'] == 0) { ?>
-                              <form action="<?= base_url('asset/update_sarlog') ?>" method="post" id="update-sarlog-<?= $value['Id'] ?>">
+                              <form action="<?= base_url('asset/update_sarlog') ?>" method="post" id="form-update-sarlog-<?= $value['Id'] ?>">
                                 <input type="hidden" name="id_po" id="id_po" value="<?= $value['Id'] ?>">
                                 <div class="row">
-                                  <div class="col-md-3">
+                                  <div class="col-md-3 col-sm-6 col-xs-6">
                                     <label for="tanggal" class="form-label">Tanggal</label>
                                     <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d') ?>">
                                   </div>
-                                  <div class="col-md-3">
+                                  <div class="col-md-3 col-sm-6 col-xs-6">
                                     <label for="status" class="form-label">Status</label>
                                     <select name="status" id="status" class="form-control">
                                       <option value=""> :: Pilih Status ::</option>
@@ -225,15 +309,85 @@
                                   </div>
                                 </div>
                                 <div class="row">
-                                  <div class="col-md-6">
+                                  <div class="col-md-6 col-sm-12 col-xs-12">
                                     <label for="catatan" class="form-label">Catatan</label>
                                     <textarea name="catatan" id="catatan" class="form-control"></textarea>
                                   </div>
                                 </div>
                                 <div class="row" style="margin-top: 20px;">
-                                  <button type="submit" class="btn btn-primary btn-sm btn-submit">Save</button>
+                                  <button type="submit" class="btn btn-primary btn-sm" id="btn-update-sarlog-<?= $value['Id'] ?>">Save</button>
                                 </div>
                               </form>
+                              <script>
+                                $(document).ready(function() {
+                                  $("#btn-update-sarlog-<?= $value['Id'] ?>").click(function(e) {
+                                    e.preventDefault();
+                                    var url = $("#form-update-sarlog-<?= $value['Id'] ?>").attr('action');
+                                    var formData = new FormData($("form#form-update-sarlog-<?= $value['Id'] ?>")[0]);
+                                    Swal.fire({
+                                      title: "Are you sure?",
+                                      text: "You want to submit the form?",
+                                      icon: "warning",
+                                      showCancelButton: true,
+                                      confirmButtonColor: "#3085d6",
+                                      cancelButtonColor: "#d33",
+                                      confirmButtonText: "Yes",
+                                    }).then((result) => {
+                                      if (result.isConfirmed) {
+                                        $.ajax({
+                                          url: url,
+                                          method: "POST",
+                                          data: formData,
+                                          processData: false,
+                                          contentType: false,
+                                          dataType: "JSON",
+                                          beforeSend: () => {
+                                            Swal.fire({
+                                              title: "Loading....",
+                                              timerProgressBar: true,
+                                              allowOutsideClick: false,
+                                              didOpen: () => {
+                                                Swal.showLoading();
+                                              },
+                                            });
+                                          },
+                                          success: function(res) {
+                                            if (res.success) {
+                                              Swal.fire({
+                                                icon: "success",
+                                                title: `${res.msg}`,
+                                                showConfirmButton: false,
+                                                timer: 1500,
+                                              }).then(function() {
+                                                Swal.close();
+                                                location.reload();
+                                              });
+                                            } else {
+                                              Swal.fire({
+                                                icon: "error",
+                                                title: `${res.msg}`,
+                                                showConfirmButton: false,
+                                                timer: 1500,
+                                              }).then(function() {
+                                                Swal.close();
+                                              });
+                                            }
+                                          },
+                                          error: function(xhr, status, error) {
+                                            console.log(status);
+                                            Swal.fire({
+                                              icon: "error",
+                                              title: `${error}`,
+                                              showConfirmButton: false,
+                                              timer: 1500,
+                                            });
+                                          },
+                                        });
+                                      }
+                                    });
+                                  });
+                                })
+                              </script>
                             <?php } ?>
                           </div>
                         </div>
@@ -246,11 +400,21 @@
           </tbody>
         </table>
       </div>
+      <div class="row text-center">
+        <?= $pagination ?>
+      </div>
     </div>
   </div>
 </div>
 <script>
   $(document).ready(function() {
+    $('.select2').select2({
+      width: "100%"
+    })
+
+    $('#po_hutang').select2({
+      width: "100%"
+    })
     $("#status").change(function() {
       var value = $(this).val();
       if (value == 3) {

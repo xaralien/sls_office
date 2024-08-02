@@ -71,6 +71,7 @@
         <th>Tanggal</th>
         <th>Keterangan</th>
         <th>Item</th>
+        <th>Serial Number</th>
         <th>Jumlah</th>
         <!-- <th>Stok Awal</th>
         <th>Stok Akhir</th> -->
@@ -91,15 +92,32 @@
           <td><?= tgl_indo(date('Y-m-d', strtotime($r['tanggal']))); ?></td>
           <td><?= $r['jenis'] ?></td>
           <td><?= $item['nama'] . ' | '; ?></td>
+          <td>
+            <?php
+            if ($r['serial_number']) {
+              foreach (json_decode($r['serial_number']) as $s) {
+                if ($s != 0) {
+                  $serial = $this->db->get_where('item_detail', ['Id' => $s])->row_array();
+                  echo $serial['serial_number'] . '<br>';
+            ?>
+
+            <?php } else {
+                  echo '-';
+                }
+              }
+            } else {
+              echo '-';
+            } ?>
+          </td>
           <td><?= $r['jml'] ?></td>
           <!-- <td><?= $r['stok_awal'] ?></td>
           <td><?= $r['stok_akhir'] ?></td> -->
-          <td><?= number_format($r['harga']) ?></td>
+          <td><?= $r['harga'] ? number_format($r['harga']) : "0" ?></td>
           <td><?= number_format($r['harga'] * $r['jml']) ?></td>
         </tr>
       <?php } ?>
       <tr>
-        <td colspan="6" class="text-right">TOTAL</td>
+        <td colspan="7" class="text-right">TOTAL</td>
         <td><?= number_format($total) ?></td>
       </tr>
     </tbody>

@@ -46,7 +46,7 @@ class M_asset extends CI_Model
 
 	function itemOut_get($limit, $start)
 	{
-		$sql = "SELECT users.nama as nama_penerima, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.penerima ORDER BY working_supply.Id DESC LIMIT " . $start . ", " . $limit;
+		$sql = "SELECT users.nama as nama_penerima, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status, working_supply.bukti_serah, working_supply.image_close FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.penerima ORDER BY working_supply.Id DESC LIMIT " . $start . ", " . $limit;
 		$query = $this->db->query($sql);
 		return $query->result();
 	}
@@ -105,16 +105,23 @@ class M_asset extends CI_Model
 		return $query->num_rows();
 	}
 
-	function get_poList($where, $filter)
+	function get_poList($limit, $start, $keyword, $where, $filter)
 	{
-		$this->cb->select('a.no_po, a.ppn, a.vendor, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.status_dirut, a.Id, a.catatan_sarlog, a.catatan_direksi_ops, a.catatan_dirut, a.keterangan, a.bukti_bayar, a.user, a.date_bayar, a.jenis_pembayaran, a.status_pembayaran');
-		$this->cb->from('t_po as a');
-		$this->cb->where($where);
+		$this->cb->select('a.no_po, a.ppn, a.vendor, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.status_dirut, a.Id, a.catatan_sarlog, a.catatan_direksi_ops, a.catatan_dirut, a.keterangan, a.bukti_bayar, a.user, a.date_bayar, a.date_proses, a.jenis_pembayaran, a.status_pembayaran, b.nama as nama_vendor, c.nama as nama_user');
+		$this->cb->from('t_po as a')->where($where);
+		$this->cb->join($this->db->database . '.t_vendors as b', 'a.vendor = b.Id');
+		$this->cb->join($this->db->database . '.users as c', 'a.user = c.nip');
+		if ($keyword) {
+			$this->cb->like('a.no_po', $keyword, 'both');
+			$this->cb->or_like('b.nama', $keyword, 'both');
+			$this->cb->or_like('c.nama', $keyword, 'both');
+		}
 		if ($filter) {
 			$this->cb->where('a.vendor', $filter);
 		}
-		$this->cb->order_by('a.tgl_pengajuan', 'DESC');
-		return $this->cb->get();
+		$po = $this->cb->order_by('a.tgl_pengajuan', 'DESC')->limit($limit, $start)->get();
+
+		return $po;
 	}
 
 	function hutang_vendor($vendor)
@@ -127,23 +134,32 @@ class M_asset extends CI_Model
 		return $this->cb->query($sql)->result_array();
 	}
 
-	function get_poOutList($where)
+	function get_roList($where)
 	{
-		$this->cb->select('a.no_po, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.Id, a.catatan_sarlog, a.catatan_direksi_ops, a.keterangan,a.user');
-		$this->cb->from('t_po_out as a');
+		$this->cb->select('a.no_ro, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.Id, a.catatan_sarlog, a.catatan_direksi_ops,a.user, a.user_serah, a.bukti_serah');
+		$this->cb->from('t_ro as a');
 		$this->cb->where($where);
 
 		return $this->cb->get();
 	}
 
-	function count_po($where)
+	function count_po($keyword, $where, $filter)
 	{
-		return $this->cb->get_where('t_po', $where)->num_rows();
+		$this->cb->select('a.no_po, a.ppn, a.vendor, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.status_dirut, a.Id, a.catatan_sarlog, a.catatan_direksi_ops, a.catatan_dirut, a.keterangan, a.bukti_bayar, a.user, a.date_bayar, a.date_proses, a.jenis_pembayaran, a.status_pembayaran, b.nama');
+		$this->cb->from('t_po as a')->where($where);
+		$this->cb->join($this->db->database . '.t_vendors as b', 'a.vendor = b.Id');
+		if ($keyword) {
+			$this->cb->like('a.no_po', $keyword, 'both');
+			$this->cb->or_like('b.nama', $keyword, 'both');
+		}
+		$po = $this->cb->order_by('a.tgl_pengajuan', 'DESC')->get()->num_rows();
+
+		return $po;
 	}
 
-	function count_po_out($where)
+	function count_ro($where)
 	{
-		return $this->cb->get_where('t_po_out', $where)->num_rows();
+		return $this->cb->get_where('t_ro', $where)->num_rows();
 	}
 
 	public function total_sparepart()
@@ -156,5 +172,10 @@ class M_asset extends CI_Model
 	{
 		$sql = "SELECT sum(item_list.harga_sat) as total FROM item_detail JOIN item_list ON item_list.Id = item_detail.kode_item WHERE item_detail.status = 'R'";
 		return $this->db->query($sql)->row_array();
+	}
+
+	public function countPo($where)
+	{
+		return $this->cb->get_where('t_po', $where)->num_rows();
 	}
 }

@@ -443,7 +443,7 @@
                           <select name="coa_debit[]" id="coa_debit<?= $i['Id'] ?>" class="form-control coa_debit<?= $i['Id'] ?>" style="width: 100%;">
                             <option value=""> :: Pilih Nomor COA :: </option>
                             <?php foreach ($coa as $cd) { ?>
-                              <option value="<?= $cd['no_sbb'] ?>" <?= $cd['no_sbb'] == '15110' ? 'selected' : '' ?>><?= $cd['no_sbb'] . ' - ' . $cd['nama_perkiraan'] ?></option>
+                              <option value="<?= $cd['no_sbb'] ?>" <?= $cd['no_sbb'] == '1109002' ? 'selected' : '' ?>><?= $cd['no_sbb'] . ' - ' . $cd['nama_perkiraan'] ?></option>
                             <?php } ?>
                           </select>
                         </td>

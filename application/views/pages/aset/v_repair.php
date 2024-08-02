@@ -20,6 +20,7 @@
                   <th scope="col">Item</th>
                   <th scope="col">Serial Number</th>
                   <th scope="col">Keterangan</th>
+                  <th scope="col">#</th>
                 </tr>
               </thead>
               <tbody>
@@ -36,10 +37,13 @@
                   ?>
                     <tr>
                       <td scope="row"><?= $no++ ?></td>
-                      <td scope="row"><?= $value['tgl_pengajuan'] ?></td>
+                      <td scope="row"><?= tgl_indo($value['tgl_pengajuan']) ?></td>
                       <td scope="row"><?= $item['nama'] ?></td>
                       <td scope="row"><?= $item_detail['serial_number'] ?></td>
                       <td scope="row"><?= $value['keterangan'] ?></td>
+                      <td scope="row">
+                        <a href="<?= base_url('upload/bukti-repair/') . $value['bukti_repair'] ?>" class="btn btn-success btn-xs" target="_blank">Bukti Repair</a>
+                      </td>
                     </tr>
                 <?php }
                 } ?>
@@ -68,6 +72,15 @@
               <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d') ?>">
             </div>
             <div class="form-group">
+              <label for="item" class="form-label">Asset</label>
+              <select name="asset" id="asset" class="form-control select2">
+                <option value=""> :: Pilih Asset :: </option>
+                <?php foreach ($asset_list as $al) { ?>
+                  <option value="<?= $al['Id'] ?>"><?= $al['nama_asset'] ?></option>
+                <?php } ?>
+              </select>
+            </div>
+            <div class="form-group">
               <label for="item" class="form-label">Item</label>
               <select name="item" id="item" class="form-control select2">
                 <option value=""> :: Pilih Item :: </option>
@@ -81,6 +94,10 @@
               <select name="serial-number" id="serial-number" class="form-control select2">
                 <option value=""> :: Pilih Serial Number :: </option>
               </select>
+            </div>
+            <div class="form-group">
+              <label for="bukti" class="form-label">Bukti Repair</label>
+              <input type="file" class="form-control" name="bukti-repair" id="bukti-repair">
             </div>
             <div class="form-group">
               <label for="keterangan" class="form-label">Keterangan</label>

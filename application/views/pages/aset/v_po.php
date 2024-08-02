@@ -1,3 +1,13 @@
+<style>
+  @media screen and (max-width:991px) {
+    table.table.table-po {
+      width: 1200px !important;
+      max-width: none !important;
+    }
+
+  }
+</style>
+
 <!-- page content -->
 <div class="right_col" role="main">
   <!--div class="pull-left">
@@ -14,24 +24,24 @@
         </div>
         <div class="x_content">
           <?php if (!$this->uri->segment(3)) { ?>
-            <div class="table-responsive">
-              <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po') ?>" enctype="multipart/form-data" id="form-po">
-                <div class="row" style="margin-bottom: 30px">
-                  <div class="col-md-2">
-                    <label for="tanggal" class="form-label">Tanggal</label>
-                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
-                  </div>
-                  <div class="col-md-3">
-                    <label for="tanggal" class="form-label">Vendor</label>
-                    <select name="vendor" id="vendor" class="form-control">
-                      <option value="">:: Pilih Vendor</option>
-                      <?php foreach ($vendors->result_array() as $v) { ?>
-                        <option value="<?= $v['Id'] ?>"><?= $v['nama'] ?></option>
-                      <?php } ?>
-                    </select>
-                  </div>
+            <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po') ?>" enctype="multipart/form-data" id="form-po">
+              <div class="row" style="margin-bottom: 30px">
+                <div class="col-md-3 col-sm-6 col-xs-12">
+                  <label for="tanggal" class="form-label">Tanggal</label>
+                  <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
                 </div>
-                <table class="table table-bordered">
+                <div class="col-md-5 col-sm-6 col-xs-12">
+                  <label for="tanggal" class="form-label">Vendor</label>
+                  <select name="vendor" id="vendor" class="form-control">
+                    <option value="">:: Pilih Vendor</option>
+                    <?php foreach ($vendors->result_array() as $v) { ?>
+                      <option value="<?= $v['Id'] ?>"><?= $v['nama'] ?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-bordered table-po">
                   <thead>
                     <tr>
                       <th style="width: 250px">Item</th>
@@ -51,7 +61,7 @@
                           <select name="item[]" id="item-0" class="form-control select2" width="100%">
                             <option value=""> :: Pilih Item :: </option>
                             <?php foreach ($item_list->result_array() as $il) { ?>
-                              <option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option>
+                              <option value="<?= $il['Id'] ?>"><?= $il['nama'] ?></option>
                             <?php } ?>
                           </select>
                         </td>
@@ -81,7 +91,7 @@
                           <textarea name="ket[]" id="ket" class="form-control"></textarea>
                         </td>
                         <td>
-                          <button type="button" class="btn btn-danger remove-form">Hapus</button>
+                          <button type="button" class="btn btn-danger remove-form btn-sm"><i class="fa fa-trash" aria-hidden="true"></i></button>
                         </td>
                       </tr>
                     </div>
@@ -90,23 +100,23 @@
                       <td>
                         <input type="text" class="form-control" readonly name="nominal" id="nominal">
                       </td>
-                      <td></td>
+
                     </tr>
                     <tr>
-                      <td colspan="5">
-                        <button type="button" class="btn btn-success btn-sm" id="add-more-form">Add new row</button>
+                      <td colspan="7">
+                        <button type="button" class="btn btn-success btn-sm" id="add-more-form"><i class="fa fa-plus" aria-hidden="true"></i> Add new row</button>
                       </td>
                     </tr>
                   </tbody>
                 </table>
-                <div class="row">
-                  <div class="col-lg-12 text-end">
-                    <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning">Back</a>
-                    <button type="submit" class="btn btn-primary btn-submit">Save</button>
-                  </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12 text-end">
+                  <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning"><i class="fa fa-chevron-left" aria-hidden="true"></i> Back</a>
+                  <button type="submit" class="btn btn-primary btn-submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           <?php } else { ?>
             <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/simpan_update_po/' . $po['Id']) ?>" enctype="multipart/form-data" id="form-po">
               <div class="row" style="margin-bottom: 30px">
@@ -178,7 +188,7 @@
                           <textarea name="ket[]" id="ket" class="form-control"><?= $row['keterangan'] ?></textarea>
                         </td>
                         <td>
-                          <button type="button" class="btn btn-danger remove-form">Hapus</button>
+                          <button type="button" class="btn btn-danger remove-form btn-sm"><i class="fa fa-trash" aria-hidden="true"></i></button>
                         </td>
                       </tr>
                     <?php } ?>
@@ -192,15 +202,15 @@
                   </tr>
                   <tr>
                     <td colspan="5">
-                      <button type="button" class="btn btn-success btn-sm" id="add-more-form">Add new row</button>
+                      <button type="button" class="btn btn-success btn-sm" id="add-more-form"><i class="fa fa-plus" aria-hidden="true"></i> Add new row</button>
                     </td>
                   </tr>
                 </tbody>
               </table>
               <div class="row">
                 <div class="col-lg-12 text-end">
-                  <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning">Back</a>
-                  <button type="submit" class="btn btn-primary btn-submit">Save</button>
+                  <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning"><i class="fa fa-chevron-left" aria-hidden="true"></i> Back</a>
+                  <button type="submit" class="btn btn-primary btn-submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Update</button>
                 </div>
               </div>
             </form>
@@ -227,7 +237,7 @@
 
     var rowCount = $(".baris").length;
     $('#add-more-form').click(function() {
-      var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"><div class="form-group"><label for="uoi" class="form-label">UOI</label><select name="uoi[]" id="uoi-' + rowCount + '" class="form-control"><option value="PCS">PCS</option><option value="SET">SET</option><option value="LITER">LITER</option><option value="TABUNG">TABUNG</option><option value="DRUM">DRUM</option></select></div></td> <td><input type="text" class="form-control uang" name="satuan[]" id="satuan"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><textarea name="ket[]" id="ket-' + rowCount + '" class="form-control"></textarea></td><td><button type="button" class="btn btn-danger remove-form">Hapus</button></td></tr>';
+      var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] ?></option><?php } ?></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"><div class="form-group"><label for="uoi" class="form-label">UOI</label><select name="uoi[]" id="uoi-' + rowCount + '" class="form-control"><option value="PCS">PCS</option><option value="SET">SET</option><option value="LITER">LITER</option><option value="TABUNG">TABUNG</option><option value="DRUM">DRUM</option></select></div></td> <td><input type="text" class="form-control uang" name="satuan[]" id="satuan"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><textarea name="ket[]" id="ket-' + rowCount + '" class="form-control"></textarea></td><td><button type="button" class="btn btn-danger btn-sm remove-form"><i class="fa fa-trash" aria-hidden="true"></i></button></td></tr>';
 
       var previousRow = $('.baris').last();
       rowCount++;

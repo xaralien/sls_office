@@ -1,6 +1,14 @@
 <style>
-  #item tr:nth-child(even) {
+  /* #item tr:nth-child(even) {
     background-color: #f2f2f2;
+  } */
+
+  @media screen and (max-width:991px) {
+    table#item {
+      width: 1200px !important;
+      max-width: none !important;
+    }
+
   }
 </style>
 
@@ -20,13 +28,13 @@
         </div>
         <div class="x_content">
           <?php if (!$this->uri->segment(3)) { ?>
-            <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po_out') ?>" enctype="multipart/form-data" id="form-po">
+            <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_release_order') ?>" enctype="multipart/form-data" id="form-po">
               <div class="row" style="margin-bottom: 30px">
-                <div class="col-md-2">
+                <div class="col-md-3 col-sm-6 col-xs-12">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-sm-6 col-xs-12">
                   <label for="teknisi" class="form-label">Nama Teknisi</label>
                   <input type="text" class="form-control" name="teknisi" id="teknisi">
                 </div>
@@ -35,31 +43,45 @@
                 <table class="table table-bordered" id="item">
                   <div class="items">
                     <tr class="baris-out">
+                      <input type="hidden" name="row[]" id="row">
                       <td width="250px">
-                        <label for="asset" class="form-label">Asset</label>
-                        <select name="asset[]" id="asset-0" class="form-control select2">
-                          <option value=""> :: Pilih Asset :: </option>
-                          <?php
-                          $asset = $this->db->get('asset_list')->result_array();
-                          foreach ($asset as $row) {
-                          ?>
-                            <option value="<?= $row['Id'] ?>"><?= $row['nama_asset'] . ' | ' . $row['kode'] ?></option>
-                          <?php } ?>
-                        </select> <br>
-                        <input type="hidden" name="row[]" id="row">
-                        <label for="item" class="form-label">Item</label>
-                        <select name="item[]" id="item-0" class="form-control item-out" width="100%">
-                          <option value=""> :: Pilih Item :: </option>
-                          <?php foreach ($item_list->result_array() as $il) { ?>
-                            <option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option>
-                          <?php } ?>
-                        </select>
+                        <div class="form-group">
+                          <div>
+                            <label for="asset" class="form-label">Asset</label>
+                          </div>
+                          <select name="asset[]" id="asset-0" class="form-control select2">
+                            <option value=""> :: Pilih Asset :: </option>
+                            <?php
+                            $asset = $this->db->get('asset_list')->result_array();
+                            foreach ($asset as $row) {
+                            ?>
+                              <option value="<?= $row['Id'] ?>"><?= $row['nama_asset'] ?></option>
+                            <?php } ?>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <div>
+                            <label for="item" class="form-label">Item</label>
+                          </div>
+                          <select name="item[]" id="item-0" class="form-control item-out" width="100%">
+                            <option value=""> :: Pilih Item :: </option>
+                            <?php foreach ($item_list->result_array() as $il) { ?>
+                              <option value="<?= $il['Id'] ?>"><?= $il['nama'] ?></option>
+                            <?php } ?>
+                          </select>
+                        </div>
                       </td>
                       <td>
-                        <label for="uoi" class="form-label">QTY</label>
-                        <input type="text" class="form-control uang" name="qty_out[]" id="qty_out-0">
                         <div class="form-group">
-                          <label for="uoi" class="form-label">UOI</label>
+                          <div>
+                            <label for="uoi" class="form-label">QTY</label>
+                          </div>
+                          <input type="text" class="form-control uang" name="qty_out[]" id="qty_out-0">
+                        </div>
+                        <div class="form-group">
+                          <div>
+                            <label for="uoi" class="form-label">UOI</label>
+                          </div>
                           <select name="uoi_out[]" id="uoi" class="form-control">
                             <option value="PCS">PCS</option>
                             <option value="SET">SET</option>
@@ -71,7 +93,7 @@
                       </td>
                       <td>
                         <label for="harga_out" class="form-label">Harga</label>
-                        <input type="text" class="form-control uang" name="harga_out[]" id="price_out-0">
+                        <input type="text" class="form-control uang" name="harga_out[]" id="price_out-0" readonly>
                       </td>
                       <td>
                         <label for="total" class="form-label">TOTAL</label>
@@ -82,7 +104,7 @@
                         <textarea name="ket[]" id="ket-0" class="form-control"></textarea>
                       </td>
                       <td>
-                        <button type="button" class="btn btn-danger remove-form-out" style="margin-top: 20px;">Hapus</button>
+                        <button type="button" class="btn btn-danger remove-form-out" style="margin-top: 20px;"><i class="fa fa-trash" aria-hidden="true"></i></button>
                       </td>
                     </tr>
                   </div>
@@ -102,7 +124,7 @@
               </div>
               <div class="row">
                 <div class="col-lg-12 text-end">
-                  <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning">Back</a>
+                  <a href="<?= base_url('asset/ro_list') ?>" class="btn btn-warning">Back</a>
                   <button type="submit" class="btn btn-primary btn-submit">Save</button>
                 </div>
               </div>
@@ -218,7 +240,8 @@
     var rowCountOut = $(".baris-out").length;
     $('#add-more-form-out').click(function() {
 
-      var row = '<tr class="baris-out"><td><label for="asset" class="form-label">Asset</label><select name="asset[]" id="asset-' + rowCountOut + '" class="form-control select2"><option value=""> :: Pilih Asset :: </option><?php foreach ($asset as $row) { ?>  <option value="<?= $row['Id'] ?>"><?= $row['nama_asset'] . ' | ' . $row['kode'] ?></option><?php } ?></select><input type="hidden" name="row[]" id="row"><label for="item" class="form-label">Item</label><select name="item[]" id="item-' + rowCountOut + '" class="form-control item-out" width="100%"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?>  <option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></select></td><td><label for="uoi" class="form-label">QTY</label><input type="text" class="form-control uang" name="qty_out[]" id="qty_out-' + rowCountOut + '"><div class="form-group"><label for="uoi" class="form-label">UOI</label><select name="uoi_out[]" id="uoi-' + rowCountOut + '" class="form-control"><option value="PCS">PCS</option><option value="SET">SET</option><option value="LITER">LITER</option><option value="TABUNG">TABUNG</option><option value="DRUM">DRUM</option></select></div></td><td> <label for="harga_out" class="form-label">Harga</label>  <input type="text" class="form-control uang" name="harga_out[]" id="price_out-' + rowCountOut + '"></td><td>  <label for="total" class="form-label">TOTAL</label>  <input type="text" class="form-control" name="total_out[]" id="total_out-' + rowCountOut + '" readonly></td><td><label for="ket"class="form-label">Keterangan</label><textarea name="ket[]" id="ket-' + rowCountOut + '" class="form-control"></textarea></td><td><button type="button" class="btn btn-danger remove-form-out" style="margin-top: 20px;">Hapus</button></td></tr>';
+      var row = '<tr class="baris-out"><input type="hidden" name="row[]" id="row"><td width="250px"><div class="form-group"><div><label for="asset" class="form-label">Asset</label></div><select name="asset[]" id="asset-' + rowCountOut + '" class="form-control select2"><option value=""> :: Pilih Asset :: </option><?php $asset = $this->db->get('asset_list')->result_array();
+                                                                                                                                                                                                                                                                                                                          foreach ($asset as $row) { ?><option value="<?= $row['Id'] ?>"><?= $row['nama_asset'] ?></option><?php } ?></select></div><div class="form-group"><div><label for="item" class="form-label">Item</label></div><select name="item[]" id="item-' + rowCountOut + '" class="form-control item-out" width="100%"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] ?></option><?php } ?></select></div></td><td><div class="form-group"><div><label for="qty" class="form-label">QTY</label></div><input type="text" class="form-control uang" name="qty_out[]" id="qty_out-' + rowCountOut + '"></div><div class="form-group"><div><label for="uoi" class="form-label">UOI</label></div><select name="uoi_out[]" id="uoi-' + rowCountOut + '" class="form-control"><option value="PCS">PCS</option><option value="SET">SET</option><option value="LITER">LITER</option><option value="TABUNG">TABUNG</option><option value="DRUM">DRUM</option></select></div></td><td><label for="harga_out" class="form-label">Harga</label><input type="text" class="form-control uang" name="harga_out[]" id="price_out-' + rowCountOut + '" readonly></td> <td> <label for="total" class="form-label">TOTAL</label><input type="text" class="form-control uang" name="total_out[]" id="total_out-' + rowCountOut + '" readonly></td><td><label for="ket" class="form-label">Keterangan</label><textarea name="ket[]" id="ket-' + rowCountOut + '" class="form-control"></textarea></td><td><button type="button" class="btn btn-danger remove-form-out" style="margin-top: 20px;"><i class="fa fa-trash" aria-hidden="true"></i></button></td></tr>';
 
       var previousRow = $('.baris-out').last();
       rowCountOut++;

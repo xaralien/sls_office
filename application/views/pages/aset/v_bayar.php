@@ -68,7 +68,7 @@
               </table>
             </div>
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-6 col-sm-12 col-xs-12">
                 <div class="form-group">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <?php if ($po['status_pembayaran'] == 1) { ?>
@@ -80,7 +80,7 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-6 col-sm-12 col-xs-12">
                 <div class="form-group">
                   <label for="coa-kas" class="form-label">COA Kas</label>
                   <select name="coa-kas" id="coa-kas" class="form-control select2">

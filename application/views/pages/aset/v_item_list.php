@@ -67,6 +67,8 @@
                         foreach ($users_data as $data) :
                             $sql = "SELECT * FROM item_detail WHERE kode_item = '$data->Id' AND (status = 'A' or status = 'R')";
                             $detail = $this->db->query($sql);
+
+                            $stok_repair = $this->db->get_where('item_detail', ['kode_item' => $data->Id, 'status' => 'R'])->num_rows();
                         ?>
                             <!--content here-->
                             <tr>
@@ -76,7 +78,7 @@
                                 <td class="fit"><?php echo $data->stok; ?></td>
                                 <td><?php echo $detail->num_rows(); ?></td>
                                 <td><?php echo number_format($data->harga_sat); ?></td>
-                                <td><?php echo number_format($data->harga_sat * $data->stok); ?></td>
+                                <td><?php echo number_format(($data->harga_sat * $data->stok) - ($stok_repair * $data->harga_sat)); ?></td>
                                 <td><?php echo $data->nama_jenis; ?></td>
                                 <td width="80px">
                                     <a href="<?= base_url('asset/ubah_item/' . $data->Id) ?>" class="btn btn-success btn-xs"><i class="fa fa-pencil" aria-hidden="true"></i>

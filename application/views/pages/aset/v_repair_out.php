@@ -17,9 +17,11 @@
                 <tr>
                   <th scope="col">No.</th>
                   <th scope="col">Tanggal</th>
+                  <th scope="col">Teknisi</th>
                   <th scope="col">Item</th>
                   <th scope="col">Serial Number</th>
                   <th scope="col">Keterangan</th>
+                  <th scope="col">#</th>
                 </tr>
               </thead>
               <tbody>
@@ -36,10 +38,14 @@
                   ?>
                     <tr>
                       <td scope="row"><?= $no++ ?></td>
-                      <td scope="row"><?= $value['tanggal'] ?></td>
+                      <td scope="row"><?= tgl_indo($value['tanggal']) ?></td>
+                      <td scope="row"><?= $value['teknisi'] ?></td>
                       <td scope="row"><?= $item['nama'] ?></td>
                       <td scope="row"><?= $item_detail['serial_number'] ?></td>
-                      <td scope="row"><?= $value['keterangan'] ?></td>
+                      <td scope="row"><?= $value['keterangan'] ?? "-" ?></td>
+                      <td scope="row">
+                        <a href="<?= base_url('upload/bukti-serah/') . $value['bukti_serah'] ?>" class="btn btn-success btn-xs" target="_blank">Serah Terima Barang</a>
+                      </td>
                     </tr>
                 <?php }
                 } ?>
@@ -84,6 +90,14 @@
                   <option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['serial_number'] ?></option>
                 <?php } ?>
               </select>
+            </div>
+            <div class="form-group">
+              <label for="teknisi" class="form-label">Nama Teknisi</label>
+              <input type="text" class="form-control" name="teknisi" id="teknisi">
+            </div>
+            <div class="form-group">
+              <label for="bukti-serah" class="form-label">Bukti Serah Barang</label>
+              <input type="file" class="form-control" name="bukti-serah" id="bukti-serah">
             </div>
             <div class="form-group">
               <label for="keterangan" class="form-label">Keterangan</label>

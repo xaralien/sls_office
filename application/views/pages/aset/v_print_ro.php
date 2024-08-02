@@ -68,9 +68,8 @@
 
 <body>
   <?php
-  $detail = $this->cb->get_where('t_po_out_detail', ['no_po' => $po['Id']])->result_array();
+  $detail = $this->cb->get_where('t_ro_detail', ['no_ro' => $ro['Id']])->result_array();
   ?>
-  <!-- <p class="text-center">Dokumen Serah Terima Item Out</p> -->
 
   <table id="item" class="box">
     <tr class="box">
@@ -86,17 +85,17 @@
     <tr>
       <td class="border-none">No. Permintaan Barang</td>
       <td class="border-none">:</td>
-      <td class="border-none"><?= $po['no_po'] ?></td>
+      <td class="border-none"><?= $ro['no_ro'] ?></td>
     </tr>
     <tr>
       <td class="border-none">No. Referensi</td>
       <td class="border-none">:</td>
-      <td class="border-none"><?= $po['referensi'] ?></td>
+      <td class="border-none"><?= $ro['referensi'] ?></td>
     </tr>
     <tr>
       <td class="border-none">Tanggal</td>
       <td class="border-none">:</td>
-      <td class="border-none"><?= tgl_indo(date('Y-m-d', strtotime($po['tgl_pengajuan']))) ?></td>
+      <td class="border-none"><?= tgl_indo(date('Y-m-d', strtotime($ro['tgl_pengajuan']))) ?></td>
     </tr>
     <tr class="border-none">
       <td rowspan="1" colspan="7" class="border-none"></td>
@@ -112,14 +111,14 @@
       <th>Total</th>
     </tr>
     <?php
-    $sarlog = $this->db->get_where('users', ['nip' => $po['sarlog']])->row_array();
+    $sarlog = $this->db->get_where('users', ['nip' => $ro['user_serah']])->row_array();
     foreach ($detail as $val) {
       $item = $this->db->get_where('item_list', ['Id' => $val['item']])->row_array();
       $asset = $this->db->get_where('asset_list', ['Id' => $val['asset']])->row_array();
 
     ?>
       <tr>
-        <td><?= $po['teknisi'] ?></td>
+        <td><?= $ro['teknisi'] ?></td>
         <td><?= $asset['nama_asset'] ?></td>
         <td><?= $item['nama'] ?></td>
         <td>
@@ -132,11 +131,7 @@
                 $serial = $this->db->get_where('item_detail', ['Id' => $s])->row_array();
           ?>
                 <div>
-                  <ul>
-                    <li>
-                      <?= $serial['serial_number'] ?>
-                    </li>
-                  </ul>
+                  <?= $serial['serial_number'] ?> <br>
                 </div>
           <?php }
             }
@@ -155,7 +150,7 @@
       <td colspan="7" class="text-right">
         <b>Total</b>
       </td>
-      <td class="text-right"><b><?= number_format($po['total']) ?></b></td>
+      <td class="text-right"><b><?= number_format($ro['total']) ?></b></td>
     </tr>
     <tr class="border-none">
       <td rowspan="1" colspan="7" class="border-none"></td>
@@ -194,7 +189,7 @@
       <td colspan="2" class="border-none"><b><u><?= $sarlog['nama'] ?></u></b></td>
       <td colspan="2" class="border-none"></td>
       <td colspan="2" class="border-none"></b></td>
-      <td colspan="2" class="border-none"><b><u><?= $po['teknisi'] ?></u></b></td>
+      <td colspan="2" class="border-none"><b><u><?= $ro['teknisi'] ?></u></b></td>
     </tr>
     <tr class="border-none text-center">
       <td colspan="2" class="border-none"></td>

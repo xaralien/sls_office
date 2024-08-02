@@ -304,8 +304,8 @@ class App extends CI_Controller
 			$this->form_validation->set_rules('kode', 'kode', 'required');
 			$this->form_validation->set_rules('nama_asset', 'nama_asset', 'required');
 			$this->form_validation->set_rules('spesifikasi', 'spesifikasi');
-			$this->form_validation->set_rules('ruangan', 'ruangan', 'required|trim');
-			$this->form_validation->set_rules('lokasi', 'lokasi', 'required');
+			// $this->form_validation->set_rules('ruangan', 'ruangan', 'required|trim');
+			// $this->form_validation->set_rules('lokasi', 'lokasi', 'required');
 			$this->form_validation->set_rules('jumlah', 'jumlah', 'required');
 			$this->form_validation->set_rules('date_pic', 'date_pic', 'required');
 			$this->form_validation->set_rules('kondisi', 'kondisi', 'required');
@@ -925,12 +925,19 @@ class App extends CI_Controller
 		$a = $this->session->userdata('level');
 		if (strpos($a, '501') !== false) {
 
+			//inbox notif
 			$nip = $this->session->userdata('nip');
 			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
 			$query = $this->db->query($sql);
 			$res2 = $query->result_array();
 			$result = $res2[0]['COUNT(Id)'];
 			$data['count_inbox'] = $result;
+
+			$sql4 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query4 = $this->db->query($sql4);
+			$res4 = $query4->result_array();
+			$result4 = $res4[0]['COUNT(id)'];
+			$data['count_inbox2'] = $result4;
 
 			$sql2 = "SELECT * FROM asset_ruang";
 			$sql3 = "SELECT * FROM asset_lokasi";
@@ -945,7 +952,9 @@ class App extends CI_Controller
 			$data['asset_ruang'] = $asset_ruang;
 			$data['asset_lokasi'] = $asset_lokasi;
 
-			$this->load->view('asset_detail', $data);
+			$data['title'] = 'Asset Detail';
+			$data['pages'] = 'pages/aset/v_asset_detail';
+			$this->load->view('index', $data);
 		}
 	}
 	function letter_in()
@@ -1028,8 +1037,9 @@ class App extends CI_Controller
 				$res3 = $query3->result_array();
 				$result3 = $res3[0]['COUNT(id)'];
 				$data['count_inbox2'] = $result3;
-
-				$this->load->view('user', $data);
+				$data['title'] = 'User List';
+				$data['pages'] = 'pages/user/v_user';
+				$this->load->view('index', $data);
 			}
 		}
 	}
@@ -1057,8 +1067,9 @@ class App extends CI_Controller
 					$res3 = $query3->result_array();
 					$result3 = $res3[0]['COUNT(id)'];
 					$data['count_inbox2'] = $result3;
-
-					$this->load->view('user_view', $data);
+					$data['title'] = 'User View';
+					$data['pages'] = 'pages/user/v_user_view';
+					$this->load->view('index', $data);
 				}
 			}
 		}
@@ -1077,6 +1088,7 @@ class App extends CI_Controller
 		$res3 = $query3->result_array();
 		$result3 = $res3[0]['COUNT(id)'];
 		$data['count_inbox2'] = $result3;
+		$data['title'] = 'Add User';
 
 		if ($this->input->post('add') == 'add') {
 			$today = date("Y-m-d");
@@ -1085,7 +1097,8 @@ class App extends CI_Controller
 			if ($this->form_validation->run() === false) {
 				$this->session->set_flashdata('msg', '<div class="alert alert-danger">tidak boleh kosong</div>');
 
-				$this->load->view('user_view', $data);
+				$data['pages'] = 'pages/user/v_user_view';
+				$this->load->view('index', $data);
 
 				// echo "<script>alert('Umur Minimal 18 Tahunn !');window.history.back();</script>";
 				// redirect('app/add_user');
@@ -1126,7 +1139,8 @@ class App extends CI_Controller
 			}
 		}
 
-		$this->load->view('user_view', $data);
+		$data['pages'] = 'pages/user/v_user_view';
+		$this->load->view('index', $data);
 	}
 
 	public function user_edit()
@@ -1178,7 +1192,9 @@ class App extends CI_Controller
 						$this->session->set_flashdata('msg', 'Update User ' . $this->input->post('nama'));
 						redirect('app/user');
 					}
-					$this->load->view('user_view', $data);
+					$data['title'] = 'Edit User';
+					$data['pages'] = 'pages/user/v_user_view';
+					$this->load->view('index', $data);
 				}
 			}
 		}
@@ -1205,7 +1221,9 @@ class App extends CI_Controller
 				$result3 = $res3[0]['COUNT(id)'];
 				$data['count_inbox2'] = $result3;
 
-				$this->load->view('resetpass_view', $data);
+				$data['title'] = 'Reset Password User';
+				$data['pages'] = 'pages/user/v_reset_pass';
+				$this->load->view('index', $data);
 			}
 		}
 	}

@@ -73,12 +73,18 @@
                         <li><a href="<?php echo base_url(); ?>app/asset_list">Asset List</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/item_list">Item List</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/item_out">Item Out</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order IN</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/po_list_out">Purchase Order Out</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/report_asset">Report Asset</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/working_supply">Working Supply</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/vendors">Vendors</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/repair">Repair</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/repair">Repair In</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/repair_out">Repair Out</a></li>
+                    <?php }
+                    if (strpos($a, '502') !== false) { ?>
+                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order IN</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/ro_list">Release Order</a></li>
+                    <?php }
+                    if (strpos($a, '503') !== false) { ?>
+                        <li><a href="<?php echo base_url(); ?>asset/repair">Repair In</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/repair_out">Repair Out</a></li>
                     <?php } ?>
                 </ul>

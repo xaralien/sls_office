@@ -75,6 +75,7 @@
           <th>Jenis</th>
           <th>Keterangan</th>
           <th>Item</th>
+          <th>Serial Number</th>
           <th>Unit</th>
           <th>Stok Awal</th>
           <th>IN/OUT</th>
@@ -88,22 +89,31 @@
         foreach ($report as $r) {
           $asset = $this->db->get_where('asset_list', ['Id' => $r['asset_id']])->row_array();
           $total += $r['harga'] * $r['jml'];
-          if ($r['jenis'] == "IN") {
-            $po = $this->cb->get_where('t_po', ['Id' => $r['no_po']])->row_array();
-            $keterangan = $po['referensi'];
-            $po_detail = [];
-          } else {
-            $po = $this->cb->get_where('t_po_out', ['Id' => $r['no_po']])->row_array();
-            $po_detail = $this->cb->get_where('t_po_out_detail', ['Id' => $r['no_po'], 'item' => $r['item_id']])->row_array();
-            $keterangan = $r['penerima'];
-          }
+
         ?>
           <tr>
             <td><?= $no++; ?></td>
             <td><?= tgl_indo(date('Y-m-d', strtotime($r['tanggal']))); ?></td>
             <td><?= $r['jenis']; ?></td>
-            <td><?= $keterangan ?></td>
+            <td><?= $r['keterangan'] ?></td>
             <td><?= $r['nama']; ?></td>
+            <td>
+              <?php
+              if ($r['serial_number']) {
+                foreach (json_decode($r['serial_number']) as $s) {
+                  if ($s != 0) {
+                    $serial = $this->db->get_where('item_detail', ['Id' => $s])->row_array();
+                    echo $serial['serial_number'] . '<br>';
+              ?>
+
+              <?php } else {
+                    echo '-';
+                  }
+                }
+              } else {
+                echo '-';
+              } ?>
+            </td>
             <td><?= $r['asset_id'] ? $asset['nama_asset'] : "-"; ?></td>
             <td><?= $r['stok_awal'] ?></td>
             <td><?= $r['jml'] ?></td>
@@ -119,6 +129,7 @@
         <tr>
           <th>No.</th>
           <th>Tanggal</th>
+          <th>Serial Number</th>
           <th>Keterangan</th>
           <th>Jenis</th>
           <th>Unit</th>
@@ -134,17 +145,28 @@
         foreach ($report as $r) {
           $asset = $this->db->get_where('asset_list', ['Id' => $r['asset_id']])->row_array();
           $total += $r['harga'] * $r['jml'];
-          if ($r['jenis'] == "IN") {
-            $po = $this->cb->get_where('t_po', ['Id' => $r['no_po']])->row_array();
-            $keterangan = $po['referensi'];
-          } else {
-            $keterangan = $r['penerima'];
-          }
         ?>
           <tr>
             <td><?= $no++; ?></td>
             <td><?= tgl_indo(date('Y-m-d', strtotime($r['tanggal']))); ?></td>
-            <td><?= $keterangan ?></td>
+            <td>
+              <?php
+              if ($r['serial_number']) {
+                foreach (json_decode($r['serial_number']) as $s) {
+                  if ($s != 0) {
+                    $serial = $this->db->get_where('item_detail', ['Id' => $s])->row_array();
+                    echo $serial['serial_number'] . '<br>';
+              ?>
+
+              <?php } else {
+                    echo '-';
+                  }
+                }
+              } else {
+                echo '-';
+              } ?>
+            </td>
+            <td><?= $r['keterangan'] ?></td>
             <td><?= $r['jenis']; ?></td>
             <td><?= $r['asset_id'] ? $asset['nama_asset'] : "-"; ?></td>
             <td><?= $r['stok_awal'] ?></td>

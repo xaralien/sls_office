@@ -263,7 +263,6 @@ class Pengajuan extends CI_Controller
     if (strpos($a, '902') !== false) {
       // Pagination
       $search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
-      // Pagination
       $config['base_url'] = base_url('pengajuan/approval_spv');
       $config['total_rows'] = $this->M_pengajuan->countPengajuanSpv($search);
       $config['per_page'] = 10;
@@ -686,7 +685,6 @@ class Pengajuan extends CI_Controller
     if (strpos($a, '904') !== false) {
       // Pagination
       $search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
-      // Pagination
       $config['base_url'] = base_url('pengajuan/approval_spv');
       $config['total_rows'] = $this->M_pengajuan->countPengajuanSpv($search);
       $config['per_page'] = 10;

@@ -30,7 +30,7 @@
                     <input type="hidden" class="form-control" name="row_item[]" id="row<?= $i['Id'] ?>">
                     <input type="hidden" class="form-control" name="id_item[]" id="id_item<?= $i['Id'] ?>" value="<?= $i['Id'] ?>">
                     <tr>
-                      <td><?= $detail['nama'] . ' | ' . $detail['nomor'] ?></td>
+                      <td><?= $detail['nama'] ?></td>
                       <td><?= $i['qty'] ?></td>
                       <td><?= number_format($i['price']) ?></td>
                       <td><?= number_format($i['total']) ?></td>
@@ -88,17 +88,17 @@
               </table>
             </div>
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-6 col-sm-12 col-xs-12">
                 <div class="form-group">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <?php if ($po['posisi'] == 'Sudah Dibayar' || $po['posisi'] == "Hutang") { ?>
-                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d', strtotime($po['date_bayar'])) ?>" disabled>
+                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d', strtotime($po['date_proses'])) ?>" disabled>
                   <?php } else { ?>
                     <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d') ?>">
                   <?php } ?>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-6 col-sm-12 col-xs-12">
                 <div class="form-group">
                   <label for="jenis-pembayaran" class="form-label">Jenis Pembayaran</label>
                   <?php if ($po['posisi'] == 'Sudah Dibayar' || $po['posisi'] == "Hutang") { ?>
@@ -116,7 +116,7 @@
                   <?php } ?>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-6 col-sm-12 col-xs-12">
                 <div class="form-group">
                   <label for="coa-kredit" class="form-label">COA Kredit</label>
                   <?php if ($po['posisi'] == 'Sudah Dibayar' || $po['posisi'] == "Hutang") { ?>
@@ -136,7 +136,7 @@
                   <?php } ?>
                 </div>
               </div>
-              <div class="col-md-6" id="upload-bayar">
+              <div class="col-md-6 col-sm-12 col-xs-12" id="upload-bayar">
                 <div class="form-group">
                   <label for="file" class="form-label">Bukti Bayar</label>
                   <input type="file" class="form-control" name="bukti-bayar" id="bukti-bayar">

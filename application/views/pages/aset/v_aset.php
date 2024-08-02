@@ -25,12 +25,12 @@
                 <select name="jenis" onchange="form.submit()" id="" class="form-control">
                     <?php $jeniss = $this->session->userdata('filterJenis') ? $this->session->userdata('filterJenis') : '' ?>
                     <option selected>Pilih Jenis</option>
-                    <option <?= $jeniss == '1' ? 'selected'  : '' ?> value="1">1</option>
-                    <option <?= $jeniss == '2' ? 'selected'  : '' ?> value="2">2</option>
-                    <option <?= $jeniss == '3' ? 'selected'  : '' ?> value="3">3</option>
-                    <option <?= $jeniss == '4' ? 'selected'  : '' ?> value="4">Mobil</option>
-                    <option <?= $jeniss == '5' ? 'selected'  : '' ?> value="5">ABK</option>
-                    <option <?= $jeniss == '99' ? 'selected'  : '' ?> value="99">IT</option>
+                    <option <?= $jeniss == '1' ? 'selected'  : '' ?> value="1">ALAT PRODUKSI</option>
+                    <option <?= $jeniss == '2' ? 'selected'  : '' ?> value="2">KENDARAAN</option>
+                    <option <?= $jeniss == '3' ? 'selected'  : '' ?> value="3">PERALATAN KANTOR</option>
+                    <option <?= $jeniss == '4' ? 'selected'  : '' ?> value="4">PC</option>
+                    <option <?= $jeniss == '5' ? 'selected'  : '' ?> value="5">PRINTER</option>
+                    <option <?= $jeniss == '6' ? 'selected'  : '' ?> value="6">FURNITURE</option>
                 </select>
             </div>
             <a class="btn btn-warning" href="<?= base_url('app/reset_jenis') ?>">Reset</a>
@@ -165,12 +165,12 @@
                                 <div class="col-md-9 col-sm-9 col-xs-12">
                                     <select name="jenis_asset" class="form-control">
                                         <option>Pilih</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">Mobil</option>
-                                        <option value="5">ABK</option>
-                                        <option value="99">IT</option>
+                                        <option value="1">ALAT PRODUKSI</option>
+                                        <option value="2">KENDARAAN</option>
+                                        <option value="3">PERALATAN KANTOR</option>
+                                        <option value="4">PC</option>
+                                        <option value="5">PRINTER</option>
+                                        <option value="6">FURNITURE</option>
                                     </select>
                                 </div>
                                 <br><br>
@@ -211,7 +211,7 @@
                             <div class="item form-group">
                                 <label style="text-align: left;" class="control-label col-md-3 col-sm-3 col-xs-12" for="name">Ruangan</label>
                                 <div class="col-md-9 col-sm-9 col-xs-12">
-                                    <select class="form-control js-example-basic-single" style="width:100%;" name="ruangan" id="ruangan" required="required">
+                                    <select class="form-control js-example-basic-single" style="width:100%;" name="ruangan" id="ruangan">
                                         <?php foreach ($asset_ruang as $data) : ?>
                                             <option value="<?php echo $data->keterangan; ?>"><?php echo $data->keterangan; ?></option>
                                         <?php endforeach; ?>
@@ -223,7 +223,7 @@
                             <div class="item form-group">
                                 <label style="text-align: left;" class="control-label col-md-3 col-sm-3 col-xs-12" for="name">Lokasi</label>
                                 <div class="col-md-9 col-sm-9 col-xs-12">
-                                    <select class="form-control js-example-basic-single" style="width:100%;" name="lokasi" id="lokasi" required="required">
+                                    <select class="form-control js-example-basic-single" style="width:100%;" name="lokasi" id="lokasi">
                                         <?php foreach ($asset_lokasi as $data) : ?>
                                             <option value="<?php echo $data->keterangan; ?>"><?php echo $data->keterangan; ?></option>
                                         <?php endforeach; ?>
@@ -274,7 +274,7 @@
                                 <label class="col-form-label col-md-3 col-sm-3 label-align" for="last-name">Umur <span class="required">*</span>
                                 </label>
                                 <div class="col-md-9 col-sm-9 col-xs-12">
-                                    <input id="jumlah" class="form-control col-md-7 col-xs-12" data-validate-length-range="1" data-validate-words="1" name="umur" placeholder="" required="required" type="number">
+                                    <input id="jumlah" class="form-control col-md-7 col-xs-12" data-validate-length-range="1" data-validate-words="1" name="umur" placeholder="" type="number">
                                 </div>
                                 <br><br>
                             </div>

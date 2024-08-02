@@ -3,39 +3,10 @@
 
   <div class="x_panel card">
     <!--div class="alert alert-info">Daftar Surat Kuasa </div-->
-    <div align="center">
+    <div class="x_title">
+      <h2>Item Out</h2>
     </div>
-    <!-- search -->
 
-    <!-- <form data-parsley-validate action="<?php echo base_url(); ?>asset/item_cari" method="post" name="form_input" id="form_input">
-      <label class="control-label col-md-1 col-sm-1 col-xs-4" for="cari_nama">Filter
-        <span class="required">*</span>
-      </label>
-      <div class="col-md-6 col-sm-6 col-xs-8">
-        <input type="text" id="search" name="search" class="form-control col-md-7 col-xs-12" placeholder="nama item yang akan dicari">
-      </div>
-      <?php echo form_submit('cari_asset', 'Cari', 'class="btn btn-primary"'); ?>
-      <input type="button" class="btn btn-primary" value="Tampilkan Semua" onclick="window.location.href='<?php echo base_url(); ?>asset/item_list'" />
-      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1">Tambah Item Out</button>
-    </form> -->
-    <!-- <form method="POST" action="<?= base_url('asset/filter_jenis_item') ?>" style="margin-bottom:20px;">
-      <label class="control-label col-md-1 col-sm-1 col-xs-4">Filter Jenis</label>
-      <div class="col-md-2 col-sm-2 col-xs-4">
-        <select name="jenis" onchange="form.submit()" id="" class="form-control">
-          <?php $jenis_item = $this->session->userdata('filterJenis') ? $this->session->userdata('filterJenis') : '' ?>
-          <option selected>Pilih Jenis</option>
-          <option <?= $jenis_item == '1' ? 'selected'  : '' ?> value="1">1</option>
-          <option <?= $jenis_item == '2' ? 'selected'  : '' ?> value="2">2</option>
-          <option <?= $jenis_item == '3' ? 'selected'  : '' ?> value="3">3</option>
-          <option <?= $jenis_item == '4' ? 'selected'  : '' ?> value="4">Mobil</option>
-          <option <?= $jenis_item == '5' ? 'selected'  : '' ?> value="5">ABK</option>
-          <option <?= $jenis_item == '99' ? 'selected'  : '' ?> value="99">IT</option>
-        </select>
-      </div>
-      <a class="btn btn-warning" href="<?= base_url('asset/reset_jenis_item') ?>">Reset</a>
-      <a href="<?= base_url('asset/export_item') ?>" class="btn btn-success">Excel <i class="fa fa-file-excel-o"></i></a>
-
-    </form> -->
     <div class="table-responsive">
       <table class="table table-bordered">
         <thead>
@@ -87,7 +58,7 @@
                 <td>
                   <!-- <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal3" onclick="get_item_out(<?= $data->Id ?>)">Detail</button> -->
                   <?php if ($data->status == 1) { ?>
-                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#myModal<?= $data->Id ?>">Close</button>
+                    <button class="btn btn-success btn-xs" data-toggle="modal" data-target="#myModal<?= $data->Id ?>">Close</button>
                     <div class="modal fade" id="myModal<?= $data->Id ?>" role="dialog">
                       <div class="modal-dialog">
                         <!-- Modal content-->
@@ -105,6 +76,59 @@
                                 <button type="submit" class="btn btn-primary btn-submit">Update</button>
                               </div>
                             </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  <?php } ?>
+
+                  <?php if ($data->status == 2) { ?>
+                    <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#myDetail<?= $data->Id ?>">View</button>
+                    <div class="modal fade" id="myDetail<?= $data->Id ?>" role="dialog">
+                      <div class="modal-dialog">
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h2 class="modal-title">Detail</h2>
+                          </div>
+                          <div class="modal-body">
+                            <table style="margin-top: 20px;" class="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th>Bukti Serah Terima Barang</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <?php if ($data->bukti_serah) { ?>
+                                      <a href="<?= base_url('upload/bukti-serah/') . $data->bukti_serah ?>" class="btn btn-success btn-xs" target="_blank">Lihat Bukti Serah Terima Barang</a>
+                                    <?php } else { ?>
+                                      -
+                                    <?php } ?>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <table style="margin-top: 20px;" class="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th>Bukti Close</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <?php if ($data->image_close) { ?>
+                                      <a href="<?= base_url('upload/bukti-close/') . $data->image_close ?>" class="btn btn-success btn-xs" target="_blank">Lihat Bukti Close</a>
+                                    <?php } else { ?>
+                                      -
+                                    <?php } ?>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
