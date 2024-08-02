@@ -76,8 +76,6 @@
                         <li><a href="<?php echo base_url(); ?>asset/report_asset">Report Asset</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/working_supply">Working Supply</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/vendors">Vendors</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/repair">Repair In</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/repair_out">Repair Out</a></li>
                     <?php }
                     if (strpos($a, '502') !== false) { ?>
                         <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order IN</a></li>
@@ -90,8 +88,8 @@
                 </ul>
             </li>
         <?php } ?>
-        <?php $a = $this->session->userdata('level');
-        if (strpos($a, '10') !== false) { ?>
+        <!-- <?php $a = $this->session->userdata('level');
+                if (strpos($a, '10') !== false) { ?>
             <li>
                 <a><i class="fa fa-edit"></i>Queue<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
@@ -109,9 +107,9 @@
                     <?php } ?>
                 </ul>
             </li>
-        <?php } ?>
-        <?php $a = $this->session->userdata('level');
-        if (strpos($a, '20') !== false) { ?>
+        <?php } ?> -->
+        <!-- <?php $a = $this->session->userdata('level');
+                if (strpos($a, '20') !== false) { ?>
             <li>
                 <a><i class="fa fa-edit"></i>Mit-E<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
@@ -129,7 +127,7 @@
                     <?php } ?>
                 </ul>
             </li>
-        <?php } ?>
+        <?php } ?> -->
         <?php $a = $this->session->userdata('level');
         if (strpos($a, '30') !== false) { ?>
             <li>

@@ -1,4 +1,11 @@
 $(document).ready(function () {
+<<<<<<< HEAD
+=======
+	// $(".select2").select2({
+	// 	width: "100%",
+	// });
+
+>>>>>>> 1fd87400404708307b8946d6fb724b1fd3229b51
 	$(".uang").mask("000.000.000.000.000", {
 		reverse: true,
 	});

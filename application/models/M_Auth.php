@@ -17,7 +17,7 @@ class M_Auth extends CI_Model
         if (empty($id)) {
             redirect('auth');
         }
-        return $this->db->get_where('user', ['username' => $id])->row_array();
+        return $this->db->get_where('users', ['username' => $id])->row_array();
     }
 
     public function cek_role($id)

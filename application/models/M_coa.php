@@ -11,7 +11,7 @@ class M_coa extends CI_Model
 
     public function cek_coa($no_coa)
     {
-        return $this->cb->select('posisi, nominal')->where('no_sbb', $no_coa)->get('v_coa_all')->row_array();
+        return $this->cb->where('no_sbb', $no_coa)->get('v_coa_all')->row_array();
     }
 
     public function update_nominal_coa($no_coa, $data, $kolom, $tabel)
@@ -41,20 +41,8 @@ class M_coa extends CI_Model
 
     public function getPasivaWithLaba($table)
     {
-        // $pasiva = $this->cb->where('posisi', 'PASIVA')->group_start()->where('nominal !=', '0')->or_where('no_sbb', '32020')->group_end()->get($table)->result();
-        $pasiva = $this->cb->where('posisi', 'PASIVA')->where('nominal !=', '0')->or_where('no_sbb', '32020')->get($table)->result();
-        // $total_activa = $this->getSumNeraca($table, 'AKTIVA')['nominal'];
+        $pasiva = $this->cb->where('posisi', 'PASIVA')->where('nominal !=', '0')->or_where('no_sbb', '3201001')->get($table)->result();
 
-        // foreach ($pasiva as &$row) {
-        //     if ($row->no_sbb == '32020') { // Special handling for 'LABA'
-        //         $row->nominal = $total_activa;
-        //     }
-        // }
-
-        // echo '<pre>';
-        // print_r($pasiva);
-        // echo '</pre>';
-        // exit;
         return $pasiva;
     }
 
@@ -131,5 +119,10 @@ class M_coa extends CI_Model
         $laporan = $this->cb->order_by('no_sbb', 'ASC')->limit($limit, $from)->get('v_coa_all')->result_array();
 
         return $laporan;
+    }
+
+    public function isAvailable($kolom, $key)
+    {
+        return $this->cb->from('v_coa_all')->where($kolom, $key)->count_all_results();
     }
 }

@@ -120,7 +120,7 @@
                                         <tr>
                                             <td><?= $p->no_sbb ?></td>
                                             <td><?= $p->nama_perkiraan ?></td>
-                                            <td class="text-right"><?= number_format(($p->no_sbb == '32020') ? $laba : $p->nominal) ?></td>
+                                            <td class="text-right"><?= number_format(($p->no_sbb == '3201001') ? $laba : $p->nominal) ?></td>
                                         </tr>
                                     <?php
                                     endforeach; ?>

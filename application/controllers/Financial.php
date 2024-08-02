@@ -9,7 +9,7 @@ class Financial extends CI_Controller
         parent::__construct();
 
         //$this->load->model('M_cuti');
-        $this->load->model(['m_coa', 'm_invoice', 'M_Customer']);
+        $this->load->model(['m_coa', 'm_invoice', 'M_Customer', 'M_Auth']);
         $this->load->library(['form_validation', 'session', 'user_agent', 'Api_Whatsapp', 'pagination', 'pdfgenerator']);
         $this->load->database();
         $this->load->helper(['url', 'form', 'download', 'date', 'number']);
@@ -36,7 +36,7 @@ class Financial extends CI_Controller
     {
     }
 
-    public function financial_entry()
+    public function financial_entry($jenis = NULL)
     {
         $nip = $this->session->userdata('nip');
         $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -57,14 +57,36 @@ class Financial extends CI_Controller
             'pages' => "pages/financial/v_financial_entry",
         ];
 
+        if ($jenis == "debit") {
+            $data['pages'] = 'pages/financial/v_financial_entry_debit';
+        } else if ($jenis == "kredit") {
+            $data['pages'] = 'pages/financial/v_financial_entry_kredit';
+        } else {
+            $data['pages'] = 'pages/financial/v_financial_entry';
+        }
+
         $this->load->view('index', $data);
     }
 
-    public function store_financial_entry()
+    public function store_financial_entry($jenis = NULL)
     {
-        $coa_debit = $this->input->post('neraca_debit');
-        $coa_kredit = $this->input->post('neraca_kredit');
-        $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('input_nominal'));
+        if ($jenis == "debit") {
+            $coa_debit = $this->input->post('neraca_debit');
+            $coa_kredit = $this->input->post('accounts');
+            $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('nominals'));
+            $jenis_fe = $jenis;
+        } else if ($jenis == "kredit") {
+            $coa_debit = $this->input->post('accounts');
+            $coa_kredit = $this->input->post('neraca_kredit');
+            $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('nominals'));
+            $jenis_fe = $jenis;
+        } else {
+            $coa_debit = $this->input->post('neraca_debit');
+            $coa_kredit = $this->input->post('neraca_kredit');
+            $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('input_nominal'));
+            $jenis_fe = "single";
+        }
+
         $keterangan = trim($this->input->post('input_keterangan'));
         $tanggal = $this->input->post('tanggal');
         $file = $_FILES['file_upload']['name'];
@@ -82,44 +104,36 @@ class Financial extends CI_Controller
 
             $config = [
                 'upload_path' => $upload_path,
-                'allowed_types' => 'xls|xlsx',
+                'allowed_types' => 'xls|xlsx|pdf|doc|docx',
                 'overwrite' => TRUE,
                 'file_name' => $newFileName,
             ];
 
-            // print_r($config);
-            // exit;
-            // echo "file ditemukan";
             $this->load->library('upload', $config);
 
             if (!$this->upload->do_upload('file_upload')) {
-                // print_r($this->upload->display_errors());
-                // exit;
                 $this->session->set_flashdata('message_error', 'Error message: ' . $this->upload->display_errors());
                 redirect($_SERVER['HTTP_REFERER']);
             }
         }
 
+
         $data = [
-            'coa_debit' => $coa_debit,
-            'coa_kredit' => $coa_kredit,
-            'nominal' => $nominal,
+            'coa_debit' => json_encode($coa_debit),
+            'coa_kredit' => json_encode($coa_kredit),
+            'nominal' => json_encode($nominal),
             'keterangan' => $keterangan,
             'tanggal_transaksi' => $tanggal,
             'file_path' => isset($file) ? $upload_path . $newFileName : null,
             'created_by' => $this->session->userdata('nip'),
             'slug' => $slug,
-            'no_urut' => $bilangan
+            'no_urut' => $bilangan,
+            'jenis_fe' => $jenis_fe
         ];
-        // echo '<pre>';
-        // print_r($data);
-        // echo '</pre>';
-        // exit;
 
         $this->m_invoice->add_fe($data);
 
-
-        $msg = "Financial entry: butuh persetujuan. No. " . $slug;
+        $msg = "*FE - Need Approval*. %0aPengajuan Financial Entry oleh " . $this->session->userdata('nama') . ". %0aNo pengajuan:. " . $slug;
         $no_whatsapp = "6285240719210";
         $this->api_whatsapp->wa_notif($msg, $no_whatsapp);
         // exit;
@@ -187,23 +201,42 @@ class Financial extends CI_Controller
 
     public function approve_fe($slug)
     {
+
         $nip = $this->session->userdata('nip');
         $fe = $this->m_invoice->detail_fe($slug);
-        // print_r($slug);
-        // exit;
-        // $coa_debit = "13010";
-        // $coa_kredit = "41101";
+
+        $user = $this->M_Auth->cek_user($fe['created_by']);
 
         $keterangan = $fe['keterangan'];
-        $nominal = $fe['nominal'];
         $tanggal_transaksi = $fe['tanggal_transaksi'];
-        $coa_debit = $fe['coa_debit'];
-        $coa_kredit = $fe['coa_kredit'];
 
-        // print_r($coa_kredit);
-        // exit;
+        if ($fe['jenis_fe'] == "debit") {
+            $coa_debit = json_decode($fe['coa_debit'], true);
+            $coa_kredit = json_decode($fe['coa_kredit'], true);
+            $nominal = json_decode($fe['nominal'], true);
 
-        $this->posting($coa_debit, $coa_kredit, $keterangan, $nominal, $tanggal_transaksi);
+            if (is_array($coa_kredit) && is_array($nominal)) {
+                for ($i = 0; $i < count($coa_kredit); $i++) {
+                    $this->posting($coa_debit, $coa_kredit[$i], $keterangan, $nominal[$i], $tanggal_transaksi);
+                }
+            }
+        } else if ($fe['jenis_fe'] == "kredit") {
+            $coa_debit = json_decode($fe['coa_debit'], true);
+            $coa_kredit = json_decode($fe['coa_kredit'], true);
+            $nominal = json_decode($fe['nominal'], true);
+
+            if (is_array($coa_debit) && is_array($nominal)) {
+                for ($i = 0; $i < count($coa_debit); $i++) {
+                    $this->posting($coa_debit[$i], $coa_kredit, $keterangan, $nominal[$i], $tanggal_transaksi);
+                }
+            }
+        } else if ($fe['jenis_fe'] == "single") {
+            $coa_debit = json_decode($fe['coa_debit'], true);
+            $coa_kredit = json_decode($fe['coa_kredit'], true);
+            $nominal = json_decode($fe['nominal'], true);
+
+            $this->posting($coa_debit, $coa_kredit, $keterangan, $nominal, $tanggal_transaksi);
+        }
 
         $data = [
             'status_approval' => '1',
@@ -212,6 +245,10 @@ class Financial extends CI_Controller
         ];
 
         $this->m_invoice->update_fe($data, $slug);
+
+        $msg = "Pengajuan FE Anda No. " . $fe['slug'] . " telah disetujui oleh " . $this->session->userdata('nama');
+        $no_whatsapp = $user['phone'];
+        $this->api_whatsapp->wa_notif($msg, $no_whatsapp);
 
         $this->session->set_flashdata('message_name', 'Financial entry telah disetujui!');
 
@@ -313,7 +350,7 @@ class Financial extends CI_Controller
             'count_inbox' => $result,
             'count_inbox2' => $result2,
             'coa' => $this->m_coa->list_coa(),
-            'coa_kas' => $this->m_coa->getCoaByCode('1201'),
+            'coa_kas' => $this->m_coa->getCoaByCode('1101'),
             'coa_pendapatan' => $this->m_coa->getCoaByCode('410'),
             'keyword' => $keyword,
             'title' => "Invoice",
@@ -423,10 +460,6 @@ class Financial extends CI_Controller
         $pph = isset($opsi_pph) ? '0.02' : 0;
         $ppn = '0.11';
 
-        // echo '<pre>';
-        // print_r($besaran_pph);
-        // echo '</pre>';
-        // exit;
         $tgl_invoice = $this->input->post('tgl_invoice');
 
         $keterangan = trim($this->input->post('keterangan'));
@@ -455,11 +488,6 @@ class Financial extends CI_Controller
             'opsi_termin' => isset($opsi_termin) ? $opsi_termin : '0',
             'status_pendapatan' => '1'
         ];
-
-        // echo '<pre>';
-        // print_r($invoice_data);
-        // echo '</pre>';
-        // exit;
 
         $id_invoice = $this->m_invoice->insert($invoice_data);
 
@@ -492,15 +520,16 @@ class Financial extends CI_Controller
                 $insert = $this->m_invoice->insert_batch($detail_data);
 
                 if ($insert) {
-                    // Jurnal 1: 13010 - Piutang Usaha bertambah, 41101 - PAD-Operasional Lainnya bertambah (sebesar bruto)
-                    $coa_debit = "13010";
-                    $coa_kredit = "41101";
+
+                    // Jurnal 1: 1104003 - PENDAPATAN YANG MASIH HARUS DITERIMA bertambah, 4101001 - PENDAPATAN AKAN DITERIMA (sebesar bruto)
+                    $coa_debit = "1104003";
+                    $coa_kredit = "4101001";
 
                     $this->posting($coa_debit, $coa_kredit, $keterangan, $bruto, $tgl_invoice);
 
-                    // Jurnal 2: 13010 - Piutang Usaha bertambah, 23020 - Utang PPN bertambah (sebesar besaran_ppn)
-                    $coa_debit = "13010";
-                    $coa_kredit = "23020";
+                    // Jurnal 2: 1104003 - PENDAPATAN YANG MASIH HARUS DITERIMA bertambah, 2106009 - UTANG PPN bertambah (sebesar besaran_ppn)
+                    $coa_debit = "1104003";
+                    $coa_kredit = "2106009";
 
                     $this->posting($coa_debit, $coa_kredit, $keterangan, $besaran_ppn, $tgl_invoice);
 
@@ -657,33 +686,26 @@ class Financial extends CI_Controller
         ];
 
         // Versi jika menjadi PAD saat pembuatan invoice
-        // J1: PAD berkurang sebesar nominal pendapatan, Pendapatan bertambah sebesar nominal pendapatan
-        $j1_coa_debit = "41101";
+        // J1: 4101001 - PAD berkurang sebesar nominal pendapatan, Pendapatan bertambah sebesar nominal pendapatan
+        $j1_coa_debit = "4101001";
         $j1_coa_kredit = $coa_pendapatan;
         $this->posting($j1_coa_debit, $j1_coa_kredit, $keterangan, $inv['bruto'], $tanggal_bayar);
 
-        // j2: Kas/Bank bertambah, 13010 - Piutang Usaha berkurang (sebesar nominal bayar)
+        // j2: Kas/Bank bertambah, 1104003 - PENDAPATAN YANG MASIH HARUS DITERIMA berkurang (sebesar nominal bayar)
         $j2_coa_debit = $coa_kas;
-        $j2_coa_kredit = "13010";
+        $j2_coa_kredit = "1104003";
         $this->posting($j2_coa_debit, $j2_coa_kredit, $keterangan, $nominal_bayar, $tanggal_bayar);
 
-        // j3: 14306 - U/M PPH bertambah, 13010 - Piutang Usaha berkurang (sebesar besaran pph)
-        $j3_coa_debit = "14306";
-        $j3_coa_kredit = "13010";
+        // j3: 1108003 - UANG MUKA PPH 23 bertambah, 1104003 - PENDAPATAN YANG MASIH HARUS DITERIMA berkurang (sebesar besaran pph)
+        $j3_coa_debit = "1108003";
+        $j3_coa_kredit = "1104003";
         $this->posting($j3_coa_debit, $j3_coa_kredit, $keterangan, $inv['besaran_pph'], $tanggal_bayar);
 
-        // j4: 14306 - Utang PPN berkurang, PPN Keluaran bertambah (sebesar besaran ppn)
-        $j4_coa_debit = "23020";
-        $j4_coa_kredit = "23011";
+        // j4: 2106009 - UTANG PPN berkurang, 2106008 - PPN Keluaran bertambah (sebesar besaran ppn)
+        $j4_coa_debit = "2106009";
+        $j4_coa_kredit = "2106008";
         $this->posting($j4_coa_debit, $j4_coa_kredit, $keterangan, $inv['besaran_ppn'], $tanggal_bayar);
 
-        // if ($inv['opsi_pph23'] != '1') {
-        //     // Apabila opsi potong pph23 tidak dicentang, maka akan terjadi jurnal di bawah ini
-        //     // J4: Kas/Bank bertambah sebesar pph, utang pph 23 bertambah sebesar pph
-        //     $j4_coa_debit = $coa_kas;
-        //     $j4_coa_kredit = "23014";
-        //     $this->posting($j4_coa_debit, $j4_coa_kredit, $keterangan, $inv['besaran_pph'], $tanggal_bayar);
-        // }
 
         $this->log_pembayaran("invoice", $inv['Id'], $nominal_bayar, $keterangan);
 
@@ -1166,7 +1188,6 @@ class Financial extends CI_Controller
 
     public function list_coa()
     {
-        // $keyword = trim($this->input->post('keyword', true) ?? $this->session->userdata('search'));
         $keyword = ($this->input->post('keyword')) ? trim($this->input->post('keyword')) : (($this->session->userdata('search')) ? $this->session->userdata('search') : '');
         if ($keyword === null) $keyword = $this->session->userdata('search');
         else $this->session->set_userdata('search', $keyword);
@@ -1198,15 +1219,15 @@ class Financial extends CI_Controller
             'num_tag_open' => '<li>',
             'num_tag_close' => '</li>',
             'use_page_numbers' => TRUE,
-            'enable_query_strings' => TRUE,
-            'page_query_string' => TRUE,
-            'query_string_segment' => 'page'
+            // 'enable_query_strings' => TRUE,
+            // 'page_query_string' => TRUE,
+            // 'query_string_segment' => 'page'
         ];
 
 
         $this->pagination->initialize($config);
 
-        $page = $this->input->get('page') ? ($this->input->get('page') - 1) * $config['per_page'] : 0;
+        $page = $this->uri->segment(3) ? ($this->uri->segment(3) - 1) * $config['per_page'] : 0;
         // $invoices = $this->m_invoice->list_invoice($config["per_page"], $page, $keyword);
         $coa = $this->m_coa->list_coa_paginate($config["per_page"], $page, $keyword);
 
@@ -1230,6 +1251,64 @@ class Financial extends CI_Controller
         ];
 
         $this->load->view('index', $data);
+    }
+
+    public function tambahCoa()
+    {
+        $no_bb = $this->input->post('no_bb');
+        $no_sbb = $this->input->post('no_sbb');
+        $nama_coa = $this->input->post('nama_coa');
+
+        $cek_no_sbb = $this->m_coa->isAvailable('no_sbb', $no_sbb);
+        $cek_nama_coa = $this->m_coa->isAvailable('nama_perkiraan', $nama_coa);
+
+        if ($cek_no_sbb) {
+            $this->session->set_flashdata('message_error', 'No. ' . $no_sbb . ' sudah ada');
+            redirect($_SERVER['HTTP_REFERER']);
+        } else if ($cek_nama_coa) {
+            $this->session->set_flashdata('message_error', 'CoA ' . $nama_coa . ' sudah ada');
+            redirect($_SERVER['HTTP_REFERER']);
+        } else {
+
+            $substr_coa = substr($no_sbb, 0, 1);
+
+            // cek tabel
+            if ($substr_coa == "1" || $substr_coa == "2" || $substr_coa == "3") {
+                $tabel = "t_coa_sbb";
+            } else if ($substr_coa == "4" || $substr_coa == "5" || $substr_coa == "6" || $substr_coa == "7" || $substr_coa == "8" || $substr_coa == "9") {
+                $tabel = "t_coalr_sbb";
+            } else {
+                $this->session->set_flashdata('message_error', 'Format nomor CoA ' . $no_sbb . ' tidak sesuai.');
+                redirect($_SERVER['HTTP_REFERER']);
+            }
+
+            if ($substr_coa == "1" || $substr_coa == "5" || $substr_coa == "6" || $substr_coa == "7" || $substr_coa == "5" || $substr_coa == "6") {
+                $posisi = 'AKTIVA';
+            } else {
+                $posisi = 'PASIVA';
+            }
+
+            $data = [
+                'no_bb' => $no_bb,
+                'no_sbb' => $no_sbb,
+                'nama_perkiraan' => $nama_coa,
+                'posisi' => $posisi,
+            ];
+
+            $query = $this->cb->insert($tabel, $data);
+
+            if ($query) {
+                $this->session->set_flashdata('message_name', 'CoA ' . $no_sbb . ' berhasil ditambahkan.');
+                redirect($_SERVER['HTTP_REFERER']);
+            } else {
+                $this->session->set_flashdata('message_error', 'CoA ' . $no_sbb . ' gagal disimpan. Ket:' . $this->cb->error());
+                redirect($_SERVER['HTTP_REFERER']);
+            }
+        }
+        // exit;
+        // echo '<pre>';
+        // print_r($_POST);
+        // echo '</pre>';
     }
 
     public function reset($jenis)

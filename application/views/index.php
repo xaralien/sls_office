@@ -60,10 +60,17 @@
 			display: flex;
 			justify-content: center;
 		}
+
+		.mt-3 {
+			margin-top: 1rem !important;
+		}
+
+		.mt-5 {
+			margin-top: 2rem !important;
+		}
 	</style>
 	<!-- jQuery -->
 	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
-	<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 </head>
 
 <header class="header_area sticky-header">
@@ -250,6 +257,8 @@
 	<!-- Select 2 -->
 	<script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
 	<!-- My Script -->
+
+	<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 	<script src="<?php echo base_url(); ?>assets/js/myscript.js"></script>
 
 	<script>
@@ -275,7 +284,6 @@
 			}
 		});
 	</script>
-
 </body>
 
 </html>
