@@ -20,7 +20,7 @@
         <div class="x_content">
           <div class="row">
             <?php $a = $this->session->userdata('level');
-            if (strpos($a, '502') !== false) { ?>
+            if (strpos($a, '503') !== false) { ?>
               <a href="<?= base_url('asset/sarlog_out') ?>" class="btn btn-success btn-sm">Approval Sarlog <span class="badge bg-red"><?= $count_sarlog ?></span></a>
             <?php }
             if ($this->session->userdata('bagian') == 10) { ?>
