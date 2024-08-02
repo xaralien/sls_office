@@ -84,8 +84,8 @@
                 </ul>
             </li>
         <?php } ?>
-        <?php $a = $this->session->userdata('level');
-        if (strpos($a, '10') !== false) { ?>
+        <!-- <?php $a = $this->session->userdata('level');
+                if (strpos($a, '10') !== false) { ?>
             <li>
                 <a><i class="fa fa-edit"></i>Queue<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
@@ -103,9 +103,9 @@
                     <?php } ?>
                 </ul>
             </li>
-        <?php } ?>
-        <?php $a = $this->session->userdata('level');
-        if (strpos($a, '20') !== false) { ?>
+        <?php } ?> -->
+        <!-- <?php $a = $this->session->userdata('level');
+                if (strpos($a, '20') !== false) { ?>
             <li>
                 <a><i class="fa fa-edit"></i>Mit-E<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
@@ -123,7 +123,7 @@
                     <?php } ?>
                 </ul>
             </li>
-        <?php } ?>
+        <?php } ?> -->
         <?php $a = $this->session->userdata('level');
         if (strpos($a, '30') !== false) { ?>
             <li>

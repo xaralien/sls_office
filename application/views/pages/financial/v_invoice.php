@@ -49,7 +49,7 @@
                                         <?php
                                         foreach ($customers as $c) :
                                         ?>
-                                            <option <?= ($customer_id == $c->id) ? "selected" : "" ?> value="<?= $c->id ?>"><?= $c->nama_customer ?></option>
+                                            <option <?= ($this->input->post('customer_id') == $c->id) ? "selected" : "" ?> value="<?= $c->id ?>"><?= $c->nama_customer ?></option>
                                         <?php
                                         endforeach;
                                         ?>
@@ -285,25 +285,4 @@
         $('.select2').select2();
         $('.select3').select2();
     })
-
-    const flashdata = $(".flash-data").data("flashdata");
-    if (flashdata) {
-        Swal.fire({
-            title: "Success!! ",
-            text: '<?= $this->session->flashdata('message_name') ?>',
-            type: "success",
-            icon: "success",
-        });
-    }
-    // const flashdata_error = $('<?= $this->session->flashdata("message_error") ?>').data("flashdata");
-    const flashdata_error = $(".flash-data-error").data("flashdata");
-    // const flashdata_error = $('.flash-data').data('flashdata');
-    if (flashdata_error) {
-        Swal.fire({
-            title: "Error!! ",
-            text: flashdata_error,
-            type: "error",
-            icon: "error",
-        });
-    }
 </script>

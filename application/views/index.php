@@ -60,10 +60,17 @@
 			display: flex;
 			justify-content: center;
 		}
+
+		.mt-3 {
+			margin-top: 1rem !important;
+		}
+
+		.mt-5 {
+			margin-top: 2rem !important;
+		}
 	</style>
 	<!-- jQuery -->
 	<script src="<?php echo base_url(); ?>assets/vendors/jquery/dist/jquery.min.js"></script>
-	<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 </head>
 
 <header class="header_area sticky-header">
@@ -250,6 +257,8 @@
 	<!-- Select 2 -->
 	<script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
 	<!-- My Script -->
+
+	<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 	<script src="<?php echo base_url(); ?>assets/js/myscript.js"></script>
 
 	<script>
@@ -275,9 +284,6 @@
 			}
 		});
 	</script>
-<<<<<<< HEAD
-=======
-
 	<script>
 		$(document).ready(function() {
 			get_detail_item();
@@ -293,7 +299,7 @@
 			})
 
 			// $('.select2').select2({
-			// 	width: '100%'
+			// width: '100%'
 			// })
 
 			$('#item-0').select2({
@@ -385,9 +391,25 @@
 			});
 			$("#nominal").val(formatNumber(total_pos_fix)); // Atur nilai input #nominal dengan total_pos_fix
 		}
-	</script>
 
->>>>>>> 575f42b1c656f1fabaced37899b677cd71e17e93
+		const flashdata = $(".flash-data").data("flashdata");
+		if (flashdata) {
+			Swal.fire({
+				title: "Success!! ",
+				text: '<?= $this->session->flashdata('message_name') ?>',
+				icon: "success",
+			});
+		}
+
+		const flashdata_error = $(".flash-data-error").data("flashdata");
+		if (flashdata_error) {
+			Swal.fire({
+				title: "Error!! ",
+				text: flashdata_error,
+				icon: "error",
+			});
+		}
+	</script>
 </body>
 
 </html>
