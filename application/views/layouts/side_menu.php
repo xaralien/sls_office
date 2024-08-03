@@ -78,7 +78,7 @@
                         <li><a href="<?php echo base_url(); ?>asset/vendors">Vendors</a></li>
                     <?php }
                     if (strpos($a, '502') !== false) { ?>
-                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order IN</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/ro_list">Release Order</a></li>
                     <?php }
                     if (strpos($a, '503') !== false) { ?>
