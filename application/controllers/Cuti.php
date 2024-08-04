@@ -79,7 +79,10 @@ class Cuti extends CI_Controller
             $data['jenis_cuti'] = $this->M_cuti->getJenisCuti();
             $data['all_jenis'] = $this->M_cuti->get_all_jenis_cuti();
             $data['karyawan'] = $this->M_cuti->getKaryawan();
-            $this->load->view('cuti_view', $data);
+
+            $data['pages'] = 'pages/cuti/v_cuti_view';
+            $data['title'] = 'Cuti';
+            $this->load->view('index', $data);
         }
     }
 
@@ -105,7 +108,9 @@ class Cuti extends CI_Controller
 
         $data['count_inbox'] = $result;
         $data['count_inbox2'] = $result2;
-        $this->load->view('cuti_view_gm', $data);
+        $data['pages'] = 'pages/cuti/v_cuti_gm';
+        $data['title'] = 'Data Cuti';
+        $this->load->view('index', $data);
     }
 
     public function cuti_all_gm()
@@ -302,7 +307,7 @@ class Cuti extends CI_Controller
             $row[] = date('d F Y', strtotime($res->date_created));
             $row[] = $this->tgl_indo($res->tgl_cuti);
             $row[] = $jumlah_cuti;
-            $row[] = $atasan[$i]->nama;
+            $row[] = $atasan[$i] ? $atasan[$i]->nama : '';
             $row[] = $status_cuti;
             $row[] = $lihatDetail . $cetak;
             $data['data'][] = $row;
@@ -339,7 +344,9 @@ class Cuti extends CI_Controller
             $data['jenis_cuti'] = $this->M_cuti->getJenisCuti();
             $data['all_jenis'] = $this->M_cuti->get_all_jenis_cuti();
             $data['karyawan'] = $this->M_cuti->getKaryawan();
-            $this->load->view('approve_atasan', $data);
+            $data['pages'] = 'pages/cuti/v_approve_atasan';
+            $data['title'] = 'Approve Atasan';
+            $this->load->view('index', $data);
         }
     }
 
@@ -449,7 +456,9 @@ class Cuti extends CI_Controller
             $data['jenis_cuti'] = $this->M_cuti->getJenisCuti();
             $data['all_jenis'] = $this->M_cuti->get_all_jenis_cuti();
             $data['karyawan'] = $this->M_cuti->getKaryawan();
-            $this->load->view('approve_hrd', $data);
+            $data['pages'] = 'pages/cuti/v_approve_hrd';
+            $data['title'] = 'Data Approve Hrd';
+            $this->load->view('index', $data);
         }
     }
 
@@ -555,7 +564,9 @@ class Cuti extends CI_Controller
             $data['jenis_cuti'] = $this->M_cuti->getJenisCuti();
             $data['all_jenis'] = $this->M_cuti->get_all_jenis_cuti();
             $data['karyawan'] = $this->M_cuti->getKaryawan();
-            $this->load->view('approve_direksi', $data);
+            $data['pages'] = 'pages/cuti/v_approve_direksi';
+            $data['title'] = 'Data Approve Direksi';
+            $this->load->view('index', $data);
         }
     }
 
@@ -1456,7 +1467,7 @@ class Cuti extends CI_Controller
 
         // $this->load->view('cetak_form_cuti', $data);
         $dompdf = new Dompdf\Dompdf();
-        $dompdf->loadHtml($this->load->view('cetak_form_cuti', $data, true));
+        $dompdf->loadHtml($this->load->view('pages/cuti/cetak_form_cuti', $data, true));
         // (Optional) Setup the paper size and orientation
         $dompdf->setPaper('a4', 'potrait');
 
@@ -1489,7 +1500,9 @@ class Cuti extends CI_Controller
             $data['data'] = $this->M_cuti->getDataCuti($id);
             $data['users'] = $this->db->get_where('users', ['nip' => $data['data']['nip']])->row_array();
             $data['historyCuti'] = $this->M_cuti->historyCutiById($id);
-            $this->load->view('history_cuti', $data);
+            $data['pages'] = 'pages/cuti/v_history_cuti';
+            $data['title'] = 'History Cuti';
+            $this->load->view('index', $data);
         }
     }
 

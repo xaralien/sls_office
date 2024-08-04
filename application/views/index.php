@@ -36,6 +36,7 @@
 	<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/mobile_menu/icons.css">
 	<!-- My Style -->
 	<link rel="stylesheet" href="<?= base_url('assets/css/mystyle.css') ?>">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet" />
 
 	<style>
 		.col-xs-3 {
@@ -260,12 +261,25 @@
 	<!-- Custom Theme Scripts -->
 	<script src="<?php echo base_url(); ?>assets/build/js/custom.min.js"></script>
 	<script src="<?php echo base_url(); ?>assets/build/js/owl.carousel.min.js"></script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script> -->
+	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-buttons/js/buttons.flash.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+	<script src="<?= base_url() ?>assets/vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
 	<!-- Sweetalert -->
 	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<!-- Select 2 -->
 	<script type="text/javascript" src="<?= base_url(); ?>assets/select2/js/select2.min.js"></script>
 	<!-- My Script -->
-
 	<script src="<?= base_url(); ?>assets/js/jquery.mask.js"></script>
 	<script src="<?php echo base_url(); ?>assets/js/myscript.js"></script>
 

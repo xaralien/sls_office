@@ -157,7 +157,22 @@ class Login extends CI_Controller
 		if ($this->session->userdata('isLogin') == FALSE) {
 			redirect('login');
 		} else {
-			$this->load->view('password');
+			//inbox notif
+			$nip = $this->session->userdata('nip');
+			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+			$query = $this->db->query($sql);
+			$res1 = $query->result_array();
+			$result = $res1[0]['COUNT(Id)'];
+			$data['count_inbox'] = $result;
+
+			$sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query2 = $this->db->query($sql2);
+			$res2 = $query2->result_array();
+			$result2 = $res2[0]['COUNT(id)'];
+			$data['count_inbox2'] = $result2;
+			$data['pages'] = 'pages/auth/v_password';
+			$data['title'] = 'Reset Password';
+			$this->load->view('index', $data);
 		}
 	}
 

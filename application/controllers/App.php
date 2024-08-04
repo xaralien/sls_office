@@ -722,8 +722,9 @@ class App extends CI_Controller
 				$res4 = $query4->result_array();
 				$result4 = $res4[0]['COUNT(id)'];
 				$data['count_inbox2'] = $result4;
-
-				$this->load->view('user', $data);
+				$data['pages'] = 'pages/user/v_user';
+				$data['title'] = 'Data User Cari';
+				$this->load->view('index', $data);
 			}
 		}
 	}
@@ -792,8 +793,9 @@ class App extends CI_Controller
 				$res4 = $query4->result_array();
 				$result4 = $res4[0]['COUNT(id)'];
 				$data['count_inbox2'] = $result4;
-
-				$this->load->view('inbox_view', $data);
+				$data['pages'] = 'pages/memo/v_inbox';
+				$data['title'] = 'Inbox';
+				$this->load->view('index', $data);
 			}
 		}
 	}
@@ -917,7 +919,7 @@ class App extends CI_Controller
 	public function qrcode_view()
 	{
 		$data['asset_list'] = $this->m_app->ambil_asset_list($this->uri->segment(3));
-		$this->load->view('qrcode', $data);
+		$this->load->view('pages/aset/v_qrcode', $data);
 	}
 
 	public function asset_detail()
@@ -1295,7 +1297,9 @@ class App extends CI_Controller
 			$data['count_inbox'] = $result;
 
 			$data['slip'] = $this->m_app->cari_gaji($this->session->userdata('nip'));
-			$this->load->view('cetak_gaji', $data);
+			$data['pages'] = 'pages/user/v_cetak_haji';
+			$data['title'] = 'Cetak Gaji';
+			$this->load->view('index', $data);
 			// if (count($data)==1){
 			// $this->slip_gaji_pdf();
 			// }else{
@@ -1321,7 +1325,16 @@ class App extends CI_Controller
 			$res2 = $query->result_array();
 			$result = $res2[0]['COUNT(Id)'];
 			$data['count_inbox'] = $result;
-			$this->load->view('cetak_gaji', $data);
+
+			$sql4 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query4 = $this->db->query($sql4);
+			$res4 = $query4->result_array();
+			$result4 = $res4[0]['COUNT(id)'];
+			$data['count_inbox2'] = $result4;
+
+			$data['title'] = 'Slip Gaji';
+			$data['pages'] = 'pages/user/v_cetak_gaji';
+			$this->load->view('index', $data);
 		}
 	}
 	public function slip_gaji_pdf()
@@ -1345,11 +1358,11 @@ class App extends CI_Controller
 				if ($data['slip']->pembayaran == 1) {
 					$this->pdf->setPaper('A4', 'potrait');
 					$this->pdf->filename = "slip_gaji.pdf";
-					$this->pdf->load_view('slip_gaji_pdf', $data);
+					$this->pdf->load_view('pages/user/slip_gaji_pdf', $data);
 				} elseif ($data['slip']->pembayaran == 2) {
 					$this->pdf->setPaper('A4', 'potrait');
 					$this->pdf->filename = "slip_gaji.pdf";
-					$this->pdf->load_view('slip_gaji_pdf2', $data);
+					$this->pdf->load_view('pages/user/slip_gaji_pdf2', $data);
 				}
 			}
 		}
@@ -1368,7 +1381,16 @@ class App extends CI_Controller
 				$res2 = $query->result_array();
 				$result = $res2[0]['COUNT(Id)'];
 				$data['count_inbox'] = $result;
-				$this->load->view('upload_gaji', $data);
+
+				$sql4 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+				$query4 = $this->db->query($sql4);
+				$res4 = $query4->result_array();
+				$result4 = $res4[0]['COUNT(id)'];
+				$data['count_inbox2'] = $result4;
+
+				$data['pages'] = 'pages/human_resources/v_upload_gaji';
+				$data['title'] = 'Upload Gaji';
+				$this->load->view('index', $data);
 			}
 		}
 	}
@@ -3272,27 +3294,7 @@ class App extends CI_Controller
 					}
 				}
 			}
-			/**
-		//menyimpan setoran modal/top up
-		if($this->input->post('simpan_transaksi')){
-			
-		}
-		//menyimpan penarikan tunai
-		if($this->input->post('simpan_tarik')){
-			
-		}
-		//menyimpan spending
-		if($this->input->post('simpan_spending')){
-			
-		}
-		//menyimpan transfer antar user
-		if($this->input->post('transfer_user')){
-			
-		}
-		//menyimpan pembayaran hutang
-		if($this->input->post('simpan_hutang')){
-			
-		} **/
+
 			//eksekusi transaksi oleh admin
 			if ($this->input->post('post_transaksi')) {
 				$this->form_validation->set_rules('id_post', 'id_post', 'required|trim');
