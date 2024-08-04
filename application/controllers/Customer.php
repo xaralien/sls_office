@@ -20,29 +20,57 @@ class Customer extends CI_Controller
 
 	public function index()
 	{
+		$keyword = trim($this->input->post('keyword', true) ?? '');
+
+		$config = [
+			'base_url' => site_url('financial/fe_pending'),
+			'total_rows' => $this->M_Customer->customer_count($keyword),
+			'per_page' => 20,
+			'uri_segment' => 3,
+			'num_links' => 10,
+			'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+			'full_tag_close' => '</ul>',
+			'first_link' => false,
+			'last_link' => false,
+			'first_tag_open' => '<li>',
+			'first_tag_close' => '</li>',
+			'prev_link' => '«',
+			'prev_tag_open' => '<li class="prev">',
+			'prev_tag_close' => '</li>',
+			'next_link' => '»',
+			'next_tag_open' => '<li>',
+			'next_tag_close' => '</li>',
+			'last_tag_open' => '<li>',
+			'last_tag_close' => '</li>',
+			'cur_tag_open' => '<li class="active"><a href="#">',
+			'cur_tag_close' => '</a></li>',
+			'num_tag_open' => '<li>',
+			'num_tag_close' => '</li>'
+		];
+
+		$this->pagination->initialize($config);
+
+		$page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
+		$customers = $this->M_Customer->list_customers($config["per_page"], $page, $keyword);
 
 		$nip = $this->session->userdata('nip');
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
 		$query = $this->db->query($sql);
-		$res2 = $query->result_array();
-		$result = $res2[0]['COUNT(Id)'];
+		$result = $query->row_array()['COUNT(Id)'];
 
 		$sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
 		$query2 = $this->db->query($sql2);
-		$res2 = $query2->result_array();
-		$result2 = $res2[0]['COUNT(id)'];
+		$result2 = $query2->row_array()['COUNT(id)'];
 
-		$data['count_inbox'] = $result;
-		$data['count_inbox2'] = $result2;
-
-		$data['title'] = "Customer";
-
-		$data['customers'] = $this->M_Customer->customer();
-
-		// $this->load->view('customer', $data);
-		$data['title'] = "Customer";
-		$data['pages'] = "pages/customer/v_customer";
-
+		$data = [
+			'page' => $page,
+			'customers' => $customers,
+			'count_inbox' => $result,
+			'count_inbox2' => $result2,
+			'keyword' => $keyword,
+			'title' => "Customer",
+			'pages' => "pages/customer/v_customer"
+		];
 		$this->load->view('index', $data);
 	}
 

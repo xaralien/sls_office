@@ -25,12 +25,12 @@
 </style>
 <div class="right_col" role="main">
     <div class="page-title">
-        <!-- <div class="title_left" style="width: 30%;">
+        <div class="title_left" style="width: 30%;">
             <h3>List of CoA</h3>
-        </div> -->
+        </div>
 
         <div class="title_right" style="width: 100%;">
-            <div class="col-md-12 col-sm-12 form-group pull-right top_search">
+            <div class="col-md-12 col-xs-12 form-group pull-right top_search">
                 <form class="form-horizontal form-label-left" method="post" action="<?= base_url('financial/list_coa') ?>">
                     <div class="input-group">
                         <input type="text" class="form-control" name="keyword" placeholder="Search for..." value="<?= $keyword ?>">

@@ -20,6 +20,26 @@ class M_Customer extends CI_Model
         return $this->cb->where('status_customer', $status)->order_by('nama_customer', 'ASC')->get('customer')->result();
     }
 
+    public function customer_count($keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('slug', $keyword);
+            $this->cb->or_like('nama_customer', $keyword);
+        }
+
+        return $this->cb->from('customer')->count_all_results();
+    }
+
+    public function list_customers($limit, $from, $keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('slug', $keyword);
+            $this->cb->or_like('nama_customer', $keyword);
+        }
+
+        return $this->cb->order_by('nama_customer', 'DESC')->limit($limit, $from)->get('customer')->result();
+    }
+
     public function insert($data)
     {
         return $this->cb->insert('customer', $data);

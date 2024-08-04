@@ -149,10 +149,10 @@ class M_invoice extends CI_Model
 
     public function fe_pending_count($keyword)
     {
-        // if ($keyword) {
-        //     // $this->cb->like('slug', $keyword);
-        //     $this->cb->or_like('keterangan', $keyword);
-        // }
+        if ($keyword) {
+            $this->cb->like('slug', $keyword);
+            $this->cb->or_like('keterangan', $keyword);
+        }
 
         return $this->cb->from('financial_entry')->where('status_approval', '0')->count_all_results();
     }

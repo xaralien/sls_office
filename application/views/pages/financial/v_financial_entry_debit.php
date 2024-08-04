@@ -36,7 +36,7 @@
                     <form class="form-label-left input_mask" method="POST" action="<?= base_url('financial/store_financial_entry/debit') ?>" enctype="multipart/form-data">
 
 
-                        <div class="col-md-6 col-12 form-group has-feedback">
+                        <div class="col-md-6 col-xs-12 form-group has-feedback">
                             <label for="" class="form-label">Coa Debit</label>
                             <select name="neraca_debit" id="neraca_debit" class="form-control select2" style="width: 100%" required>
                                 <option value="">:: Pilih pos neraca debit</option>
@@ -50,7 +50,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="width: 600px;">Coa Kredit</th>
+                                    <th>Coa Kredit</th>
                                     <th>Nominal</th>
                                 </tr>
                             </thead>
@@ -78,7 +78,7 @@
                             </tbody>
                         </table>
 
-                        <!-- <div class="col-md-6 col-12 form-group has-feedback">
+                        <!-- <div class="col-md-6 col-xs-12 form-group has-feedback">
                             <label for="" class="form-label">Kredit</label>
                             <select name="neraca_kredit" id="neraca_kredit" class="form-control select2" required>
                                 <option value="">:: Pilih pos neraca kredit</option>
@@ -90,19 +90,19 @@
                                 endforeach; ?>
                             </select>
                         </div> -->
-                        <!-- <div class="col-md-6 col-12 form-group has-feedback">
+                        <!-- <div class="col-md-6 col-xs-12 form-group has-feedback">
                             <label for="" class="form-label">Nominal</label>
                             <input type="text" class="form-control uang" name="input_nominal" id="input_nominal" placeholder="Nominal" autofocus required>
                         </div> -->
-                        <div class="col-md-6 col-12 form-group has-feedback">
+                        <div class="col-md-6 col-xs-12 form-group has-feedback">
                             <label for="" class="form-label">Tanggal</label>
                             <input type="date" name="tanggal" id="tanggal" value="<?= date('Y-m-d') ?>" class="form-control" required>
                         </div>
-                        <div class="col-md-6 col-12 form-group has-feedback">
+                        <div class="col-md-6 col-xs-12 form-group has-feedback">
                             <label for="" class="form-label">Keterangan</label>
                             <textarea name="input_keterangan" id="input_keterangan" class="form-control" placeholder="Keterangan" oninput="this.value = this.value.toUpperCase()" rows="3" required></textarea>
                         </div>
-                        <div class="col-md-6 col-12 form-group has-feedback">
+                        <div class="col-md-6 col-xs-12 form-group has-feedback">
                             <label for="file_upload" class="form-label">Upload file (opsional)</label>
                             <input type="file" name="file_upload" id="file_upload" class="form-control">
                         </div>

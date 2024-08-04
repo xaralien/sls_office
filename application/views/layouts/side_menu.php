@@ -196,7 +196,7 @@
                     <?php }
                     if (strpos($a, '301') !== false) { ?>
                         <li>
-                            <a href="<?= base_url(); ?>financial/coa_report">Report per CoA</a>
+                            <a href="<?= base_url(); ?>financial/coa_report">Arus Kas</a>
                         </li>
                     <?php }
                     if (strpos($a, '301') !== false) { ?>

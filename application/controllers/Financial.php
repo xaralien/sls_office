@@ -1316,6 +1316,10 @@ class Financial extends CI_Controller
         $this->session->unset_userdata('search');
         if ($jenis == "coa") {
             redirect('financial/list_coa');
+        } else if ($jenis == "invoice") {
+            redirect('financial/invoice');
+        } else if ($jenis == "customer") {
+            redirect('customer');
         }
     }
 }
