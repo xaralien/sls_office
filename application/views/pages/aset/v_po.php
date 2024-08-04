@@ -1,4 +1,10 @@
 <style>
+  .select2-container--default .select2-selection--multiple,
+  .select2-container--default .select2-selection--single {
+    min-height: 34px;
+    height: 34px;
+  }
+
   @media screen and (max-width:991px) {
     table.table.table-po {
       width: 1200px !important;
@@ -25,12 +31,12 @@
         <div class="x_content">
           <?php if (!$this->uri->segment(3)) { ?>
             <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po') ?>" enctype="multipart/form-data" id="form-po">
-              <div class="row" style="margin-bottom: 30px">
-                <div class="col-md-3 col-sm-6 col-xs-12">
+              <div class="row" style="margin-bottom: 30px;">
+                <div class="col-md-3 col-sm-6 col-xs-12" style="padding: 0;">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
                 </div>
-                <div class="col-md-5 col-sm-6 col-xs-12">
+                <div class="col-md-5 col-sm-6 col-xs-12 p-0" style="padding: 0;">
                   <label for="tanggal" class="form-label">Vendor</label>
                   <select name="vendor" id="vendor" class="form-control">
                     <option value="">:: Pilih Vendor</option>
@@ -111,7 +117,7 @@
                 </table>
               </div>
               <div class="row">
-                <div class="col-lg-12 text-end">
+                <div class="col-lg-12 text-end" style="padding: 0;">
                   <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning"><i class="fa fa-chevron-left" aria-hidden="true"></i> Back</a>
                   <button type="submit" class="btn btn-primary btn-submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
                 </div>
