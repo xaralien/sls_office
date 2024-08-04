@@ -1,12 +1,12 @@
 <div class="right_col" role="main">
     <div class="container">
-        <div class="row justify-content-center">
+        <!-- <div class="row justify-content-center">
             <div class="title_left">
                 <h3>
                     <a href="http://103.252.51.17:8787/fornax/user_login.php" class="btn btn-warning">Fornax</a>
                 </h3>
             </div>
-        </div>
+        </div> -->
         <div class="clearfix"></div>
         <div class="row justify-content-center">
             <div class="col-md-8 col-sm-8 col-xs-12">

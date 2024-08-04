@@ -61,6 +61,14 @@
 			justify-content: center;
 		}
 
+		.mt-1 {
+			margin-top: .25rem !important;
+		}
+
+		.mt-2 {
+			margin-top: .5rem !important;
+		}
+
 		.mt-3 {
 			margin-top: 1rem !important;
 		}

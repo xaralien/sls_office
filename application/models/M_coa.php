@@ -49,7 +49,7 @@ class M_coa extends CI_Model
     public function getCoaReport($no_coa, $from, $to)
     {
         return $this->cb->where('tanggal >=', $from)->where('tanggal <=', $to)->where('akun_debit', $no_coa)->or_where('akun_kredit', $no_coa)
-            // ->order_by('tanggal', 'ASC')->order_by('created_at', 'ASC')
+            ->order_by('id', 'DESC')
             ->get('jurnal_neraca')->result();
     }
 

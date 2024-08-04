@@ -20,42 +20,31 @@
 
     .select2-container .select2-dropdown .select2-results__option {
         text-align: left;
-        /* Pastikan opsi dropdown rata kiri */
     }
 </style>
 <div class="right_col" role="main">
+    <div class="page-title">
+        <div class="title_right" style="width: 100%;">
+            <div class="col-md-12 col-xs-12 form-group pull-right top_search">
+                <form class="form-horizontal form-label-left" method="post" action="<?= base_url('financial/fe_pending') ?>">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="keyword" placeholder="Search for..." value="<?= $keyword ?>">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="submit">Go!</button>
+                            <button class="btn btn-warning" onclick="document.location='<?= base_url('financial/reset/customer') ?>'" style="color:white;">Reset</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div class="clearfix"></div>
 
     <!-- Start content-->
     <div class="row">
         <div class="col-md-12 col-sm-12 col-xs-12">
             <div class="x_panel card">
-                <!-- <div class="x_title">
-                    <h2>Invoices</h2>
-                    <ul class="nav navbar-right panel_toolbox">
-                        <li>
-                            <button class="btn btn-primary" onclick="document.location='<?= base_url('financial/create_invoice') ?>'">Create Invoice</button>
-                        </li>
-                    </ul>
-                </div> -->
                 <div class="x_content">
-                    <div class="row">
-                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/fe_pending') ?>">
-                            <!-- <div class="col-md-2">
-                                <h2>Invoices</h2>
-                            </div> -->
-                            <div class="col-md-5">
-                                <div class="form-group">
-                                    <input type="text" name="keyword" id="keyword" class="form-control" placeholder="Masukkan nomor FE / keterangan">
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-success">Cari</button>
-                                <a href="<?= base_url('financial/fe_pending') ?>" class="btn btn-warning">Reset</a>
-                            </div>
-                        </form>
-                        <div class="col-md-1"></div>
-                    </div>
                     <div class="table-responsive">
                         <table id="datatable" class="table table-striped" style="width:100%">
                             <thead>

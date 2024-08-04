@@ -49,15 +49,15 @@
                 </div>
                 <div class="x_content">
                     <div class="row">
-                        <div class="col-md-6 col-12">
+                        <div class="col-md-6 col-xs-12">
                             <h5>
                                 <?php
                                 $total_pendapatan = $sum_pendapatan - $sum_biaya; ?>
                                 Laba berjalan: <strong>Rp <?= number_format($total_pendapatan) ?></strong>
                             </h5>
                         </div>
-                        <div class="col-md-2 col-12"></div>
-                        <div class="col-md-4 col-12">
+                        <div class="col-md-2 col-xs-12"></div>
+                        <div class="col-md-4 col-xs-12">
                             <?php
                             if (!$this->uri->segment(3)) {
                             ?>
@@ -76,7 +76,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 col-12">
+                        <div class="col-md-6 col-xs-12">
                             <div class="row justify-content-between">
                                 <h2 class="text-center">Pendapatan</h2>
                                 <p class="text-right">Total: <strong><?= number_format($sum_pendapatan) ?></strong></p>
@@ -103,7 +103,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-6 col-12">
+                        <div class="col-md-6 col-xs-12">
                             <h2 class="text-center">Biaya</h2>
                             <p class="text-right">Total: <strong><?= number_format($sum_biaya) ?></strong></p>
                             <table id="datatable" class="table" style="width:100%">
@@ -145,7 +145,7 @@
             <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('financial/simpanLR') ?>">
                 <div class="modal-body">
                     <div class="form-group row">
-                        <div class="col-12">
+                        <div class="col-xs-12">
                             <label for="keterangan" class="form-label">Keterangan</label>
                             <textarea name="keterangan" id="keterangan" class="form-control" oninput="this.value = this.value.toUpperCase()"></textarea>
                         </div>

@@ -39,45 +39,47 @@
                     </ul>
                 </div>
                 <div class="x_content">
-                    <table id="datatable" class="table table-striped" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>No.</th>
-                                <th>Kode</th>
-                                <th>Tanggal simpan</th>
-                                <th>Keterangan</th>
-                                <th>User</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            if ($neraca) {
-                                $no = 1;
-                                foreach ($neraca as $i) : ?>
-                                    <tr>
-                                        <td><?= $no++ ?>.</td>
-                                        <td><a href="<?= base_url('financial/showNeracaTersimpan/' . $i['slug']) ?>"><?= $i['slug'] ?></a></td>
-                                        <td><?= format_indo($i['tanggal_simpan']) ?></td>
-                                        <td style="white-space: pre-line;"><?= ($i['keterangan']) ?></td>
-                                        <td><?= isset($i['created_by_name']) ? $i['created_by_name'] : 'N/A' ?></td>
-                                    </tr>
-
-                                <?php
-                                endforeach;
-                            } else {
-                                ?>
+                    <div class="table-responsive">
+                        <table id="datatable" class="table table-striped" style="width:100%">
+                            <thead>
                                 <tr>
-                                    <td colspan="5">Tidak ada data yang ditampilkan</td>
+                                    <th>No.</th>
+                                    <th>Kode</th>
+                                    <th>Tanggal simpan</th>
+                                    <th>Keterangan</th>
+                                    <th>User</th>
                                 </tr>
-                            <?php
-                            } ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php
+                                if ($neraca) {
+                                    $no = 1;
+                                    foreach ($neraca as $i) : ?>
+                                        <tr>
+                                            <td><?= $no++ ?>.</td>
+                                            <td><a href="<?= base_url('financial/showNeracaTersimpan/' . $i['slug']) ?>"><?= $i['slug'] ?></a></td>
+                                            <td><?= format_indo($i['tanggal_simpan']) ?></td>
+                                            <td style="white-space: pre-line;"><?= ($i['keterangan']) ?></td>
+                                            <td><?= isset($i['created_by_name']) ? $i['created_by_name'] : 'N/A' ?></td>
+                                        </tr>
+
+                                    <?php
+                                    endforeach;
+                                } else {
+                                    ?>
+                                    <tr>
+                                        <td colspan="5">Tidak ada data yang ditampilkan</td>
+                                    </tr>
+                                <?php
+                                } ?>
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-xs-12">
                             <h6>*klik kode untuk lihat neraca tersimpan</h6>
                         </div>
-                        <div class="col-md-6 text-right">
+                        <div class="col-md-6 col-xs-12 text-right">
                             <?= $this->pagination->create_links() ?>
                         </div>
                     </div>
