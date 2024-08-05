@@ -8,18 +8,25 @@
         </div>
         <!-- search -->
 
-        <form data-parsley-validate action="<?php echo base_url(); ?>app/asset_cari" method="post" name="form_input" id="form_input">
-            <label class="control-label col-md-1 col-sm-1 col-xs-4" for="cari_nama">Filter
-                <span class="required">*</span>
-            </label>
-            <div class="col-md-6 col-sm-6 col-xs-8">
-                <input type="text" id="search" name="search" class="form-control col-md-7 col-xs-12" placeholder="nama asset yang akan dicari">
+        <div class="row">
+            <div class="col-md-8 col-sm-8 col-xs-12" style="padding: 0 !important; margin: 0 !important">
+                <form action="<?= base_url('app/asset_cari') ?>" method="post">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode asset..." value="<?= $this->input->get('search') ?>">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
             </div>
-            <?php echo form_submit('cari_asset', 'Cari', 'class="btn btn-primary"'); ?>
-            <input type="button" class="btn btn-primary" value="Tampilkan Semua" onclick="window.location.href='<?php echo base_url(); ?>app/asset_list'" />
-            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1">Tambah Asset</button>
-        </form>
-        <form method="POST" action="<?= base_url('app/filter_jenis_asset') ?>" style="margin-bottom:20px;">
+            <div class="col-md-4 col-sm-4 col-xs-12" style="padding: 0 !important; margin: 0 !important">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='<?php echo base_url(); ?>app/asset_list'">Tampilkan Semua</button>
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1">Tambah Asset</button>
+            </div>
+        </div>
+
+
+        <!-- <form method="POST" action="<?= base_url('app/filter_jenis_asset') ?>" style="margin-bottom:20px;">
             <label class="control-label col-md-1 col-sm-1 col-xs-4">Filter Jenis</label>
             <div class="col-md-2 col-sm-2 col-xs-4">
                 <select name="jenis" onchange="form.submit()" id="" class="form-control">
@@ -36,7 +43,7 @@
             <a class="btn btn-warning" href="<?= base_url('app/reset_jenis') ?>">Reset</a>
             <a href="<?= base_url('app/export_asset') ?>" class="btn btn-success">Excel <i class="fa fa-file-excel-o"></i></a>
 
-        </form>
+        </form> -->
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>

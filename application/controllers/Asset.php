@@ -845,7 +845,7 @@ class Asset extends CI_Controller
 					'posisi' => $posisi,
 					'date_sarlog' => $tgl,
 					'catatan_sarlog' => $catatan,
-					'direksi_ops' => '2176102'
+					'direksi_ops' => 'SLS0004'
 				];
 
 				$this->cb->where('Id', $id);
@@ -1133,7 +1133,7 @@ class Asset extends CI_Controller
 				'posisi' => $posisi,
 				'date_direksi_ops' => $tgl,
 				'catatan_direksi_ops' => $catatan,
-				'dirut' => '2146501'
+				'dirut' => 'SLS0003'
 			];
 
 			$this->cb->where('Id', $id);
@@ -1819,7 +1819,7 @@ class Asset extends CI_Controller
 		} else {
 			if ($status == 1) {
 				$posisi = 'diajukan kepada direktur operasional';
-				$direksi_ops = '2176102';
+				$direksi_ops = 'SLS0004';
 			} else {
 				$posisi = 'ditolak sarlog';
 				$direksi_ops = null;

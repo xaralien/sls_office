@@ -23,7 +23,7 @@
 
         <div class="row">
             <div class="col-md-6 col-sm-6 col-xs-12" style="padding: 0 !important; margin: 0 !important">
-                <form action="">
+                <form action="<?= base_url('asset/item_list') ?>" method="get">
                     <div class="input-group">
                         <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode item..." value="<?= $this->input->get('search') ?>">
                         <span class="input-group-btn">
@@ -77,7 +77,7 @@
                                 <td><?php echo $data->nama; ?></td>
                                 <td class="fit"><?php echo $data->stok; ?></td>
                                 <td><?php echo $detail->num_rows(); ?></td>
-                                <td><?php echo number_format($data->harga_sat); ?></td>
+                                <td><?= $data->harga_sat ? number_format($data->harga_sat) : "" ?></td>
                                 <td><?php echo number_format(($data->harga_sat * $data->stok) - ($stok_repair * $data->harga_sat)); ?></td>
                                 <td><?php echo $data->nama_jenis; ?></td>
                                 <td width="80px">

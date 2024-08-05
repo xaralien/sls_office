@@ -32,11 +32,11 @@
           <?php if (!$this->uri->segment(3)) { ?>
             <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_po') ?>" enctype="multipart/form-data" id="form-po">
               <div class="row" style="margin-bottom: 30px;">
-                <div class="col-md-3 col-sm-6 col-xs-12" style="padding: 0;">
+                <div class="col-md-3 col-sm-6 col-xs-12">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
                 </div>
-                <div class="col-md-5 col-sm-6 col-xs-12 p-0" style="padding: 0;">
+                <div class="col-md-5 col-sm-6 col-xs-12">
                   <label for="tanggal" class="form-label">Vendor</label>
                   <select name="vendor" id="vendor" class="form-control">
                     <option value="">:: Pilih Vendor</option>
