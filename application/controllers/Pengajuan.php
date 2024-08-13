@@ -466,6 +466,7 @@ class Pengajuan extends CI_Controller
     $metode = $this->input->post('metode');
     $catatan = $this->input->post('catatan');
     $tgl = $this->input->post('tanggal');
+    $memo = $this->input->post('memo');
     $now = date('Y-m-d');
 
     if (strtotime($tgl) != strtotime($now)) {
@@ -498,6 +499,8 @@ class Pengajuan extends CI_Controller
 
       if ($_FILES['bukti']['name']) {
         if ($this->upload->do_upload('bukti')) {
+          $path = './upload/pengajuan/' . $data['bukti_pengajuan'];
+          unlink($path);
           $upload = $this->upload->data();
           $user = $this->db->get_where('users', ['nip' => $this->session->userdata('nip')])->row_array();
           $count = $this->cb->get('t_pengajuan')->num_rows();
@@ -515,7 +518,8 @@ class Pengajuan extends CI_Controller
             'bukti_pengajuan' => $upload['file_name'],
             'catatan' => $catatan,
             'created_at' => $created_at,
-            'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total)
+            'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
+            'memo' => $memo
           ];
           $this->cb->where(['Id' => $id]);
           $this->cb->update('t_pengajuan', $pengajuan);
@@ -560,7 +564,8 @@ class Pengajuan extends CI_Controller
           'posisi' => 'Diajukan kepada spv',
           'catatan' => $catatan,
           'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
-          'created_at' => $created_at
+          'created_at' => $created_at,
+          'memo' => $memo
         ];
         $this->cb->where(['Id' => $id]);
         $this->cb->update('t_pengajuan', $pengajuan);

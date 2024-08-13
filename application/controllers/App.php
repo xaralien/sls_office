@@ -70,13 +70,20 @@ class App extends CI_Controller
 		$a = $this->session->userdata('level');
 		if (strpos($a, '501') !== false) {
 			//pagination settings
+			$keyword = $this->input->get('keyword');
 			$config['base_url'] = site_url('app/asset_list');
-			$config['total_rows'] = $this->m_app->asset_count();
-			$config['per_page'] = "20";
+			$config['total_rows'] = $this->m_app->asset_count($keyword);
+			$config['per_page'] = "10";
 			$config["uri_segment"] = 3;
 			$choice = $config["total_rows"] / $config["per_page"];
 			//$config["num_links"] = floor($choice);
 			$config["num_links"] = 10;
+			$config['enable_query_strings'] = TRUE;
+			$config['page_query_string'] = TRUE;
+			$config['use_page_numbers'] = TRUE;
+			$config['reuse_query_string'] = TRUE;
+			$config['query_string_segment'] = 'page';
+
 			// integrate bootstrap pagination
 			$config['full_tag_open'] = '<ul class="pagination">';
 			$config['full_tag_close'] = '</ul>';
@@ -97,8 +104,8 @@ class App extends CI_Controller
 			$config['num_tag_open'] = '<li>';
 			$config['num_tag_close'] = '</li>';
 			$this->pagination->initialize($config);
-			$data['page'] = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
-			$data['users_data'] = $this->m_app->asset_get($config["per_page"], $data['page']);
+			$data['page'] = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
+			$data['users_data'] = $this->m_app->asset_get($config["per_page"], $data['page'], $keyword);
 			$data['pagination'] = $this->pagination->create_links();
 
 			//inbox notif
@@ -159,7 +166,7 @@ class App extends CI_Controller
 			$stringLink = str_replace(' ', '_', $search);
 			// pagination settings
 			$config = array();
-			$config['base_url'] = site_url("app/asset_cari/$stringLink");
+			$config['base_url'] = site_url("app/asset_cari");
 			$config['total_rows'] = $this->m_app->asset_cari_count($search);
 			$config['per_page'] = "20";
 			$config["uri_segment"] = 4;

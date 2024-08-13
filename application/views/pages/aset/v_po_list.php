@@ -27,7 +27,7 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" placeholder="input no po atau nama vendor" name="keyword" id="keyword" value="<?= $this->input->get('keyword') ?>">
                                     <span class="input-group-btn">
-                                        <button class="btn btn-default" type="button">Search</button>
+                                        <button class="btn btn-default" type="submit">Search</button>
                                         <a href="<?= base_url('asset/po_list') ?>" class="btn btn-warning" style="color:white;">Reset</a>
                                     </span>
                                 </div><!-- /input-group -->
@@ -39,6 +39,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">No.</th>
+                                    <th scope="col">PO</th>
                                     <th scope="col">Vendor</th>
                                     <th scope="col">Tanggal</th>
                                     <th scope="col">Posisi</th>
@@ -56,7 +57,7 @@
                                     ?>
                                         <tr>
                                             <td scope="row"><?= $value['no_po'] ?></td>
-                                            <td scope="row"><?= $value['nama'] ?></td>
+                                            <td scope="row"><?= $value['nama_vendor'] ?></td>
                                             <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>
                                             <td scope="row"><?= $value['posisi'] ?></td>
                                             <td scope="row">

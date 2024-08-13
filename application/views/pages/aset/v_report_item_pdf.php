@@ -13,7 +13,7 @@
       margin: 0;
       padding: 0;
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 12pt;
+      font-size: 8pt;
     }
 
     body {
@@ -28,7 +28,7 @@
     #item td,
     #item th {
       border: 1px solid #ddd;
-      padding: 10px;
+      padding: 5px;
     }
 
     #item tr:nth-child(even) {
@@ -40,8 +40,8 @@
     }
 
     #item th {
-      padding-top: 12px;
-      padding-bottom: 12px;
+      padding-top: 5px;
+      padding-bottom: 5px;
       text-align: left;
       background-color: #615e5e;
       color: white;

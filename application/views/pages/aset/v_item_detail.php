@@ -14,7 +14,7 @@
         <div class="col-md-6" style="padding: 0; margin:0">
           <form action="">
             <div class="input-group">
-              <input type="text" class="form-control" id="search" name="search" placeholder="Cari no purchase order" value="<?= $this->input->get('search') ?>">
+              <input type="text" class="form-control" id="search" name="search" placeholder="cari serial number" value="<?= $this->input->get('search') ?>">
               <span class="input-group-btn">
                 <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
               </span>

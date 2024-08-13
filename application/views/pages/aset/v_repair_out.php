@@ -118,9 +118,13 @@
 
 <script>
   $(document).ready(function() {
-    $('.select2').select2({
-      width: "100%"
-    })
+    var selects = document.querySelectorAll('.select2');
+    for (let index = 0; index < selects.length; index++) {
+      $("#" + selects[index].id + "").select2({
+        dropdownParent: $("#myModal1"),
+        width: "100%"
+      })
+    }
 
     $('select[name="item"]').change(function() {
       var value = $(this).val();

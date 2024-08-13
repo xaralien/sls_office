@@ -6,8 +6,8 @@
     }
   }
 
-  .select2-container--default .select2-search--inline .select2-search__field {
-    width: auto !important;
+  .select2-container--default {
+    overflow: inherit;
   }
 </style>
 
@@ -102,18 +102,17 @@
                               <?php } ?>
                             </select>
                           <?php } ?>
+                          <script>
+                            $(document).ready(function() {
+                              $('#detail-item-<?= $i['Id'] ?>, #coa_beban<?= $i['Id'] ?>, #coa_persediaan<?= $i['Id'] ?>').select2({
+                                width: "100%",
+                              })
+
+                            })
+                          </script>
                         </div>
                       </td>
                     </tr>
-                    <script>
-                      $(document).ready(function() {
-                        $('#detail-item-<?= $i['Id'] ?>, #coa_beban<?= $i['Id'] ?>, #coa_persediaan<?= $i['Id'] ?>').select2({
-                          width: "100%",
-                          dropdownParent: $("#update-bayar")
-                        })
-
-                      })
-                    </script>
                   <?php } ?>
                   <tr>
                     <td colspan="3"><b>Total</b></td>

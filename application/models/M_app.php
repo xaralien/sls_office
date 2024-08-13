@@ -13,28 +13,44 @@ class M_app extends CI_Model
 		$this->db->close();
 	}
 
-	function asset_get($limit, $start)
+	function asset_get($limit, $start, $keyword)
 	{
 		$jenis = $this->session->userdata('filterJenis');
-		if ($jenis == true) {
-			$sql = "SELECT * FROM asset_list where jenis_asset='$jenis' ORDER BY Id DESC limit " . $start . ", " . $limit;
-		} else {
-			$sql = "select * FROM asset_list ORDER BY Id DESC limit " . $start . ", " . $limit;
+		$this->db->select('a.*')->from('asset_list as a')->join('asset_history as b', 'a.kode = b.kode', 'left');
+		if ($keyword) {
+			$this->db->like('a.kode', $keyword, 'both');
+			$this->db->or_like('a.spesifikasi', $keyword, 'both');
+			$this->db->or_like('a.nama_asset', $keyword, 'both');
+			$this->db->or_like('b.remark', $keyword, 'both');
 		}
-		$query = $this->db->query($sql);
-		return $query->result();
+		if ($jenis == true) {
+			$this->db->or_where('a.jenis_asset', $jenis);
+		}
+
+		$data = $this->db->order_by('a.Id', 'DESC')->limit($limit, $start)->get();
+		return $data->result();
 	}
-	function asset_count()
+
+	function asset_count($keyword)
 	{
 		$jenis = $this->session->userdata('filterJenis');
+		$this->db->select('a.*')->from('asset_list as a')->join('asset_history as b', 'a.kode = b.kode', 'left');
+		if ($keyword) {
+			$this->db->like('a.kode', $keyword, 'both');
+			$this->db->or_like('a.spesifikasi', $keyword, 'both');
+			$this->db->or_like('a.nama_asset', $keyword, 'both');
+			$this->db->or_like('b.remark', $keyword, 'both');
+		}
 		if ($jenis == true) {
-			$sql = "SELECT * FROM asset_list where jenis_asset='$jenis' ORDER BY Id";
-		} else {
-			$sql = "select * FROM asset_list";
+			$this->db->where('a.jenis_asset', $jenis);
 		}
 		// $sql = "select Id FROM asset_list";
-		$query = $this->db->query($sql);
-		return $query->num_rows();
+		$data = $this->db->get();
+		return $data->num_rows();
+
+		// $sql = "SELECT a.* FROM asset_list as a left join asset_history as b on(a.kode=b.kode) WHERE (a.kode LIKE '%$st%' OR a.spesifikasi LIKE '%$st%' OR a.nama_asset LIKE '%$st%' OR b.remark LIKE '%$st%')";
+		// $query = $this->db->query($sql);
+		// return $query->num_rows();
 	}
 
 	function memo_count_send($nip)

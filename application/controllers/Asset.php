@@ -20,7 +20,7 @@ class Asset extends CI_Controller
 	public function item_list()
 	{
 		$a = $this->session->userdata('level');
-		if (strpos($a, '501') !== false) {
+		if (strpos($a, '502') !== false) {
 			$search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
 
 			//pagination settings
@@ -76,125 +76,142 @@ class Asset extends CI_Controller
 			$data['total'] = $this->m_asset->total_sparepart();
 			$data['total_repair'] = $this->m_asset->total_repair();
 			$this->load->view('index', $data);
+		} else {
+			redirect('home');
 		}
 	}
 
 	function ubah_item($id)
 	{
-		//inbox notif
-		$nip = $this->session->userdata('nip');
-		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
-		$query = $this->db->query($sql);
-		$res2 = $query->result_array();
-		$result = $res2[0]['COUNT(Id)'];
-		$data['count_inbox'] = $result;
+		$a = $this->session->userdata('level');
+		if (strpos($a, '502') !== false) {
+			//inbox notif
+			$nip = $this->session->userdata('nip');
+			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+			$query = $this->db->query($sql);
+			$res2 = $query->result_array();
+			$result = $res2[0]['COUNT(Id)'];
+			$data['count_inbox'] = $result;
 
-		// Tello
-		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
-		$query4 = $this->db->query($sql4);
-		$res4 = $query4->result_array();
-		$result4 = $res4[0]['COUNT(Id)'];
-		$data['count_inbox2'] = $result4;
+			// Tello
+			$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query4 = $this->db->query($sql4);
+			$res4 = $query4->result_array();
+			$result4 = $res4[0]['COUNT(Id)'];
+			$data['count_inbox2'] = $result4;
 
-		$data['jenis_item'] = $this->db->get('item_jenis');
-		$data['item'] = $this->db->get_where('item_list', ['Id' => $id])->row_array();
-		$data['title'] = "Ubah data item";
-		$data['pages'] = "pages/aset/v_ubah_item";
-		$this->load->view('index', $data);
+			$data['jenis_item'] = $this->db->get('item_jenis');
+			$data['item'] = $this->db->get_where('item_list', ['Id' => $id])->row_array();
+			$data['title'] = "Ubah data item";
+			$data['pages'] = "pages/aset/v_ubah_item";
+			$this->load->view('index', $data);
+		} else {
+			redirect('home');
+		}
 	}
 
 	function update_item($id)
 	{
-		$nama_item = $this->input->post('nama');
-		$jenis = $this->input->post('jenis');
+		$a = $this->session->userdata('level');
+		if (strpos($a, '502') !== false) {
+			$nama_item = $this->input->post('nama');
+			$jenis = $this->input->post('jenis');
 
-		$this->form_validation->set_rules('nama', 'nama item', 'required|trim', array('required' => '%s wajib diisi!'));
-		$this->form_validation->set_rules('jenis', 'jenis item', 'required|trim', array('required' => '%s wajib diisi!'));
+			$this->form_validation->set_rules('nama', 'nama item', 'required|trim', array('required' => '%s wajib diisi!'));
+			$this->form_validation->set_rules('jenis', 'jenis item', 'required|trim', array('required' => '%s wajib diisi!'));
 
-		if ($this->form_validation->run() == FALSE) {
-			$response = [
-				'success' => false,
-				'status' => '401',
-				'msg' => array_values($this->form_validation->error_array())[0],
-			];
+			if ($this->form_validation->run() == FALSE) {
+				$response = [
+					'success' => false,
+					'status' => '401',
+					'msg' => array_values($this->form_validation->error_array())[0],
+				];
+			} else {
+				$update = [
+					'nama' => $nama_item,
+					'jenis_item' => $jenis
+				];
+
+				$this->db->where('Id', $id);
+				$this->db->update('item_list', $update);
+
+				$response = [
+					'success' => true,
+					'status' => '200',
+					'msg' => 'Data item berhasil diubah!'
+				];
+			}
+
+			echo json_encode($response, http_response_code($response['status']));
 		} else {
-			$update = [
-				'nama' => $nama_item,
-				'jenis_item' => $jenis
-			];
-
-			$this->db->where('Id', $id);
-			$this->db->update('item_list', $update);
-
-			$response = [
-				'success' => true,
-				'status' => '200',
-				'msg' => 'Data item berhasil diubah!'
-			];
+			redirect('home');
 		}
-
-		echo json_encode($response, http_response_code($response['status']));
 	}
 
 	public function detail($id)
 	{
-		$search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
-		//pagination settings
-		$config['base_url'] = site_url('asset/detail/' . $id);
-		$config['total_rows'] = $this->m_asset->item_detail_count($search, $id);
-		$config['per_page'] = "20";
-		$config["uri_segment"] = 3;
-		$choice = $config["total_rows"] / $config["per_page"];
-		$config['enable_query_strings'] = TRUE;
-		$config['page_query_string'] = TRUE;
-		$config['use_page_numbers'] = TRUE;
-		$config['reuse_query_string'] = TRUE;
-		$config['query_string_segment'] = 'page';
-		// $config["num_links"] = floor($choice);
-		$config["num_links"] = 10;
-		// integrate bootstrap pagination
-		$config['full_tag_open'] = '<ul class="pagination">';
-		$config['full_tag_close'] = '</ul>';
-		$config['first_link'] = false;
-		$config['last_link'] = false;
-		$config['first_tag_open'] = '<li>';
-		$config['first_tag_close'] = '</li>';
-		$config['prev_link'] = '«';
-		$config['prev_tag_open'] = '<li class="prev">';
-		$config['prev_tag_close'] = '</li>';
-		$config['next_link'] = '»';
-		$config['next_tag_open'] = '<li>';
-		$config['next_tag_close'] = '</li>';
-		$config['last_tag_open'] = '<li>';
-		$config['last_tag_close'] = '</li>';
-		$config['cur_tag_open'] = '<li class="active"><a href="#">';
-		$config['cur_tag_close'] = '</a></li>';
-		$config['num_tag_open'] = '<li>';
-		$config['num_tag_close'] = '</li>';
-		$this->pagination->initialize($config);
-		// $data['page'] = ($this->uri->segment(4)) ? $this->uri->segment(4) : 0;
-		$data['page'] = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
-		// $data['users_data'] = $this->m_asset->item_get($config["per_page"], $data['page'], $search);
-		$data['pagination'] = $this->pagination->create_links();
-		$nip = $this->session->userdata('nip');
-		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
-		$query = $this->db->query($sql);
-		$res2 = $query->result_array();
-		$result = $res2[0]['COUNT(Id)'];
-		$data['count_inbox'] = $result;
+		$a = $this->session->userdata('level');
+		if (strpos($a, '502') !== false) {
+			$search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
+			//pagination settings
+			$config['base_url'] = site_url('asset/detail/' . $id);
+			$config['total_rows'] = $this->m_asset->item_detail_count($search, $id);
+			$config['per_page'] = "10";
+			$config["uri_segment"] = 3;
+			$choice = $config["total_rows"] / $config["per_page"];
+			$config['enable_query_strings'] = TRUE;
+			$config['page_query_string'] = TRUE;
+			$config['use_page_numbers'] = TRUE;
+			$config['reuse_query_string'] = TRUE;
+			$config['query_string_segment'] = 'page';
+			// $config["num_links"] = floor($choice);
+			$config["num_links"] = 10;
+			// integrate bootstrap pagination
+			$config['full_tag_open'] = '<ul class="pagination">';
+			$config['full_tag_close'] = '</ul>';
+			$config['first_link'] = false;
+			$config['last_link'] = false;
+			$config['first_tag_open'] = '<li>';
+			$config['first_tag_close'] = '</li>';
+			$config['prev_link'] = '«';
+			$config['prev_tag_open'] = '<li class="prev">';
+			$config['prev_tag_close'] = '</li>';
+			$config['next_link'] = '»';
+			$config['next_tag_open'] = '<li>';
+			$config['next_tag_close'] = '</li>';
+			$config['last_tag_open'] = '<li>';
+			$config['last_tag_close'] = '</li>';
+			$config['cur_tag_open'] = '<li class="active"><a href="#">';
+			$config['cur_tag_close'] = '</a></li>';
+			$config['num_tag_open'] = '<li>';
+			$config['num_tag_close'] = '</li>';
+			$this->pagination->initialize($config);
+			// $data['page'] = ($this->uri->segment(4)) ? $this->uri->segment(4) : 0;
+			$data['page'] = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
+			// $data['users_data'] = $this->m_asset->item_get($config["per_page"], $data['page'], $search);
+			$data['pagination'] = $this->pagination->create_links();
+			$nip = $this->session->userdata('nip');
+			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+			$query = $this->db->query($sql);
+			$res2 = $query->result_array();
+			$result = $res2[0]['COUNT(Id)'];
+			$data['count_inbox'] = $result;
 
-		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
-		$query4 = $this->db->query($sql4);
-		$res4 = $query4->result_array();
-		$result4 = $res4[0]['COUNT(Id)'];
-		$data['count_inbox2'] = $result4;
+			$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query4 = $this->db->query($sql4);
+			$res4 = $query4->result_array();
+			$result4 = $res4[0]['COUNT(Id)'];
+			$data['count_inbox2'] = $result4;
 
-		$data['title'] = "Detail item";
-		$data['pages'] = "pages/aset/v_item_detail";
-		$data['item'] = $this->db->get_where('item_list', ['Id' => $id])->row_array();
-		// $data['detail'] = $this->db->get_where('item_detail', ['kode_item' => $id]);
-		$data['detail'] = $this->m_asset->item_detail_get($config["per_page"], $data['page'], $search, $id);
-		$this->load->view('index', $data);
+			$data['title'] = "Detail item";
+			$data['pages'] = "pages/aset/v_item_detail";
+			$data['item'] = $this->db->get_where('item_list', ['Id' => $id])->row_array();
+			// $data['detail'] = $this->db->get_where('item_detail', ['kode_item' => $id]);
+			$data['detail'] = $this->m_asset->item_detail_get($config["per_page"], $data['page'], $search, $id);
+			$this->load->view('index', $data);
+		} else {
+			redirect('home');
+		}
 	}
 
 	function add_detail_item()
@@ -536,10 +553,10 @@ class Asset extends CI_Controller
 			}
 
 			$this->db->select('phone');
-			$this->db->where(['level_jabatan' => 1, 'bagian' => 2]);
-			$admin = $this->db->get('users')->result_array();
+			$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
+			$sarlog = $this->db->get('users')->result_array();
 			$phone = '';
-			foreach ($admin as $val) {
+			foreach ($sarlog as $val) {
 				$phone .= $val['phone'] . ',';
 			}
 
@@ -633,10 +650,10 @@ class Asset extends CI_Controller
 			}
 
 			$this->db->select('phone');
-			$this->db->where(['level_jabatan' => 1, 'bagian' => 2]);
-			$admin = $this->db->get('users')->result_array();
+			$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
+			$sarlog = $this->db->get('users')->result_array();
 			$phone = '';
-			foreach ($admin as $val) {
+			foreach ($sarlog as $val) {
 				$phone .= $val['phone'] . ',';
 			}
 
@@ -662,7 +679,7 @@ class Asset extends CI_Controller
 			$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
 			$config['base_url'] = base_url('asset/po_list');
 			$config['total_rows'] = $this->m_asset->count_po($keyword, ['a.user' => $nip], null);
-			$config['per_page'] = 20;
+			$config['per_page'] = 10;
 			$config['uri_segment'] = 3;
 			$config['num_links'] = 3;
 			$config['enable_query_strings'] = TRUE;
@@ -1721,6 +1738,18 @@ class Asset extends CI_Controller
 				$this->cb->insert('t_ro_detail', $insert_detail);
 			}
 
+			$this->db->select('phone');
+			$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
+			$sarlog = $this->db->get('users')->result_array();
+			$phone = '';
+			foreach ($sarlog as $val) {
+				$phone .= $val['phone'] . ',';
+			}
+
+			$nama_session = $this->session->userdata('nama');
+			$msg = "There's a new Release Order\nNo : *$no_ro*\nFrom : *$nama_session*\n\nMohon untuk segera diproses.";
+			$this->api_whatsapp->wa_notif($msg, $phone);
+
 			$response = [
 				'success' => true,
 				'msg' => 'Release Order berhasil diajukan!'
@@ -1731,6 +1760,45 @@ class Asset extends CI_Controller
 
 	public function ro_list()
 	{
+		$nip = $this->session->userdata('nip');
+		// Pagination
+		$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
+		$config['base_url'] = base_url('asset/ro_list');
+		$config['total_rows'] = $this->m_asset->count_ro($keyword, ['a.user' => $nip]);
+		$config['per_page'] = 10;
+		$config['uri_segment'] = 3;
+		$config['num_links'] = 3;
+		$config['enable_query_strings'] = TRUE;
+		$config['page_query_string'] = TRUE;
+		$config['use_page_numbers'] = TRUE;
+		$config['reuse_query_string'] = TRUE;
+		$config['query_string_segment'] = 'page';
+
+		// Bootstrap style pagination
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li>';
+		$config['first_tag_close'] = '</li>';
+		$config['prev_link'] = '«';
+		$config['prev_tag_open'] = '<li class="prev">';
+		$config['prev_tag_close'] = '</li>';
+		$config['next_link'] = '»';
+		$config['next_tag_open'] = '<li>';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li>';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="active"><a href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+
+		// Initialize paginaton
+		$this->pagination->initialize($config);
+		$page = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
+		$data['page'] = $page;
+		$data['pagination'] = $this->pagination->create_links();
 		//inbox notif
 		$nip = $this->session->userdata('nip');
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -1754,9 +1822,9 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['count_sarlog'] = $this->m_asset->count_ro(['status_sarlog' => 0]);
-		$data['count_dirops'] = $this->m_asset->count_ro(['status_sarlog' => 1, 'direksi_ops' => $this->session->userdata('nip'), 'status_direksi_ops' => 0]);
-		$data['ro'] = $this->m_asset->get_roList(['user' => $this->session->userdata('nip')]);
+		$data['count_sarlog'] = $this->m_asset->count_ro(null, ['a.status_sarlog' => 0]);
+		$data['count_dirops'] = $this->m_asset->count_ro(null, ['a.status_sarlog' => 1, 'a.direksi_ops' => $this->session->userdata('nip'), 'a.status_direksi_ops' => 0]);
+		$data['ro'] = $this->m_asset->get_roList($config['per_page'], $page, $keyword, ['a.user' => $nip]);
 		$data['title'] = "List Release Order";
 		$data['pages'] = "pages/aset/v_ro_list";
 		$this->load->view('index', $data);
@@ -1764,6 +1832,44 @@ class Asset extends CI_Controller
 
 	public function sarlog_out()
 	{
+		// Pagination
+		$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
+		$config['base_url'] = base_url('asset/sarlog_out');
+		$config['total_rows'] = $this->m_asset->count_ro($keyword, ['user !=' => $this->session->userdata('nip')]);
+		$config['per_page'] = 5;
+		$config['uri_segment'] = 3;
+		$config['num_links'] = 3;
+		$config['enable_query_strings'] = TRUE;
+		$config['page_query_string'] = TRUE;
+		$config['use_page_numbers'] = TRUE;
+		$config['reuse_query_string'] = TRUE;
+		$config['query_string_segment'] = 'page';
+
+		// Bootstrap style pagination
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li>';
+		$config['first_tag_close'] = '</li>';
+		$config['prev_link'] = '«';
+		$config['prev_tag_open'] = '<li class="prev">';
+		$config['prev_tag_close'] = '</li>';
+		$config['next_link'] = '»';
+		$config['next_tag_open'] = '<li>';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li>';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="active"><a href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+
+		// Initialize paginaton
+		$this->pagination->initialize($config);
+		$page = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
+		$data['page'] = $page;
+		$data['pagination'] = $this->pagination->create_links();
 		//inbox notif
 		$nip = $this->session->userdata('nip');
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -1787,9 +1893,9 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['ro'] = $this->m_asset->get_roList(['user !=' => $this->session->userdata('nip')]);
+		$data['ro'] = $this->m_asset->get_roList($config['per_page'], $page, $keyword, ['user !=' => $this->session->userdata('nip')]);
 		$data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
-		$data['title'] = "List PO Item Out Sarlog";
+		$data['title'] = "Release Order";
 		$data['pages'] = "pages/aset/v_sarlog_out";
 		$this->load->view('index', $data);
 	}
@@ -1837,6 +1943,33 @@ class Asset extends CI_Controller
 			$this->cb->where('Id', $id);
 			$this->cb->update('t_ro', $update);
 
+			$ro = $this->cb->get_where('t_ro', ['Id' => $id])->row_array();
+			$user = $this->db->get_where('users', ['nip' => $ro['user']])->row_array();
+
+			$this->db->like('nama_jabatan', 'Direktur Utama', 'both');
+			$this->db->or_like('nama_jabatan', 'Direktur Operasional', 'both');
+			$direksi = $this->db->get('users')->result_array();
+
+			$nama_session = $this->session->userdata('nama');
+
+			if ($status == 1) {
+				$msg = "Pemberitahuan Release Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$ro[no_ro]* sudah disetujui oleh *$nama_session* sebagai penanggung jawab logistik.\nSelanjutnya pengajuan anda akan diajukan kepada Direktur Operasional.\n\n*Catatan* : $catatan";
+
+				$msgdireksi = "There's a new Release Order\n\nNo : *$ro[no_ro]*\nFrom : *$user[nama]*\n\nMohon untuk segera diproses.";
+				$this->api_whatsapp->wa_notif($msg, $user['phone']);
+
+				$phone = '';
+				foreach ($direksi as $val) {
+					$phone .= $val['phone'] . ',';
+				}
+				$this->api_whatsapp->wa_notif($msgdireksi, $phone);
+			}
+
+			if ($status == 2) {
+				$msg = "Pemberitahuan Release Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$ro[no_ro]* ditolak oleh *$nama_session* sebagai penanggung jawab logistik.\n\n*Catatan* : $catatan";
+				$this->api_whatsapp->wa_notif($msg, $user['phone']);
+			}
+
 			$response = [
 				'success' => true,
 				'msg' => 'Status Release Order Telah Diubah!'
@@ -1849,6 +1982,44 @@ class Asset extends CI_Controller
 	public function direksi_ops_out()
 	{
 		$nip = $this->session->userdata('nip');
+		// Pagination
+		$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
+		$config['base_url'] = base_url('asset/direksi_ops_out');
+		$config['total_rows'] = $this->m_asset->count_ro($keyword, ['status_sarlog' => 1, 'direksi_ops' => $nip]);
+		$config['per_page'] = 5;
+		$config['uri_segment'] = 3;
+		$config['num_links'] = 3;
+		$config['enable_query_strings'] = TRUE;
+		$config['page_query_string'] = TRUE;
+		$config['use_page_numbers'] = TRUE;
+		$config['reuse_query_string'] = TRUE;
+		$config['query_string_segment'] = 'page';
+
+		// Bootstrap style pagination
+		$config['full_tag_open'] = '<ul class="pagination">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = false;
+		$config['last_link'] = false;
+		$config['first_tag_open'] = '<li>';
+		$config['first_tag_close'] = '</li>';
+		$config['prev_link'] = '«';
+		$config['prev_tag_open'] = '<li class="prev">';
+		$config['prev_tag_close'] = '</li>';
+		$config['next_link'] = '»';
+		$config['next_tag_open'] = '<li>';
+		$config['next_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li>';
+		$config['last_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="active"><a href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+
+		// Initialize paginaton
+		$this->pagination->initialize($config);
+		$page = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
+		$data['page'] = $page;
+		$data['pagination'] = $this->pagination->create_links();
 		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
 		$sql2 = "SELECT * FROM asset_ruang";
 		$sql3 = "SELECT * FROM asset_lokasi";
@@ -1870,7 +2041,7 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['ro'] = $this->m_asset->get_roList(['status_sarlog' => 1, 'direksi_ops' => $this->session->userdata('nip')]);
+		$data['ro'] = $this->m_asset->get_roList($config['per_page'], $page, $keyword, ['status_sarlog' => 1, 'direksi_ops' => $nip]);
 		$data['direksi'] = $this->db->get_where('users', ['level_jabatan >' => 4])->result_array();
 		$data['title'] = "List PO Item Out Direksi";
 		$data['pages'] = "pages/aset/v_direksi_ops_out";
@@ -1914,6 +2085,24 @@ class Asset extends CI_Controller
 
 			$this->cb->where('Id', $id);
 			$this->cb->update('t_ro', $update);
+
+			$ro = $this->cb->get_where('t_ro', ['Id' => $id])->row_array();
+			$user = $this->db->get_where('users', ['nip' => $ro['user']])->row_array();
+			$sarlog = $this->db->get_where('users', ['nip' => $ro['sarlog']])->row_array();
+			$nama_session = $this->session->userdata('nama');
+
+			if ($status == 1) {
+				$msg = "Pemberitahuan Release Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$ro[no_ro]* sudah disetujui oleh *$nama_session* sebagai Direktur Operasional.\nBarang akan segera diserahkan oleh penanggung jawab logistik.\n\n*Catatan* : $catatan";
+				$this->api_whatsapp->wa_notif($msg, $user['phone']);
+
+				$msgsarlog = "Pemberitahuan Release Order\n\nHallo *$sarlog[nama]*, Release Order dengan No. *$ro[no_ro]* sudah disetujui oleh *$nama_session* sebagai Direktur Operasional.\nMohon untuk segera diproses lebih lanjut.\n*Catatan* : $catatan";
+				$this->api_whatsapp->wa_notif($msgsarlog, $sarlog['phone']);
+			}
+
+			if ($status == 2) {
+				$msg = "Pemberitahuan Release Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$ro[no_ro]* ditolak oleh *$nama_session* sebagai Direktur Operasional.\n\n*Catatan* : $catatan";
+				$this->api_whatsapp->wa_notif($msg, $user['phone']);
+			}
 
 			$response = [
 				'success' => true,
@@ -2026,7 +2215,7 @@ class Asset extends CI_Controller
 		$data['count_inbox2'] = $result4;
 
 		$data['coa'] = $this->cb->get('v_coa_all');
-		$data['ro'] = $this->m_asset->get_roList(['a.Id' => $id])->row_array();
+		$data['ro'] = $this->m_asset->get_roList(null, null, null, ['a.Id' => $id])->row_array();
 		$data['title'] = "Serahkan Item";
 		$data['pages'] = "pages/aset/v_serah_item";
 		$this->load->view('index', $data);
@@ -2840,16 +3029,24 @@ class Asset extends CI_Controller
 		$data['count_inbox2'] = $result4;
 
 		$data['title'] = "Working Supply";
-		$data['item'] = $this->db->get('item_list');
+		$data['data_item'] = $this->db->get('item_list');
 		$data['pages'] = 'pages/aset/v_report_item';
 		$this->load->view('index', $data);
 	}
 
-	public function export_item()
+	public function report_item()
 	{
+		$nip = $this->session->userdata('nip');
+		// Fetch counts
+		$result = $this->db->query("SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');")->row()->{'COUNT(Id)'};
+		$result2 = $this->db->query("SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` LIKE '%$nip%') AND activity='1'")->row()->{'COUNT(id)'};
+		$data['data_item'] = $this->db->get('item_list');
+		$data['count_inbox'] = $result;
+		$data['count_inbox2'] = $result2;
 		$item = $this->input->post('item');
 		$dari = $this->input->post('dari');
 		$sampai = $this->input->post('sampai');
+
 		if ($item == 'all') {
 			$sql = "SELECT * FROM working_supply JOIN item_list ON item_list.Id = working_supply.item_id WHERE (tanggal >= '$dari' OR tanggal <= '$sampai')";
 			$data['report'] = $this->db->query($sql)->result_array();
@@ -2862,18 +3059,46 @@ class Asset extends CI_Controller
 		}
 
 
-		// $data['item'] = $this->db->get_where('item_list', ['Id' => $item])->row_array();
-		// $file_pdf = 'Penggunaan Item . ' . $data['item']['nama'] . ' | ' . $data['item']['nomor'];
+		if ($item) {
+			$data['title'] = "Working Supply";
+			$data['pages'] = "pages/aset/v_report_item";
+
+			$this->load->view('index', $data);
+		} else {
+			$data['title'] = "Working Supply";
+			$data['pages'] = "pages/aset/v_report_item";
+
+			$this->load->view('index', $data);
+		}
+	}
+
+	public function export_item()
+	{
+		$item = $this->input->post('item');
+		$dari = $this->input->post('dari');
+		$sampai = $this->input->post('sampai');
+
+		if ($item == 'all') {
+			$sql = "SELECT * FROM working_supply LEFT JOIN item_list ON item_list.Id = working_supply.item_id WHERE (tanggal >= '$dari' OR tanggal <= '$sampai')";
+			$data['report'] = $this->db->query($sql)->result_array();
+			$data['jenis'] = 'all';
+		} else {
+			$sql = "SELECT * FROM working_supply LEFT JOIN item_list ON item_list.Id = working_supply.item_id WHERE item_id = '$item' and (tanggal >= '$dari' OR tanggal <= '$sampai')";
+			$data['report'] = $this->db->query($sql)->result_array();
+			$data['jenis'] = 'not all';
+			$data['item_list'] = $this->db->get_where('item_list', ['Id' => $item])->row_array();
+		}
+		$file_pdf = 'Working Supply';
 		// setting paper
-		// $paper = 'A4';
+		$paper = 'A4';
 
-		// //orientasi paper potrait / landscape
-		// $orientation = "landscape";
+		//orientasi paper potrait / landscape
+		$orientation = "landscape";
 
-		// $html = $this->load->view('pages/aset/v_report_asset_pdf', $data, true);
+		// $this->load->view('pages/aset/v_report_item_pdf', $data);
+		$html = $this->load->view('pages/aset/v_report_item_pdf', $data, true);
 
-		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
-		$this->load->view('pages/aset/v_report_item_pdf', $data);
+		$this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
 	}
 
 	public function export_report()
@@ -2885,18 +3110,17 @@ class Asset extends CI_Controller
 		$sql = "SELECT * FROM working_supply WHERE asset_id = '$item' and (tanggal >= '$dari' OR tanggal <= '$sampai')";
 		$data['report'] = $this->db->query($sql)->result_array();
 		$data['asset'] = $this->db->get_where('asset_list', ['Id' => $item])->row_array();
-		// $file_pdf = 'Penggunaan Item . ' . $data['item']['nama'] . ' | ' . $data['item']['nomor'];
+		$file_pdf = 'Penggunaan Asset . ' . $data['asset']['nama_asset'];
 		// setting paper
-		// $paper = 'A4';
+		$paper = 'A4';
 
-		// //orientasi paper potrait / landscape
-		// $orientation = "landscape";
+		//orientasi paper potrait / landscape
+		$orientation = "landscape";
 
-		// $html = $this->load->view('pages/aset/v_report_asset_pdf', $data, true);
+		$html = $this->load->view('pages/aset/v_report_asset_pdf', $data, true);
 
-		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
-		$this->load->view('pages/aset/v_report_asset_pdf', $data);
-		// $this
+		$this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		// $this->load->view('pages/aset/v_report_asset_pdf', $data);
 	}
 
 
@@ -2904,42 +3128,46 @@ class Asset extends CI_Controller
 	{
 		$data['po'] = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
 		if ($data['po']['status_sarlog'] == 1 and $data['po']['status_direksi_ops'] == 1 and $data['po']['status_dirut'] == 1) {
+			// filename dari pdf ketika didownload
+			// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
+
+			// // setting paper
+			// $paper = 'A4';
+
+			// //orientasi paper potrait / landscape
+			// $orientation = "landscape";
+
+			// $html = $this->load->view('pages/aset/v_print_po', $data, true);
+
+			// // run dompdf
+			// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
 			$this->load->view('pages/aset/v_print_po', $data);
 		} else {
 			redirect('home');
 		}
-		// filename dari pdf ketika didownload
-		// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
-
-		// // setting paper
-		// $paper = 'A4';
-
-		// //orientasi paper potrait / landscape
-		// $orientation = "landscape";
-
-		// $html = $this->load->view('pages/aset/v_print_po', $data, true);
-
-		// // run dompdf
-		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
 	}
 
 	public function print_ro($id)
 	{
 		$data['ro'] = $this->cb->get_where('t_ro', ['Id' => $id])->row_array();
-		$this->load->view('pages/aset/v_print_ro', $data);
-		// filename dari pdf ketika didownload
-		// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
+		if ($data['ro']['status_sarlog'] == 1 and $data['ro']['status_direksi_ops'] == 1) {
+			$this->load->view('pages/aset/v_print_ro', $data);
+			// filename dari pdf ketika didownload
+			// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
 
-		// // setting paper
-		// $paper = 'A4';
+			// // setting paper
+			// $paper = 'A4';
 
-		// //orientasi paper potrait / landscape
-		// $orientation = "landscape";
+			// //orientasi paper potrait / landscape
+			// $orientation = "landscape";
 
-		// $html = $this->load->view('pages/aset/v_print_po_out', $data, true);
+			// $html = $this->load->view('pages/aset/v_print_po_out', $data, true);
 
-		// // run dompdf
-		// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+			// // run dompdf
+			// $this->pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+		} else {
+			redirect('asset/sarlog_out');
+		}
 	}
 
 	public function vendors()
@@ -3233,7 +3461,6 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['count_sarlog'] = $this->m_asset->count_po(['status_sarlog' => 0]);
 		$data['list_repair'] = $this->db->get('item_repair');
 		$data['item_list'] = $this->db->get('item_list')->result_array();
 		$data['asset_list'] = $this->db->get('asset_list')->result_array();
@@ -3377,7 +3604,6 @@ class Asset extends CI_Controller
 		$result4 = $res4[0]['COUNT(Id)'];
 		$data['count_inbox2'] = $result4;
 
-		$data['count_sarlog'] = $this->m_asset->count_po(['status_sarlog' => 0]);
 		$data['list_repair'] = $this->db->get('item_repair_out');
 		$data['asset'] = $this->db->get('asset_list')->result_array();
 

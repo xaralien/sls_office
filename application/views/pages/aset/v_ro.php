@@ -36,11 +36,11 @@
           <?php if (!$this->uri->segment(3)) { ?>
             <form class="form-horizontal form-label-left input_mask" method="POST" action="<?= base_url('asset/save_release_order') ?>" enctype="multipart/form-data" id="form-po">
               <div class="row" style="margin-bottom: 30px">
-                <div class="col-md-3 col-sm-6 col-xs-12 padding-0">
+                <div class="col-md-3 col-sm-6 col-xs-12">
                   <label for="tanggal" class="form-label">Tanggal</label>
                   <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
                 </div>
-                <div class="col-md-4 col-sm-6 col-xs-12 padding-0">
+                <div class="col-md-4 col-sm-6 col-xs-12">
                   <label for="teknisi" class="form-label">Nama Teknisi</label>
                   <input type="text" class="form-control" name="teknisi" id="teknisi">
                 </div>

@@ -112,6 +112,7 @@
     </tr>
     <?php
     $sarlog = $this->db->get_where('users', ['nip' => $ro['user_serah']])->row_array();
+    $dirops = $this->db->get_where('users', ['nip' => $ro['direksi_ops']])->row_array();
     foreach ($detail as $val) {
       $item = $this->db->get_where('item_list', ['Id' => $val['item']])->row_array();
       $asset = $this->db->get_where('asset_list', ['Id' => $val['asset']])->row_array();
@@ -159,45 +160,49 @@
       <td rowspan="1" colspan="7" class="border-none"></td>
     </tr>
     <tr class="border-none" style="margin-top: 30px;">
-      <td class="border-none" colspan="3">Lellilef, Rabu 10 Juli 2024</td>
+      <td class="border-none" colspan="3">Lellilef, <?= tgl_indo(date('Y-m-d', strtotime($ro['tgl_pengajuan']))) ?></td>
     </tr>
     <tr class="border-none">
       <td rowspan="1" colspan="7" class="border-none"></td>
     </tr>
     <tr class="border-none text-center">
       <td colspan="2" class="border-none">Diserahkan Oleh,</td>
-      <td colspan="2" class="border-none"></td>
+      <td colspan="2" class="border-none">Diketahui Oleh,</td>
       <td colspan="2" class="border-none"></td>
       <td colspan="2" class="border-none">Diterima Oleh,</td>
     </tr>
     <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
+      <td colspan="2" class="border-none text-center">
+        <?php if ($ro['status_sarlog'] == 1) { ?>
+          <img src="<?= base_url('assets/ttd/') . $ro['sarlog'] . '.png' ?>" alt="" width="100">
+        <?php } ?>
+      </td>
+      <td colspan="2" class="border-none text-center">
+        <?php if ($ro['status_direksi_ops'] == 1) { ?>
+          <img src="<?= base_url('assets/ttd/') . $ro['direksi_ops'] . '.png' ?>" alt="" width="150">
+        <?php } ?>
+      </td>
     </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
+
     <tr class="border-none text-center">
       <td colspan="2" class="border-none"><b><u><?= $sarlog['nama'] ?></u></b></td>
-      <td colspan="2" class="border-none"></td>
+      <td colspan="2" class="border-none"><b><u><?= $dirops['nama'] ?></u></b></td>
       <td colspan="2" class="border-none"></b></td>
       <td colspan="2" class="border-none"><b><u><?= $ro['teknisi'] ?></u></b></td>
     </tr>
     <tr class="border-none text-center">
+      <td colspan="2" class="border-none"><?= $sarlog['nama_jabatan'] ?></td>
+      <td colspan="2" class="border-none"><?= $dirops['nama_jabatan'] ?></td>
       <td colspan="2" class="border-none"></td>
-      <td colspan="2" class="border-none"></td>
-      <td colspan="2" class="border-none"></td>
-      <td colspan="2" class="border-none"></td>
+      <td colspan="2" class="border-none">Teknisi</td>
     </tr>
   </table>
+
+  <script type="text/javascript">
+    window.onload = function() {
+      window.print();
+    }
+  </script>
 
 </body>
 

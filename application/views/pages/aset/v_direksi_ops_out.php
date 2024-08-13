@@ -9,6 +9,20 @@
           <h2>List Release Order</h2>
         </div>
         <div class="x_content">
+          <a href="<?= base_url('asset/ro_list') ?>" class="btn btn-warning">Back</a>
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12 form-group" style="margin: 0; padding:0;">
+              <form class="form-horizontal form-label-left" method="get" action="<?= base_url('asset/direksi_ops_out') ?>">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="input no po atau nama vendor" name="keyword" id="keyword" value="<?= $this->input->get('keyword') ?>">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Search</button>
+                    <a href="<?= base_url('asset/direksi_ops_out') ?>" class="btn btn-warning" style="color:white;">Reset</a>
+                  </span>
+                </div><!-- /input-group -->
+              </form>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="table table-bordered">
               <thead>
@@ -44,7 +58,7 @@
                     <tr>
                       <td scope="row"><?= $value['no_ro'] ?></td>
                       <td scope="row"><?= $user['nama'] ?></td>
-                      <td scope="row"><?= $value['tgl_pengajuan'] ?></td>
+                      <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>
                       <td scope="row"><?= $value['posisi'] ?></td>
                       <td scope="row" style="color: <?= $color ?>;"><?= $status ?></td>
                       <td scope="row"><?= number_format($value['total']) ?></td>

@@ -160,7 +160,7 @@
       <td rowspan="1" colspan="7" class="border-none"></td>
     </tr>
     <tr class="border-none" style="margin-top: 30px;">
-      <td class="border-none" colspan="3">Lellilef, Rabu 10 Juli 2024</td>
+      <td class="border-none" colspan="3">Lellilef, <?= tgl_indo(date('Y-m-d', strtotime($po['tgl_pengajuan']))) ?></td>
     </tr>
     <tr class="border-none">
       <td rowspan="1" colspan="7" class="border-none"></td>
@@ -171,20 +171,25 @@
       <td colspan="2" class="border-none">Diketahui Oleh,</td>
       <td colspan="2" class="border-none">Disetujui Oleh,</td>
     </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
-    </tr>
-    <tr class="border-none">
-      <td rowspan="1" colspan="7" class="border-none"></td>
+    <tr>
+      <td colspan="2" class="border-none text-center">
+        <img src="<?= base_url('assets/ttd/') . $po['user'] . '.png' ?>" alt="" width="100">
+      </td>
+      <td colspan="2" class="border-none text-center">
+        <?php if ($po['status_sarlog'] == 1) { ?>
+          <img src="<?= base_url('assets/ttd/') . $po['sarlog'] . '.png' ?>" alt="" width="100">
+        <?php } ?>
+      </td>
+      <td colspan="2" class="border-none text-center">
+        <?php if ($po['status_direksi_ops'] == 1) { ?>
+          <img src="<?= base_url('assets/ttd/') . $po['direksi_ops'] . '.png' ?>" alt="" width="150">
+        <?php } ?>
+      </td>
+      <td colspan="2" class="border-none text-center">
+        <?php if ($po['status_dirut'] == 1) { ?>
+          <img src="<?= base_url('assets/ttd/') . $po['dirut'] . '.png' ?>" alt="" width="150">
+        <?php } ?>
+      </td>
     </tr>
     <tr class="border-none text-center">
       <td colspan="2" class="border-none"><b><u><?= $user['nama'] ?></u></b></td>
@@ -199,6 +204,12 @@
       <td colspan="2" class="border-none"><?= $dirut['nama_jabatan'] ?></td>
     </tr>
   </table>
+
+  <script type="text/javascript">
+    window.onload = function() {
+      window.print();
+    }
+  </script>
 
 </body>
 

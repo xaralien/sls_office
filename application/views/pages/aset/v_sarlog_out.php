@@ -5,10 +5,23 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="x_panel card">
         <div class="x_title">
-          <h2>List Purchase Order Item Out</h2>
+          <h2>List Release Order</h2>
         </div>
         <div class="x_content">
           <a href="<?= base_url('asset/ro_list') ?>" class="btn btn-warning">Back</a>
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12 form-group" style="margin: 0; padding:0;">
+              <form class="form-horizontal form-label-left" method="get" action="<?= base_url('asset/sarlog_out') ?>">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="nomor release order, nama teknisi, atau nama user" name="keyword" id="keyword" value="<?= $this->input->get('keyword') ?>">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">Search</button>
+                    <a href="<?= base_url('asset/ro_list') ?>" class="btn btn-warning" style="color:white;">Reset</a>
+                  </span>
+                </div><!-- /input-group -->
+              </form>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="table table-bordered">
               <thead>
@@ -30,8 +43,6 @@
                   </tr>
                   <?php } else {
                   foreach ($ro->result_array() as $value) {
-                    $user = $this->db->get_where('users', ['nip' => $value['user']])->row_array();
-                    // $asset = $this->db->get_where('asset_list', ['Id' => $value['asset']])->row_array();
                     if ($value['status_sarlog'] == 0) {
                       $status = 'Belum diproses';
                       $color = "#e67e22";
@@ -45,7 +56,7 @@
                   ?>
                     <tr>
                       <td scope="row"><?= $value['no_ro'] ?></td>
-                      <td scope="row"><?= $user['nama'] ?></td>
+                      <td scope="row"><?= $value['nama'] ?></td>
                       <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>
                       <td scope="row"><?= $value['posisi'] ?></td>
                       <td scope="row" style="color: <?= $color ?>;"><?= $status ?></td>
@@ -220,6 +231,9 @@
                 } ?>
               </tbody>
             </table>
+          </div>
+          <div class="row text-center">
+            <?= $pagination ?>
           </div>
         </div>
       </div>

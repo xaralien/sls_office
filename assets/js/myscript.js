@@ -49,17 +49,6 @@ $(document).ready(function () {
 		}
 	);
 
-	$("form").on("submit", function () {
-		Swal.fire({
-			title: "Loading...",
-			timerProgressBar: true,
-			allowOutsideClick: false,
-			didOpen: () => {
-				Swal.showLoading();
-			},
-		});
-	});
-
 	$(".btn-submit").click(function (e) {
 		e.preventDefault();
 		var parent = $(this).parents("form");

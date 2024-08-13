@@ -124,7 +124,6 @@
               <!--button class="btn btn-primary" type="button">Cancel</button>
 										<button class="btn btn-primary" type="reset">Reset</button-->
               <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1">Update</button>
-              <a href="<?= base_url('asset/report_item/') . $this->uri->segment(3) ?>" class="btn btn-success" target="_blank">Pemakaian Item</a>
             </div>
           </div>
           <!--div class="ln_solid"></div-->

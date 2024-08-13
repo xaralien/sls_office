@@ -1,42 +1,46 @@
 <div class="right_col" role="main">
   <div class="clearfix"></div>
-
-
-
   <!-- Start content-->
-
   <div class="row">
-
     <div class="col-md-12 col-sm-12 col-xs-12">
-
       <div class="x_panel card">
-
         <div class="x_title">
-
           <h2>List Release Order</h2>
-
         </div>
 
         <div class="x_content">
           <div class="row">
+            <a href="<?= base_url('asset/release_order') ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus" aria-hidden="true"></i> Create RO</a>
             <?php $a = $this->session->userdata('level');
             if (strpos($a, '503') !== false) { ?>
               <a href="<?= base_url('asset/sarlog_out') ?>" class="btn btn-success btn-sm">Approval Sarlog <span class="badge bg-red"><?= $count_sarlog ?></span></a>
             <?php }
             if ($this->session->userdata('bagian') == 10) { ?>
-              <a href="<?= base_url('asset/direksi_ops_out') ?>" class="btn btn-success btn-sm">Approval Direktur Ops <span class="badge bg-red"><?= $count_dirops ?></span></a>
+              <a href="<?= base_url('asset/direksi_ops_out') ?>" class="btn btn-success btn-sm">Approval Direktur Ops
+                <span class="badge bg-red"><?= $count_dirops ?></span></a>
             <?php }
             ?>
           </div>
           <div class="row">
-            <a href="<?= base_url('asset/release_order') ?>" class="btn btn-primary btn-sm"><i class="fa fa-plus" aria-hidden="true"></i> Create RO</a>
+            <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12 form-group" style="margin: 0; padding:0;">
+              <form class="form-horizontal form-label-left" method="get" action="<?= base_url('asset/ro_list') ?>">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Masukan nomor release order" name="keyword" id="keyword" value="<?= $this->input->get('keyword') ?>">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">Search</button>
+                    <a href="<?= base_url('asset/ro_list') ?>" class="btn btn-warning" style="color:white;">Reset</a>
+                  </span>
+                </div><!-- /input-group -->
+              </form>
+            </div>
           </div>
           <div class="table-responsive">
             <table class="table table-bordered">
               <thead>
                 <tr>
                   <th scope="col">No.</th>
-                  <!-- <th scope="col">Asset</th> -->
+                  <th scope="col">Release Order</th>
+                  <th scope="col">Teknisi</th>
                   <th scope="col">Tanggal</th>
                   <th scope="col">Posisi</th>
                   <th scope="col">Total</th>
@@ -52,11 +56,12 @@
                   foreach ($ro->result_array() as $value) {
                   ?>
                     <tr>
+                      <td scope="row"><?= ++$page; ?></td>
                       <td scope="row"><?= $value['no_ro'] ?></td>
+                      <td scope="row"><?= $value['teknisi'] ?></td>
                       <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>
                       <td scope="row"><?= $value['posisi'] ?></td>
                       <td scope="row"><?= number_format($value['total']) ?></td>
-                      </td>
                       <td scope="row">
                         <?php if ($value['status_sarlog'] == 1 and $value['status_direksi_ops'] == 1) { ?>
                           <a href="<?= base_url('asset/print_ro/' . $value['Id']) ?>" class="btn btn-primary btn-xs" target="_blank">Print</a>
@@ -132,7 +137,8 @@
                                   </thead>
                                   <tbody>
                                     <tr>
-                                      <td><?= $value['catatan_sarlog'] ? $value['catatan_sarlog'] : "Tidak ada catatan" ?></td>
+                                      <td><?= $value['catatan_sarlog'] ? $value['catatan_sarlog'] : "Tidak ada catatan" ?>
+                                      </td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -144,7 +150,9 @@
                                   </thead>
                                   <tbody>
                                     <tr>
-                                      <td><?= $value['catatan_direksi_ops'] ? $value['catatan_direksi_ops'] : "Tidak ada catatan" ?></td>
+                                      <td>
+                                        <?= $value['catatan_direksi_ops'] ? $value['catatan_direksi_ops'] : "Tidak ada catatan" ?>
+                                      </td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -176,6 +184,9 @@
                 } ?>
               </tbody>
             </table>
+          </div>
+          <div class="row text-center">
+            <?= $pagination ?>
           </div>
         </div>
       </div>

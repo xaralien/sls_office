@@ -82,7 +82,7 @@
             </div>
             <div class="form-group">
               <label for="item" class="form-label">Item</label>
-              <select name="item" id="item" class="form-control select2">
+              <select name="item" id="item" class="form-control select2" style="width: 100%;">
                 <option value=""> :: Pilih Item :: </option>
                 <?php foreach ($item_list as $il) { ?>
                   <option value="<?= $il['Id'] ?>"><?= $il['nama'] ?></option>
@@ -91,7 +91,7 @@
             </div>
             <div class="form-group">
               <label for="serial-number" class="form-label">Serial Number</label>
-              <select name="serial-number" id="serial-number" class="form-control select2">
+              <select name="serial-number" id="serial-number" class="form-control select2" style="width: 100%;">
                 <option value=""> :: Pilih Serial Number :: </option>
               </select>
             </div>
@@ -118,9 +118,14 @@
 
 <script>
   $(document).ready(function() {
-    $('.select2').select2({
-      width: "100%"
-    })
+
+    var selects = document.querySelectorAll('.select2');
+    for (let index = 0; index < selects.length; index++) {
+      $("#" + selects[index].id + "").select2({
+        dropdownParent: $("#myModal1"),
+        width: "100%"
+      })
+    }
 
     $('select[name="item"]').change(function() {
       var value = $(this).val();

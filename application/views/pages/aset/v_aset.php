@@ -10,9 +10,9 @@
 
         <div class="row">
             <div class="col-md-8 col-sm-8 col-xs-12" style="padding: 0 !important; margin: 0 !important">
-                <form action="<?= base_url('app/asset_cari') ?>" method="post">
+                <form action="<?= base_url('app/asset_list') ?>" method="get">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode asset..." value="<?= $this->input->get('search') ?>">
+                        <input type="text" class="form-control" id="keyword" name="keyword" placeholder="Cari nama atau kode asset..." value="<?= $this->input->get('keyword') ?>">
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
                         </span>
@@ -78,14 +78,8 @@
                     </tr>
                 </thead>
                 <?php
-                if (($this->uri->segment(2) == 'asset_cari') and ($this->uri->segment(3) <> '')) {
-                    $no = $this->uri->segment(4) + 1;
-                } else {
-                    $no = $this->uri->segment(3) + 1;
-                }
                 if (empty($users_data)) {
                 ?>
-
                     <?php
                 } else {
                     foreach ($users_data as $data) :
@@ -93,7 +87,7 @@
                         <!--content here-->
                         <tbody>
                             <tr>
-                                <td><?php echo $no; ?></td>
+                                <td><?php echo ++$page; ?></td>
                                 <td><?php echo $data->kode; ?></td>
                                 <td><?php echo $data->nama_asset; ?></td>
                                 <td><?php echo $data->spesifikasi; ?></td>
@@ -111,7 +105,6 @@
                         </tbody>
 
                 <?php
-                        $no++;
                     endforeach;
                 }
                 ?>

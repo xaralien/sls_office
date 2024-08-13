@@ -67,9 +67,9 @@
                       </td>
                       <td scope="row">
                         <?php if ($value['status_spv'] == 0 or $value['status_spv'] == 2 or $value['status_keuangan'] == 2 or $value['status_direksi'] == 2) { ?>
-                          <a href="<?= base_url('pengajuan/ubah/' . $value['Id']) ?>" class="btn btn-success btn-sm">Update</a>
+                          <a href="<?= base_url('pengajuan/ubah/' . $value['Id']) ?>" class="btn btn-success btn-xs">Update</a>
                         <?php } ?>
-                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal<?= $value['Id'] ?>">View</button>
+                        <button class="btn btn-warning btn-xs" data-toggle="modal" data-target="#myModal<?= $value['Id'] ?>">View</button>
                         <!-- Modal Detail -->
                         <div class="modal fade" id="myModal<?= $value['Id'] ?>" role="dialog">
                           <div class="modal-dialog modal-lg">

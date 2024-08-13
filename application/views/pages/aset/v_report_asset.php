@@ -19,7 +19,7 @@
             <div class="row">
               <div class="col-md-4 col-sm-4 col-xs-12">
                 <div class="form">
-                  <label for="asset">Nama Item</label>
+                  <label for="asset">Nama Asset</label>
                   <select name="asset" id="asset" class="form-control select2" required>
                     <option value=""> :: Pilih Item :: </option>
                     <?php foreach ($asset->result_array() as $a) { ?>

@@ -28,7 +28,7 @@ class M_asset extends CI_Model
 	function item_detail_get($limit, $start, $search, $id)
 	{
 		if ($search) {
-			$sql = "SELECT * FROM item_detail WHERE kode_item = $id AND item_detail.serial_number = $search ORDER BY Id DESC limit " . $start . ", " . $limit;
+			$sql = "SELECT * FROM item_detail WHERE kode_item = $id AND item_detail.serial_number LIKE '%$search%' ORDER BY Id DESC limit " . $start . ", " . $limit;
 		} else {
 			$sql = "SELECT * FROM item_detail WHERE kode_item = $id ORDER BY Id DESC limit " . $start . ", " . $limit;
 		}
@@ -113,8 +113,13 @@ class M_asset extends CI_Model
 		$this->cb->join($this->db->database . '.users as c', 'a.user = c.nip');
 		if ($keyword) {
 			$this->cb->like('a.no_po', $keyword, 'both');
+			$this->cb->where($where);
 			$this->cb->or_like('b.nama', $keyword, 'both');
+			$this->cb->where($where);
 			$this->cb->or_like('c.nama', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.referensi', $keyword, 'both');
+			$this->cb->where($where);
 		}
 		if ($filter) {
 			$this->cb->where('a.vendor', $filter);
@@ -134,13 +139,23 @@ class M_asset extends CI_Model
 		return $this->cb->query($sql)->result_array();
 	}
 
-	function get_roList($where)
+	function get_roList($limit, $start, $keyword, $where)
 	{
-		$this->cb->select('a.no_ro, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.Id, a.catatan_sarlog, a.catatan_direksi_ops,a.user, a.user_serah, a.bukti_serah');
-		$this->cb->from('t_ro as a');
-		$this->cb->where($where);
+		$this->cb->select('a.no_ro, a.tgl_pengajuan, a.teknisi, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.Id, a.catatan_sarlog, a.catatan_direksi_ops,a.user, a.user_serah, a.bukti_serah, b.nama');
+		$this->cb->from('t_ro as a')->where($where);
+		$this->cb->join($this->db->database . '.users as b', 'a.user = b.nip', 'left');
+		if ($keyword) {
+			$this->cb->like('a.no_ro', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('b.nama', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.teknisi', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.referensi', $keyword, 'both');
+			$this->cb->where($where);
+		}
 
-		return $this->cb->get();
+		return $this->cb->order_by('a.tgl_pengajuan', 'DESC')->limit($limit, $start)->get();
 	}
 
 	function count_po($keyword, $where, $filter)
@@ -150,16 +165,35 @@ class M_asset extends CI_Model
 		$this->cb->join($this->db->database . '.t_vendors as b', 'a.vendor = b.Id');
 		if ($keyword) {
 			$this->cb->like('a.no_po', $keyword, 'both');
+			$this->cb->where($where);
 			$this->cb->or_like('b.nama', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.teknisi', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.referensi', $keyword, 'both');
+			$this->cb->where($where);
 		}
 		$po = $this->cb->order_by('a.tgl_pengajuan', 'DESC')->get()->num_rows();
 
 		return $po;
 	}
 
-	function count_ro($where)
+	function count_ro($keyword, $where)
 	{
-		return $this->cb->get_where('t_ro', $where)->num_rows();
+		$this->cb->select('a.no_ro, a.tgl_pengajuan, a.teknisi, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.Id, a.catatan_sarlog, a.catatan_direksi_ops,a.user, a.user_serah, a.bukti_serah, b.nama');
+		$this->cb->from('t_ro as a')->where($where);
+		$this->cb->join($this->db->database . '.users as b', 'a.user = b.nip', 'left');;
+		if ($keyword) {
+			$this->cb->like('a.no_ro', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('b.nama', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.teknisi', $keyword, 'both');
+			$this->cb->where($where);
+			$this->cb->or_like('a.referensi', $keyword, 'both');
+			$this->cb->where($where);
+		}
+		return $this->cb->get()->num_rows();
 	}
 
 	public function total_sparepart()
