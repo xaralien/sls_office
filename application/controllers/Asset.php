@@ -220,7 +220,7 @@ class Asset extends CI_Controller
 		$serial = $this->input->post('serial');
 		$tgl = $this->input->post('tanggal');
 
-		$this->form_validation->set_rules('serial', 'serial number', 'required|trim', array('required' => '%s wajib diisi!'));
+		$this->form_validation->set_rules('serial', 'serial number', 'required|trim|is_unique[item_detail.serial_number]', array('required' => '%s wajib diisi!', 'is_unique' => '%s sudah tersedia!'));
 		$this->form_validation->set_rules('tanggal', 'tanggal masuk', 'required|trim', array('required' => '%s wajib diisi!'));
 
 		if ($this->form_validation->run() == FALSE) {
@@ -419,7 +419,7 @@ class Asset extends CI_Controller
 			redirect('home');
 		} else {
 			$a = $this->session->userdata('level');
-			if (strpos($a, '501') !== false) {
+			if (strpos($a, '502') !== false) {
 				//inbox notif
 				$nip = $this->session->userdata('nip');
 				$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -447,233 +447,248 @@ class Asset extends CI_Controller
 
 	public function update_po($id)
 	{
-		//inbox notif
-		$nip = $this->session->userdata('nip');
-		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
-		$query = $this->db->query($sql);
-		$res1 = $query->result_array();
-		$result = $res1[0]['COUNT(Id)'];
-		$data['count_inbox'] = $result;
+		$a = $this->session->userdata('level');
+		if (strpos($a, '502') !== false) {
+			//inbox notif
+			$nip = $this->session->userdata('nip');
+			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+			$query = $this->db->query($sql);
+			$res1 = $query->result_array();
+			$result = $res1[0]['COUNT(Id)'];
+			$data['count_inbox'] = $result;
 
-		$sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
-		$query2 = $this->db->query($sql2);
-		$res2 = $query2->result_array();
-		$result2 = $res2[0]['COUNT(id)'];
-		$data['count_inbox2'] = $result2;
+			$sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query2 = $this->db->query($sql2);
+			$res2 = $query2->result_array();
+			$result2 = $res2[0]['COUNT(id)'];
+			$data['count_inbox2'] = $result2;
 
-		$data['item_list'] = $this->db->get('item_list');
-		$data['vendors'] = $this->db->get('t_vendors');
-		$data['po'] = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
-		$data['title'] = "Create PO";
-		$data['pages'] = "pages/aset/v_po";
-		$this->load->view('index', $data);
+			$data['item_list'] = $this->db->get('item_list');
+			$data['vendors'] = $this->db->get('t_vendors');
+			$data['po'] = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
+			$data['title'] = "Create PO";
+			$data['pages'] = "pages/aset/v_po";
+			$this->load->view('index', $data);
+		} else {
+			redirect('home');
+		}
 	}
 
 	public function save_po()
 	{
-		$nip = $this->session->userdata('nip');
-		$tgl = $this->input->post('tanggal');
-		$vendor = $this->input->post('vendor');
-		// $keterangan = $this->input->post('keterangan');
-		$rows = $this->input->post('row[]');
-		$item = $this->input->post('item[]');
-		$qty = $this->input->post('qty[]');
-		$uoi = $this->input->post('uoi[]');
-		$satuan = $this->input->post('satuan[]');
-		$keterangan = $this->input->post('ket[]');
-		$price = $this->input->post('harga[]');
-		$subtotal = $this->input->post('total[]');
-		$total = $this->input->post('nominal');
-		$now = date('Y-m-d');
-		if (strtotime($tgl) != strtotime($now)) {
-			$tgl = $tgl;
-		} else {
-			$tgl = date('Y-m-d H:i:s');
-		}
-
-		$this->form_validation->set_rules('tanggal', 'tanggal po', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('vendor', 'vendor', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('item[]', 'nama item', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('qty[]', 'qty item', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('harga[]', 'harga item', 'required', ['required' => '%s wajib diisi']);
-
-		if ($this->form_validation->run() == FALSE) {
-			$response = [
-				'success' => false,
-				'msg' => array_values($this->form_validation->error_array())[0]
-			];
-		} else {
-			// $sql = "SELECT MAX(nomor) as maximal FROM letter LEFT JOIN jenis_surat ON letter.jenis_surat = jenis_surat.id WHERE jenis_surat.company = '$jenis_surat->company' AND YEAR(date_created) = YEAR(curdate()) AND letter.back_date = 0;";
-			$sql = "SELECT count(a.Id) as jml FROM t_po as a WHERE a.vendor ='$vendor' AND YEAR(tgl_pengajuan) = YEAR(curdate())";
-			$result = $this->cb->query($sql);
-
-			if ($result->num_rows() > 0) {
-				$res = $result->row_array();
-				$nomor = $res['jml'] + 1;
+		$a = $this->session->userdata('level');
+		if (strpos($a, '502') !== false) {
+			$nip = $this->session->userdata('nip');
+			$tgl = $this->input->post('tanggal');
+			$vendor = $this->input->post('vendor');
+			// $keterangan = $this->input->post('keterangan');
+			$rows = $this->input->post('row[]');
+			$item = $this->input->post('item[]');
+			$qty = $this->input->post('qty[]');
+			$uoi = $this->input->post('uoi[]');
+			$satuan = $this->input->post('satuan[]');
+			$keterangan = $this->input->post('ket[]');
+			$price = $this->input->post('harga[]');
+			$subtotal = $this->input->post('total[]');
+			$total = $this->input->post('nominal');
+			$now = date('Y-m-d');
+			if (strtotime($tgl) != strtotime($now)) {
+				$tgl = $tgl;
 			} else {
-				$nomor = 1;
+				$tgl = date('Y-m-d H:i:s');
 			}
-			$data_vendor = $this->db->get_where('t_vendors', ['Id' => $vendor])->row_array();
-			$array_bln = array(1 => "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII");
-			$bln = $array_bln[date('n')];
-			$no_po = sprintf("%06d", $nomor) . '-' . $data_vendor['kode'];
-			$ref = "PO-" . sprintf("%06d", $nomor) . '/' . $bln . '/' . $data_vendor['kode'] . '/' . date('y');
 
-			// $count = $this->cb->get('t_po')->num_rows();
-			// $count = $count + 1;
-			// $no_po = sprintf("%06d", $count);
+			$this->form_validation->set_rules('tanggal', 'tanggal po', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('vendor', 'vendor', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('item[]', 'nama item', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('qty[]', 'qty item', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('harga[]', 'harga item', 'required', ['required' => '%s wajib diisi']);
 
-			$insert = [
-				'no_po' => $no_po,
-				'referensi' => $ref,
-				'user' => $nip,
-				// 'keterangan' => $keterangan,
-				'tgl_pengajuan' => $tgl,
-				'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
-				'vendor' => $vendor,
-				'posisi' => 'diajukan kepada sarlog'
-			];
+			if ($this->form_validation->run() == FALSE) {
+				$response = [
+					'success' => false,
+					'msg' => array_values($this->form_validation->error_array())[0]
+				];
+			} else {
+				// $sql = "SELECT MAX(nomor) as maximal FROM letter LEFT JOIN jenis_surat ON letter.jenis_surat = jenis_surat.id WHERE jenis_surat.company = '$jenis_surat->company' AND YEAR(date_created) = YEAR(curdate()) AND letter.back_date = 0;";
+				$sql = "SELECT count(a.Id) as jml FROM t_po as a WHERE a.vendor ='$vendor' AND YEAR(tgl_pengajuan) = YEAR(curdate())";
+				$result = $this->cb->query($sql);
 
-			$this->cb->insert('t_po', $insert);
-			$last_id = $this->cb->insert_id();
+				if ($result->num_rows() > 0) {
+					$res = $result->row_array();
+					$nomor = $res['jml'] + 1;
+				} else {
+					$nomor = 1;
+				}
+				$data_vendor = $this->db->get_where('t_vendors', ['Id' => $vendor])->row_array();
+				$array_bln = array(1 => "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII");
+				$bln = $array_bln[date('n')];
+				$no_po = sprintf("%06d", $nomor) . '-' . $data_vendor['kode'];
+				$ref = "PO-" . sprintf("%06d", $nomor) . '/' . $bln . '/' . $data_vendor['kode'] . '/' . date('y');
 
-			for ($i = 0; $i < count($rows); $i++) {
-				$detail = [
-					'no_po' => $last_id,
-					'item' => $item[$i],
-					'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
-					'uoi' => $uoi[$i],
-					'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $price[$i]),
-					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
-					'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
-					'keterangan' => $keterangan[$i]
+				// $count = $this->cb->get('t_po')->num_rows();
+				// $count = $count + 1;
+				// $no_po = sprintf("%06d", $count);
+
+				$insert = [
+					'no_po' => $no_po,
+					'referensi' => $ref,
+					'user' => $nip,
+					// 'keterangan' => $keterangan,
+					'tgl_pengajuan' => $tgl,
+					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
+					'vendor' => $vendor,
+					'posisi' => 'diajukan kepada sarlog'
 				];
 
-				$this->cb->insert('t_po_detail', $detail);
+				$this->cb->insert('t_po', $insert);
+				$last_id = $this->cb->insert_id();
+
+				for ($i = 0; $i < count($rows); $i++) {
+					$detail = [
+						'no_po' => $last_id,
+						'item' => $item[$i],
+						'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
+						'uoi' => $uoi[$i],
+						'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $price[$i]),
+						'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
+						'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
+						'keterangan' => $keterangan[$i]
+					];
+
+					$this->cb->insert('t_po_detail', $detail);
+				}
+
+				$this->db->select('phone');
+				$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
+				$sarlog = $this->db->get('users')->result_array();
+				$phone = '';
+				foreach ($sarlog as $val) {
+					$phone .= $val['phone'] . ',';
+				}
+
+				$nama_session = $this->session->userdata('nama');
+				$msg = "There's a new Purchase Order\nNo : *$no_po*\nFrom : *$nama_session*\n\nMohon untuk segera diproses.";
+				$this->api_whatsapp->wa_notif($msg, $phone);
+
+				$response = [
+					'success' => true,
+					'msg' => 'PO berhasil dibuat!'
+				];
 			}
 
-			$this->db->select('phone');
-			$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
-			$sarlog = $this->db->get('users')->result_array();
-			$phone = '';
-			foreach ($sarlog as $val) {
-				$phone .= $val['phone'] . ',';
-			}
-
-			$nama_session = $this->session->userdata('nama');
-			$msg = "There's a new Purchase Order\nNo : *$no_po*\nFrom : *$nama_session*\n\nMohon untuk segera diproses.";
-			$this->api_whatsapp->wa_notif($msg, $phone);
-
-			$response = [
-				'success' => true,
-				'msg' => 'PO berhasil dibuat!'
-			];
+			echo json_encode($response);
+		} else {
+			redirect('home');
 		}
-
-		echo json_encode($response);
 	}
 
 	public function simpan_update_po($id)
 	{
-		$po = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
-		$nip = $this->session->userdata('nip');
-		$tgl = $this->input->post('tanggal');
-		$vendor = $this->input->post('vendor');
-		// $keterangan = $this->input->post('keterangan');
-		$rows = $this->input->post('row[]');
-		$item = $this->input->post('item[]');
-		$qty = $this->input->post('qty[]');
-		$uoi = $this->input->post('uoi[]');
-		$satuan = $this->input->post('satuan[]');
-		$keterangan = $this->input->post('ket[]');
-		$price = $this->input->post('harga[]');
-		$subtotal = $this->input->post('total[]');
-		$total = $this->input->post('nominal');
-		$now = date('Y-m-d');
-		if (strtotime($tgl) != strtotime($now)) {
-			$tgl = $tgl;
-		} else {
-			$tgl = date('Y-m-d H:i:s');
-		}
+		$a = $this->session->userdata('level');
+		if (strpos($a, '502') !== false) {
+			$po = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
+			$nip = $this->session->userdata('nip');
+			$tgl = $this->input->post('tanggal');
+			$vendor = $this->input->post('vendor');
+			// $keterangan = $this->input->post('keterangan');
+			$rows = $this->input->post('row[]');
+			$item = $this->input->post('item[]');
+			$qty = $this->input->post('qty[]');
+			$uoi = $this->input->post('uoi[]');
+			$satuan = $this->input->post('satuan[]');
+			$keterangan = $this->input->post('ket[]');
+			$price = $this->input->post('harga[]');
+			$subtotal = $this->input->post('total[]');
+			$total = $this->input->post('nominal');
+			$now = date('Y-m-d');
+			if (strtotime($tgl) != strtotime($now)) {
+				$tgl = $tgl;
+			} else {
+				$tgl = date('Y-m-d H:i:s');
+			}
 
-		$this->form_validation->set_rules('tanggal', 'tanggal po', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('vendor', 'vendor', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('item[]', 'nama item', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('qty[]', 'qty item', 'required', ['required' => '%s wajib diisi!']);
-		$this->form_validation->set_rules('harga[]', 'harga item', 'required', ['required' => '%s wajib diisi']);
+			$this->form_validation->set_rules('tanggal', 'tanggal po', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('vendor', 'vendor', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('item[]', 'nama item', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('qty[]', 'qty item', 'required', ['required' => '%s wajib diisi!']);
+			$this->form_validation->set_rules('harga[]', 'harga item', 'required', ['required' => '%s wajib diisi']);
 
-		if ($this->form_validation->run() == FALSE) {
-			$response = [
-				'success' => false,
-				'msg' => array_values($this->form_validation->error_array())[0]
-			];
-		} else {
-
-			$update = [
-				'user' => $nip,
-				'tgl_pengajuan' => $tgl,
-				'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
-				'vendor' => $vendor,
-				'posisi' => 'diajukan kepada sarlog',
-				'sarlog' => null,
-				'status_sarlog' => 0,
-				'catatan_sarlog' => null,
-				'date_sarlog' => null,
-				'direksi_ops' => null,
-				'date_direksi_ops' => null,
-				'status_direksi_ops' => 0,
-				'catatan_direksi_ops' => null,
-				'dirut' => null,
-				'date_dirut' => null,
-				'status_dirut' => 0,
-				'catatan_dirut' => null
-			];
-			$this->cb->where('Id', $id);
-			$this->cb->update('t_po', $update);
-
-			$this->cb->where('no_po',  $po['Id']);
-			$this->cb->delete('t_po_detail');
-
-			for ($i = 0; $i < count($rows); $i++) {
-				$detail = [
-					'no_po' => $po['Id'],
-					'item' => $item[$i],
-					'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
-					'uoi' => $uoi[$i],
-					'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $price[$i]),
-					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
-					'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
-					'keterangan' => $keterangan[$i]
+			if ($this->form_validation->run() == FALSE) {
+				$response = [
+					'success' => false,
+					'msg' => array_values($this->form_validation->error_array())[0]
 				];
+			} else {
 
-				$this->cb->insert('t_po_detail', $detail);
+				$update = [
+					'user' => $nip,
+					'tgl_pengajuan' => $tgl,
+					'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $total),
+					'vendor' => $vendor,
+					'posisi' => 'diajukan kepada sarlog',
+					'sarlog' => null,
+					'status_sarlog' => 0,
+					'catatan_sarlog' => null,
+					'date_sarlog' => null,
+					'direksi_ops' => null,
+					'date_direksi_ops' => null,
+					'status_direksi_ops' => 0,
+					'catatan_direksi_ops' => null,
+					'dirut' => null,
+					'date_dirut' => null,
+					'status_dirut' => 0,
+					'catatan_dirut' => null
+				];
+				$this->cb->where('Id', $id);
+				$this->cb->update('t_po', $update);
+
+				$this->cb->where('no_po',  $po['Id']);
+				$this->cb->delete('t_po_detail');
+
+				for ($i = 0; $i < count($rows); $i++) {
+					$detail = [
+						'no_po' => $po['Id'],
+						'item' => $item[$i],
+						'qty' => preg_replace('/[^a-zA-Z0-9\']/', '', $qty[$i]),
+						'uoi' => $uoi[$i],
+						'price' => preg_replace('/[^a-zA-Z0-9\']/', '', $price[$i]),
+						'total' => preg_replace('/[^a-zA-Z0-9\']/', '', $subtotal[$i]),
+						'satuan' => preg_replace('/[^a-zA-Z0-9\']/', '', $satuan[$i]),
+						'keterangan' => $keterangan[$i]
+					];
+
+					$this->cb->insert('t_po_detail', $detail);
+				}
+
+				$this->db->select('phone');
+				$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
+				$sarlog = $this->db->get('users')->result_array();
+				$phone = '';
+				foreach ($sarlog as $val) {
+					$phone .= $val['phone'] . ',';
+				}
+
+				$nama_session = $this->session->userdata('nama');
+				$msg = "There's a update Purchase Order\nNo : *$po[no_po]*\nFrom : *$nama_session*\n\nMohon untuk segera diproses.";
+				$this->api_whatsapp->wa_notif($msg, $phone);
+
+				$response = [
+					'success' => true,
+					'msg' => 'PO berhasil diubah!'
+				];
 			}
 
-			$this->db->select('phone');
-			$this->db->where(['level_jabatan' => 2, 'bagian' => 2]);
-			$sarlog = $this->db->get('users')->result_array();
-			$phone = '';
-			foreach ($sarlog as $val) {
-				$phone .= $val['phone'] . ',';
-			}
-
-			$nama_session = $this->session->userdata('nama');
-			$msg = "There's a update Purchase Order\nNo : *$po[no_po]*\nFrom : *$nama_session*\n\nMohon untuk segera diproses.";
-			$this->api_whatsapp->wa_notif($msg, $phone);
-
-			$response = [
-				'success' => true,
-				'msg' => 'PO berhasil diubah!'
-			];
+			echo json_encode($response);
+		} else {
+			redirect('home');
 		}
-
-		echo json_encode($response);
 	}
 
 	public function po_list()
 	{
 		$a = $this->session->userdata('level');
-		if (strpos($a, '501') !== false) {
+		if (strpos($a, '502') !== false) {
 			$nip = $this->session->userdata('nip');
 			// Pagination
 			$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
@@ -2864,15 +2879,20 @@ class Asset extends CI_Controller
 		} else {
 			$a = $this->session->userdata('level');
 			if (strpos($a, '501') !== false) {
-				//pagination settings
-				$config['base_url'] = site_url('asset/item_out');
-				$config['total_rows'] = $this->m_asset->itemOut_count();
-				$config['per_page'] = "20";
-				$config["uri_segment"] = 3;
-				$choice = $config["total_rows"] / $config["per_page"];
-				//$config["num_links"] = floor($choice);
-				$config["num_links"] = 10;
-				// integrate bootstrap pagination
+				// Pagination
+				$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
+				$config['base_url'] = base_url('asset/item_out');
+				$config['total_rows'] = $this->m_asset->itemOut_count($keyword);
+				$config['per_page'] = 10;
+				$config['uri_segment'] = 3;
+				$config['num_links'] = 3;
+				$config['enable_query_strings'] = TRUE;
+				$config['page_query_string'] = TRUE;
+				$config['use_page_numbers'] = TRUE;
+				$config['reuse_query_string'] = TRUE;
+				$config['query_string_segment'] = 'page';
+
+				// Bootstrap style pagination
 				$config['full_tag_open'] = '<ul class="pagination">';
 				$config['full_tag_close'] = '</ul>';
 				$config['first_link'] = false;
@@ -2891,10 +2911,14 @@ class Asset extends CI_Controller
 				$config['cur_tag_close'] = '</a></li>';
 				$config['num_tag_open'] = '<li>';
 				$config['num_tag_close'] = '</li>';
+
+				// Initialize paginaton
 				$this->pagination->initialize($config);
-				$data['page'] = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
-				$data['users_data'] = $this->m_asset->itemOut_get($config["per_page"], $data['page']);
+				$page = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
+				$data['page'] = $page;
 				$data['pagination'] = $this->pagination->create_links();
+
+				$data['users_data'] = $this->m_asset->itemOut_get($config["per_page"], $page, $keyword);
 
 				//inbox notif
 				$nip = $this->session->userdata('nip');
@@ -2976,62 +3000,72 @@ class Asset extends CI_Controller
 
 	public function report_asset()
 	{
-		//inbox notif
-		$nip = $this->session->userdata('nip');
-		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
-		$sql2 = "SELECT * FROM asset_ruang";
-		$sql3 = "SELECT * FROM asset_lokasi";
-		$query = $this->db->query($sql);
-		$query2 = $this->db->query($sql2);
-		$query3 = $this->db->query($sql3);
-		$res2 = $query->result_array();
-		$asset_ruang = $query2->result();
-		$asset_lokasi = $query3->result();
-		$result = $res2[0]['COUNT(Id)'];
-		$data['count_inbox'] = $result;
-		$data['asset_ruang'] = $asset_ruang;
-		$data['asset_lokasi'] = $asset_lokasi;
+		$a = $this->session->userdata('level');
+		if (strpos($a, '504') !== false) {
+			//inbox notif
+			$nip = $this->session->userdata('nip');
+			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+			$sql2 = "SELECT * FROM asset_ruang";
+			$sql3 = "SELECT * FROM asset_lokasi";
+			$query = $this->db->query($sql);
+			$query2 = $this->db->query($sql2);
+			$query3 = $this->db->query($sql3);
+			$res2 = $query->result_array();
+			$asset_ruang = $query2->result();
+			$asset_lokasi = $query3->result();
+			$result = $res2[0]['COUNT(Id)'];
+			$data['count_inbox'] = $result;
+			$data['asset_ruang'] = $asset_ruang;
+			$data['asset_lokasi'] = $asset_lokasi;
 
-		// Tello
-		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
-		$query4 = $this->db->query($sql4);
-		$res4 = $query4->result_array();
-		$result4 = $res4[0]['COUNT(Id)'];
-		$data['count_inbox2'] = $result4;
+			// Tello
+			$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query4 = $this->db->query($sql4);
+			$res4 = $query4->result_array();
+			$result4 = $res4[0]['COUNT(Id)'];
+			$data['count_inbox2'] = $result4;
 
-		$data['title'] = "Report asset";
-		$data['asset'] = $this->db->get('asset_list');
-		$data['pages'] = 'pages/aset/v_report_asset';
-		$this->load->view('index', $data);
+			$data['title'] = "Report asset";
+			$data['asset'] = $this->db->get('asset_list');
+			$data['pages'] = 'pages/aset/v_report_asset';
+			$this->load->view('index', $data);
+		} else {
+			redirect('home');
+		}
 	}
 
 	public function working_supply()
 	{
-		//inbox notif
-		$nip = $this->session->userdata('nip');
-		$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
-		$sql2 = "SELECT * FROM asset_ruang";
-		$sql3 = "SELECT * FROM asset_lokasi";
-		$query = $this->db->query($sql);
-		$query2 = $this->db->query($sql2);
-		$query3 = $this->db->query($sql3);
-		$res2 = $query->result_array();
-		$asset_ruang = $query2->result();
-		$asset_lokasi = $query3->result();
-		$result = $res2[0]['COUNT(Id)'];
-		$data['count_inbox'] = $result;
+		$a = $this->session->userdata('level');
+		if (strpos($a, '505') !== false) {
+			//inbox notif
+			$nip = $this->session->userdata('nip');
+			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+			$sql2 = "SELECT * FROM asset_ruang";
+			$sql3 = "SELECT * FROM asset_lokasi";
+			$query = $this->db->query($sql);
+			$query2 = $this->db->query($sql2);
+			$query3 = $this->db->query($sql3);
+			$res2 = $query->result_array();
+			$asset_ruang = $query2->result();
+			$asset_lokasi = $query3->result();
+			$result = $res2[0]['COUNT(Id)'];
+			$data['count_inbox'] = $result;
 
-		// Tello
-		$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
-		$query4 = $this->db->query($sql4);
-		$res4 = $query4->result_array();
-		$result4 = $res4[0]['COUNT(Id)'];
-		$data['count_inbox2'] = $result4;
+			// Tello
+			$sql4 = "SELECT COUNT(Id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+			$query4 = $this->db->query($sql4);
+			$res4 = $query4->result_array();
+			$result4 = $res4[0]['COUNT(Id)'];
+			$data['count_inbox2'] = $result4;
 
-		$data['title'] = "Working Supply";
-		$data['data_item'] = $this->db->get('item_list');
-		$data['pages'] = 'pages/aset/v_report_item';
-		$this->load->view('index', $data);
+			$data['title'] = "Working Supply";
+			$data['data_item'] = $this->db->get('item_list');
+			$data['pages'] = 'pages/aset/v_report_item';
+			$this->load->view('index', $data);
+		} else {
+			redirect('home');
+		}
 	}
 
 	public function report_item()

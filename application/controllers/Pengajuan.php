@@ -21,7 +21,7 @@ class Pengajuan extends CI_Controller
   public function create()
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '901') !== false) {
+    if (strpos($a, '801') !== false) {
       //inbox notif
       $nip = $this->session->userdata('nip');
       $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -57,7 +57,7 @@ class Pengajuan extends CI_Controller
   public function insert()
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '901') !== false) {
+    if (strpos($a, '801') !== false) {
       $tgl = $this->input->post('tanggal');
       $now = date('Y-m-d');
       if (strtotime($tgl) != strtotime($now)) {
@@ -149,7 +149,7 @@ class Pengajuan extends CI_Controller
   public function list()
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '901') !== false) {
+    if (strpos($a, '801') !== false) {
       // Pagination
       $search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
       // Pagination
@@ -260,7 +260,7 @@ class Pengajuan extends CI_Controller
   public function approval_spv()
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '902') !== false) {
+    if (strpos($a, '802') !== false) {
       // Pagination
       $search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
       $config['base_url'] = base_url('pengajuan/approval_spv');
@@ -384,7 +384,7 @@ class Pengajuan extends CI_Controller
   public function approval_keuangan()
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '903') !== false) {
+    if (strpos($a, '803') !== false) {
       $filter = $this->input->get('filter');
       //inbox notif
       $nip = $this->session->userdata('nip');
@@ -425,7 +425,7 @@ class Pengajuan extends CI_Controller
   public function ubah($id)
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '901') !== false) {
+    if (strpos($a, '801') !== false) {
       //inbox notif
       $nip = $this->session->userdata('nip');
       $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -687,7 +687,7 @@ class Pengajuan extends CI_Controller
   public function approval_direksi()
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '904') !== false) {
+    if (strpos($a, '804') !== false) {
       // Pagination
       $search = htmlspecialchars($this->input->get('search') ?? '', ENT_QUOTES, 'UTF-8');
       $config['base_url'] = base_url('pengajuan/approval_spv');
@@ -802,7 +802,7 @@ class Pengajuan extends CI_Controller
   public function close($id)
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '903') !== false) {
+    if (strpos($a, '803') !== false) {
       //inbox notif
       $nip = $this->session->userdata('nip');
       $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
@@ -1236,7 +1236,7 @@ class Pengajuan extends CI_Controller
   public function bayar($id)
   {
     $a = $this->session->userdata('level');
-    if (strpos($a, '903') !== false) {
+    if (strpos($a, '803') !== false) {
       //inbox notif
       $nip = $this->session->userdata('nip');
       $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";

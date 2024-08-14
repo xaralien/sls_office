@@ -6,31 +6,41 @@
     <div class="x_title">
       <h2>Item Out</h2>
     </div>
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12 form-group" style="margin: 0; padding:0;">
+        <form class="form-horizontal form-label-left" method="get" action="<?= base_url('asset/item_out') ?>">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="input nama asset, item atau keterangan" name="keyword" id="keyword" value="<?= $this->input->get('keyword') ?>">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="submit">Search</button>
+              <a href="<?= base_url('asset/item_out') ?>" class="btn btn-warning" style="color:white;">Reset</a>
+            </span>
+          </div><!-- /input-group -->
+        </form>
+      </div>
+    </div>
 
     <div class="table-responsive">
       <table class="table table-bordered">
         <thead>
           <tr>
             <th>No.</th>
+            <th>User</th>
             <th>Nama Asset</th>
             <th>Nama Item</th>
             <th>Jumlah</th>
             <th>Harga Satuan</th>
             <th>Status</th>
+            <th>Ket</th>
             <th>#</th>
           </tr>
         </thead>
         <?php
-        if (($this->uri->segment(2) == 'asset_cari') and ($this->uri->segment(3) <> '')) {
-          $no = $this->uri->segment(4) + 1;
-        } else {
-          $no = $this->uri->segment(3) + 1;
-        }
         if (empty($users_data)) {
         ?>
           <tbody>
             <tr align="center">
-              <td colspan="7"><b>Belum ada data</b></td>
+              <td colspan="9"><b>Belum ada data</b></td>
             </tr>
           </tbody>
           <?php
@@ -40,7 +50,8 @@
             <!--content here-->
             <tbody>
               <tr>
-                <td><?php echo $no; ?></td>
+                <td><?= ++$page ?></td>
+                <td><?= $data->nama_user ?></td>
                 <td><?php echo $data->nama_asset; ?></td>
                 <td><?php echo $data->nama; ?></td>
                 <td><?php echo $data->jml; ?></td>
@@ -54,7 +65,9 @@
                   if ($data->status == 2) {
                     echo "Closed";
                   }
-                  ?></td>
+                  ?>
+                </td>
+                <td><?= $data->keterangan ?></td>
                 <td>
                   <!-- <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal3" onclick="get_item_out(<?= $data->Id ?>)">Detail</button> -->
                   <?php if ($data->status == 1) { ?>
@@ -138,7 +151,6 @@
               </tr>
             </tbody>
         <?php
-            $no++;
           endforeach;
         }
         ?>

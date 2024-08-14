@@ -70,20 +70,25 @@
                 <ul class="nav child_menu">
                     <?php $a = $this->session->userdata('level');
                     if (strpos($a, '501') !== false) { ?>
-                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/ro_list">Release Order</a></li>
-                    <?php }
-                    if (strpos($a, '502') !== false) { ?>
                         <li><a href="<?php echo base_url(); ?>app/asset_list">Asset List</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/item_list">Item List</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/item_out">Item Out</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/report_asset">Report Asset</a></li>
-                        <li><a href="<?php echo base_url(); ?>asset/working_supply">Working Supply</a></li>
                         <li><a href="<?php echo base_url(); ?>asset/vendors">Vendors</a></li>
-
                     <?php }
-                    if (strpos($a, '503') !== false) { ?>
+                    if (strpos($a, '502') !== false) { ?>
+                        <li><a href="<?php echo base_url(); ?>asset/po_list">Purchase Order</a></li>
+                        <li><a href="<?php echo base_url(); ?>asset/ro_list">Release Order</a></li>
+                    <?php }
+                    if (strpos($a, '504') !== false) { ?>
+                        <li><a href="<?php echo base_url(); ?>asset/report_asset">Report Asset</a></li>
+                    <?php }
+                    if (strpos($a, '505') !== false) { ?>
+                        <li><a href="<?php echo base_url(); ?>asset/working_supply">Working Supply</a></li>
+                    <?php }
+                    if (strpos($a, '506') !== false) { ?>
                         <li><a href="<?php echo base_url(); ?>asset/repair">Repair In</a></li>
+                    <?php }
+                    if (strpos($a, '507') !== false) { ?>
                         <li><a href="<?php echo base_url(); ?>asset/repair_out">Repair Out</a></li>
                     <?php } ?>
                 </ul>
@@ -165,68 +170,61 @@
             </li>
         <?php } ?>
         <?php $a = $this->session->userdata('level');
-        if (strpos($a, '30') !== false) { ?>
+        if (strpos($a, '80') !== false) { ?>
             <li>
                 <a><i class="fa fa-edit"></i>Financial<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <?php
-                    if (strpos($a, '301') !== false) { ?>
+                    if (strpos($a, '805') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/financial_entry">Financial Entry</a>
                         </li>
                     <?php }
-                    if (strpos($a, '301') !== false) { ?>
+                    if (strpos($a, '806') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/fe_pending">FE Pending</a>
                         </li>
                     <?php }
-                    if (strpos($a, '301') !== false) { ?>
+                    if (strpos($a, '807') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/invoice">Invoice</a>
                         </li>
                     <?php }
-                    if (strpos($a, '301') !== false) { ?>
+                    if (strpos($a, '808') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>customer">Customer</a>
                         </li>
                     <?php }
-                    if (strpos($a, '301') !== false) { ?>
+                    if (strpos($a, '809') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/showreport">Neraca L/R</a>
                         </li>
-                    <?php }
-                    if (strpos($a, '301') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/coa_report">Arus Kas</a>
                         </li>
-                    <?php }
-                    if (strpos($a, '301') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>financial/list_coa">List CoA</a>
                         </li>
                     <?php } ?>
                     <?php
-                    if (strpos($a, '901') !== false) { ?>
-                        <li>
-                            <a href="<?= base_url(); ?>pengajuan/create">Create Biaya</a>
-                        </li>
+                    if (strpos($a, '801') !== false) { ?>
                         <li>
                             <a href="<?= base_url(); ?>pengajuan/list">List Pengajuan</a>
                         </li>
                     <?php }
-                    if (strpos($a, '902') !== FALSE) {
+                    if (strpos($a, '802') !== FALSE) {
                     ?>
                         <li>
                             <a href="<?= base_url(); ?>pengajuan/approval_spv">Approval Kepala Divisi</a>
                         </li>
                     <?php }
-                    if (strpos($a, '903') !== FALSE) {
+                    if (strpos($a, '803') !== FALSE) {
                     ?>
                         <li>
                             <a href="<?= base_url(); ?>pengajuan/approval_keuangan">Approval Keuangan</a>
                         </li>
                     <?php }
-                    if (strpos($a, '904') !== FALSE) {
+                    if (strpos($a, '804') !== FALSE) {
                     ?>
                         <li>
                             <a href="<?= base_url(); ?>pengajuan/approval_direksi">Approval Direksi</a>

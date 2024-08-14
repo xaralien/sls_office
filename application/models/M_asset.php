@@ -44,9 +44,13 @@ class M_asset extends CI_Model
 	}
 
 
-	function itemOut_get($limit, $start)
+	function itemOut_get($limit, $start, $keyword)
 	{
-		$sql = "SELECT users.nama as nama_penerima, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status, working_supply.bukti_serah, working_supply.image_close FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.penerima ORDER BY working_supply.Id DESC LIMIT " . $start . ", " . $limit;
+		if ($keyword) {
+			$sql = "SELECT users.nama as nama_user, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status, working_supply.bukti_serah, working_supply.image_close, working_supply.keterangan FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.user WHERE asset_list.nama_asset LIKE '%$keyword%' OR item_list.nama LIKE '%$keyword%' OR working_supply.keterangan LIKE '%$keyword%' ORDER BY working_supply.Id DESC LIMIT " . $start . ", " . $limit;
+		} else {
+			$sql = "SELECT users.nama as nama_user, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status, working_supply.bukti_serah, working_supply.image_close, working_supply.keterangan FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.user ORDER BY working_supply.Id DESC LIMIT " . $start . ", " . $limit;
+		}
 		$query = $this->db->query($sql);
 		return $query->result();
 	}
@@ -73,34 +77,13 @@ class M_asset extends CI_Model
 		return $query->num_rows();
 	}
 
-	function itemIn_count()
+	function itemOut_count($keyword)
 	{
-		$sql = "select * FROM item_in";
-		$query = $this->db->query($sql);
-		return $query->num_rows();
-	}
-
-	function itemOut_count()
-	{
-		$sql = "select * FROM item_out";
-		$query = $this->db->query($sql);
-		return $query->num_rows();
-	}
-
-	function item_cari_pagination($limit, $start, $st = NULL)
-	{
-		if ($st == "NIL") $st = "";
-		// $sql = "SELECT * FROM asset_list WHERE (kode LIKE '%$st%' OR spesifikasi LIKE '%$st%' OR nama_asset LIKE '%$st%') ORDER BY kode ASC limit " . $start . ", " . $limit;
-		$sql = "SELECT a.* FROM item_list as a left join item_in as b on(a.Id=b.item_list_id) WHERE (a.nomor LIKE '%$st%' OR a.nama LIKE '%$st%') ORDER BY a.Id ASC limit " . $start . ", " . $limit;
-		$query = $this->db->query($sql);
-		return $query->result();
-	}
-
-	function item_cari_count($st = NULL)
-	{
-		if ($st == "NIL") $st = "";
-		// $sql = "select Id FROM asset_list WHERE (kode LIKE '%$st%' OR spesifikasi LIKE '%$st%' OR nama_asset LIKE '%$st%')";
-		$sql = "SELECT a.* FROM item_list as a left join item_in as b on(a.Id=b.item_list_id) WHERE (a.nomor LIKE '%$st%' OR a.nama LIKE '%$st%')";
+		if ($keyword) {
+			$sql = "SELECT users.nama as nama_user, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status, working_supply.bukti_serah, working_supply.image_close, working_supply.keterangan FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.user WHERE asset_list.nama_asset LIKE '%$keyword%' OR item_list.nama LIKE '%$keyword%' OR working_supply.keterangan LIKE '%$keyword%' ORDER BY working_supply.Id DESC";
+		} else {
+			$sql = "SELECT users.nama as nama_user, users.nip, item_list.nama, asset_list.nama_asset, asset_list.kode, working_supply.Id, working_supply.harga, working_supply.jml, working_supply.tanggal, working_supply.penerima, working_supply.status, working_supply.bukti_serah, working_supply.image_close, working_supply.keterangan FROM working_supply JOIN item_list ON working_supply.item_id = item_list.Id JOIN asset_list ON asset_list.Id = working_supply.asset_id LEFT JOIN users ON users.nip = working_supply.user ORDER BY working_supply.Id DESC";
+		}
 		$query = $this->db->query($sql);
 		return $query->num_rows();
 	}
