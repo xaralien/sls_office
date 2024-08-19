@@ -10,7 +10,7 @@
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal1"><i class="fa fa-plus" aria-hidden="true"></i> Tambah Item</button>
             <!-- <a href="<?= base_url('asset/export_item') ?>" class="btn btn-success"><i class="fa fa-file-excel-o"></i> Excel</a> -->
         </div>
-        <div class="row">
+        <!-- <div class="row">
             <div class="col-md-3 sol-sm-6 col-xs-12" style="padding: 0 !important; margin: 0 !important">
                 <div class="panel panel-default">
                     <div class="panel-heading">Total Nilai All Spare Part</div>
@@ -19,7 +19,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div class="row">
             <div class="col-md-6 col-sm-6 col-xs-12" style="padding: 0 !important; margin: 0 !important">
@@ -28,6 +28,7 @@
                         <input type="text" class="form-control" id="search" name="search" placeholder="Cari nama atau kode item..." value="<?= $this->input->get('search') ?>">
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i> Search!</button>
+                            <a href="<?= base_url('asset/item_list') ?>" class="btn btn-warning">RESET</a>
                         </span>
                     </div><!-- /input-group -->
                 </form>
@@ -143,13 +144,30 @@
                                 <label class="col-form-label col-md-3 col-sm-3 label-align" for="last-name">Jenis Item <span class="required">*</span>
                                 </label>
                                 <div class="col-md-9 col-sm-9 col-xs-12">
-                                    <select name="jenis_item" class="form-control select22" style="width: 100%;">
+                                    <select name="jenis_item" id="jenis_item" class="form-control select2" style="width: 100%;">
                                         <option value="">Pilih Jenis Item</option>
                                         <?php
                                         $jenis = $this->db->get('item_jenis')->result_array();
                                         foreach ($jenis as $value) {
                                         ?>
                                             <option value="<?= $value['Id'] ?>"><?= $value['nama_jenis'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="item form-group">
+                                <label class="col-form-label col-md-3 col-sm-3 label-align" for="last-name">Coa Item <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9 col-sm-9 col-xs-12">
+                                    <select name="coa" id="coa" class="form-control select2" style="width: 100%;">
+                                        <option value="">Pilih coa Item</option>
+                                        <?php
+                                        foreach ($coa as $c) {
+                                        ?>
+                                            <option value="<?= $c['no_sbb'] ?>"><?= $c['no_sbb'] . ' - ' . $c['nama_perkiraan'] ?></option>
                                         <?php } ?>
                                     </select>
                                 </div>
@@ -177,3 +195,15 @@
         </div>
     </form>
 </div>
+
+<script>
+    $(document).ready(function() {
+        var selects = document.querySelectorAll('.select2');
+        for (let index = 0; index < selects.length; index++) {
+            $("#" + selects[index].id + "").select2({
+                dropdownParent: $("#myModal1"),
+                width: "100%"
+            })
+        }
+    })
+</script>

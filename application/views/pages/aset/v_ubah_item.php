@@ -29,10 +29,19 @@
                 </div>
                 <div class="form-group">
                   <label for="jenis">Jenis Item</label>
-                  <select name="jenis" id="jenis" class="form-control">
+                  <select name="jenis" id="jenis" class="form-control select2">
                     <option value="">:: Pilih jenis item ::</option>
                     <?php foreach ($jenis_item->result_array() as $j) : ?>
                       <option value="<?= $j['Id'] ?>" <?= $j['Id'] == $item['jenis_item'] ? 'selected' : '' ?>><?= $j['nama_jenis'] ?></option>
+                    <?php endforeach ?>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="coa">Coa Item</label>
+                  <select name="coa" id="coa" class="form-control select2">
+                    <option value="">:: Pilih coa item ::</option>
+                    <?php foreach ($coa as $c) : ?>
+                      <option value="<?= $c['no_sbb'] ?>" <?= $c['no_sbb'] == $item['coa'] ? 'selected' : '' ?>><?= $c['no_sbb'] . ' - ' . $c['nama_perkiraan'] ?></option>
                     <?php endforeach ?>
                   </select>
                 </div>
@@ -48,3 +57,14 @@
     </div>
   </div>
 </div>
+
+<script>
+  $(document).ready(function() {
+    var selects = document.querySelectorAll('.select2');
+    for (let index = 0; index < selects.length; index++) {
+      $("#" + selects[index].id + "").select2({
+        width: "100%"
+      })
+    }
+  })
+</script>

@@ -80,7 +80,7 @@
                             <select name="coa_persediaan[]" id="coa_persediaan<?= $i['Id'] ?>" class="form-control select2">
                               <option value=""> -- Pilih COA Persediaan -- </option>
                               <?php foreach ($coa->result_array() as $cp) { ?>
-                                <option value="<?= $cp['no_sbb'] ?>"><?= $cp['no_sbb'] . ' - ' . $cp['nama_perkiraan'] ?></option>
+                                <option value="<?= $cp['no_sbb'] ?>" <?= $cp['no_sbb'] == $detail['coa'] ? 'selected' : '' ?>><?= $cp['no_sbb'] . ' - ' . $cp['nama_perkiraan'] ?></option>
                               <?php } ?>
                             </select>
                           <?php } ?>

@@ -167,9 +167,9 @@
         <th bgcolor="#34495e">
           <font color="white">Username</font>
         </th>
-        <th bgcolor="#34495e">
+        <!-- <th bgcolor="#34495e">
           <font color="white">Level</font>
-        </th>
+        </th> -->
         <th bgcolor="#34495e">
           <font color="white">Nip</font>
         </th>
@@ -208,9 +208,18 @@
               <td><?php echo $no; ?></td>
               <td><?php echo $data->nama; ?></td>
               <td><?php echo $data->username; ?></td>
-              <td><?php echo $data->level; ?></td>
+              <!-- <td><?php echo $data->level; ?></td> -->
               <td><?php echo $data->nip; ?></td>
-              <td><?php echo $data->status; ?></td>
+              <td>
+                <?php
+                if ($data->status == 1) {
+                  echo 'Active';
+                }
+                if ($data->status == 0) {
+                  echo 'Not Active';
+                }
+                ?>
+              </td>
 
               <td>
                 <!-- <form action="<?php echo base_url() . "app/user_view/" . $data->id; ?>" target="">

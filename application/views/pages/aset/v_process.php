@@ -45,11 +45,9 @@
                           <select name="coa_debit[]" id="coa_debit<?= $i['Id'] ?>" class="form-control select2" style="width: 100%;">
                             <option value=""> -- Pilih COA Persediaan -- </option>
                             <?php foreach ($coa->result_array() as $cd) { ?>
-                              <option value="<?= $cd['no_sbb'] ?>"><?= $cd['no_sbb'] . ' - ' . $cd['nama_perkiraan'] ?></option>
+                              <option value="<?= $cd['no_sbb'] ?>" <?= $cd['no_sbb'] == $detail['coa'] ? 'selected' : '' ?>><?= $cd['no_sbb'] . ' - ' . $cd['nama_perkiraan'] ?></option>
                             <?php } ?>
                           </select>
-                          <div style="margin: 5px 0;"></div>
-                          <input type="text" class="form-control" name="anggaran_debit[]" id="anggaran_debit<?= $i['Id'] ?>" readonly>
                         <?php } ?>
                       </td>
                     </tr>
@@ -57,21 +55,6 @@
                       $(document).ready(function() {
                         $('#coa_debit<?= $i['Id'] ?>').select2({
                           width: "100%"
-                        })
-                        $('#coa_debit<?= $i['Id'] ?>').change(function() {
-                          var id = $(this).val();
-                          $.ajax({
-                            url: '<?= base_url('asset/getDataCoa/') ?>' + id,
-                            method: 'GET',
-                            dataType: 'JSON',
-                            success: function(res) {
-                              if (res.anggaran) {
-                                $('#anggaran_debit<?= $i['Id'] ?>').val(formatNumber(res.nominal));
-                              } else {
-                                $('#anggaran_debit<?= $i['Id'] ?>').val(0);
-                              }
-                            }
-                          })
                         })
                       })
                     </script>

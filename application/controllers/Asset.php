@@ -73,6 +73,7 @@ class Asset extends CI_Controller
 			$data['jenis_item'] = $this->db->get('item_jenis');
 			$data['title'] = "Asset item list";
 			$data['pages'] = "pages/aset/v_item_list";
+			$data['coa'] = $this->cb->get('v_coa_all')->result_array();
 			$data['total'] = $this->m_asset->total_sparepart();
 			$data['total_repair'] = $this->m_asset->total_repair();
 			$this->load->view('index', $data);
@@ -100,6 +101,7 @@ class Asset extends CI_Controller
 			$result4 = $res4[0]['COUNT(Id)'];
 			$data['count_inbox2'] = $result4;
 
+			$data['coa'] = $this->cb->get('v_coa_all')->result_array();
 			$data['jenis_item'] = $this->db->get('item_jenis');
 			$data['item'] = $this->db->get_where('item_list', ['Id' => $id])->row_array();
 			$data['title'] = "Ubah data item";
@@ -116,6 +118,7 @@ class Asset extends CI_Controller
 		if (strpos($a, '502') !== false) {
 			$nama_item = $this->input->post('nama');
 			$jenis = $this->input->post('jenis');
+			$coa = $this->input->post('coa');
 
 			$this->form_validation->set_rules('nama', 'nama item', 'required|trim', array('required' => '%s wajib diisi!'));
 			$this->form_validation->set_rules('jenis', 'jenis item', 'required|trim', array('required' => '%s wajib diisi!'));
@@ -129,7 +132,8 @@ class Asset extends CI_Controller
 			} else {
 				$update = [
 					'nama' => $nama_item,
-					'jenis_item' => $jenis
+					'jenis_item' => $jenis,
+					'coa' => $coa
 				];
 
 				$this->db->where('Id', $id);
@@ -378,11 +382,13 @@ class Asset extends CI_Controller
 		$nomor = htmlspecialchars($this->input->post('kode') ?? '', ENT_QUOTES, 'UTF-8');
 		$nama = htmlspecialchars($this->input->post('name'), ENT_QUOTES, 'UTF-8');
 		$jenis = $this->input->post('jenis_item');
+		$coa = $this->input->post('coa');
 		$catatan = $this->input->post('catatan');
 
 		$this->form_validation->set_rules('kode', 'kode item', 'required|alpha_dash');
 		$this->form_validation->set_rules('name', 'nama item', 'required');
 		$this->form_validation->set_rules('jenis_item', 'jenis item', 'required');
+		$this->form_validation->set_rules('coa', 'coa item', 'required');
 
 		if ($this->form_validation->run() == FALSE) {
 			$response = [
@@ -398,7 +404,8 @@ class Asset extends CI_Controller
 				'stok' => 0,
 				'harga_sat' => 0,
 				'jenis_item' => $jenis,
-				'catatan' => $catatan
+				'catatan' => $catatan,
+				'coa' => $coa
 			];
 
 			$this->db->insert('item_list', $insert);
@@ -2490,9 +2497,7 @@ class Asset extends CI_Controller
 					'source_image' => './upload/po/' . $upload['file_name'],
 					'create_thumb' => false,
 					'maintain_ratio' => false,
-					'quality' => '85%',
-					'width' => 675,
-					'height' => 450,
+					'quality' => '75%',
 				];
 
 				$this->load->library('image_lib', $config2);
@@ -2972,9 +2977,7 @@ class Asset extends CI_Controller
 				'source_image' => './upload/bukti-close/' . $image['file_name'],
 				'create_thumb' => false,
 				'maintain_ratio' => false,
-				'quality' => '85%',
-				'width' => 675,
-				'height' => 450,
+				'quality' => '75%',
 			];
 
 			$this->load->library('image_lib', $config2);
@@ -3506,7 +3509,7 @@ class Asset extends CI_Controller
 	public function getSerialNumber()
 	{
 		$id = $this->input->post('id');
-		$serial = $this->db->get_where('item_detail', ['kode_item' => $id, 'status' => 'O'])->result();
+		$serial = $this->db->get_where('item_detail', ['kode_item' => $id, 'status' => 'O', 'status' => 'RO'])->result();
 		$option = "";
 		if ($serial) {
 			foreach ($serial as $row) {
@@ -3556,9 +3559,7 @@ class Asset extends CI_Controller
 					'source_image' => './upload/bukti-repair/' . $upload['file_name'],
 					'create_thumb' => false,
 					'maintain_ratio' => false,
-					'quality' => '85%',
-					'width' => 675,
-					'height' => 450,
+					'quality' => '75%',
 				];
 
 				$this->load->library('image_lib', $config2);
@@ -3687,9 +3688,7 @@ class Asset extends CI_Controller
 					'source_image' => './upload/bukti-serah/' . $upload['file_name'],
 					'create_thumb' => false,
 					'maintain_ratio' => false,
-					'quality' => '85%',
-					'width' => 675,
-					'height' => 450,
+					'quality' => '75%',
 				];
 
 				$this->load->library('image_lib', $config2);
@@ -3790,9 +3789,7 @@ class Asset extends CI_Controller
 					'source_image' => './upload/bukti-musnah/' . $upload['file_name'],
 					'create_thumb' => false,
 					'maintain_ratio' => false,
-					'quality' => '85%',
-					'width' => 675,
-					'height' => 450,
+					'quality' => '75%',
 				];
 
 				$this->load->library('image_lib', $config2);
