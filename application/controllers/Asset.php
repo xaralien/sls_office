@@ -1288,7 +1288,6 @@ class Asset extends CI_Controller
 						$item[] = $this->db->get_where('item_list', ['Id' => $po_detail[$i]['item']])->row_array();
 						// Update coa debit
 						$detail_coa_debit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_debit[$i]])->row_array();
-						$anggaran_debit[] = $detail_coa_debit[$i]['anggaran'];
 						$posisi_debit[] = $detail_coa_debit[$i]['posisi'];
 						$nominal_debit[] = $detail_coa_debit[$i]['nominal'];
 						$substr_coa_debit[] = substr($coa_debit[$i], 0, 1);
@@ -1318,7 +1317,6 @@ class Asset extends CI_Controller
 						// update coa credit
 						$detail_coa_credit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kredit])->row_array();
 						$posisi_credit[] = $detail_coa_credit[$i]['posisi'];
-						$anggaran_credit[] = $detail_coa_credit[$i]['anggaran'];
 						$nominal_credit[] = $detail_coa_credit[$i]['nominal'];
 						$substr_coa_credit[] = substr($coa_kredit, 0, 1);
 						$saldo_credit_baru[] = 0;
@@ -1444,7 +1442,6 @@ class Asset extends CI_Controller
 					// $item_detail = $this
 					// Update coa debit
 					$detail_coa_debit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_debit[$i]])->row_array();
-					$anggaran_debit[] = $detail_coa_debit[$i]['anggaran'];
 					$posisi_debit[] = $detail_coa_debit[$i]['posisi'];
 					$nominal_debit[] = $detail_coa_debit[$i]['nominal'];
 					$substr_coa_debit[] = substr($coa_debit[$i], 0, 1);
@@ -1474,7 +1471,6 @@ class Asset extends CI_Controller
 					// update coa credit
 					$detail_coa_credit[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kredit])->row_array();
 					$posisi_credit[] = $detail_coa_credit[$i]['posisi'];
-					$anggaran_credit[] = $detail_coa_credit[$i]['anggaran'];
 					$nominal_credit[] = $detail_coa_credit[$i]['nominal'];
 					$substr_coa_credit[] = substr($coa_kredit, 0, 1);
 					$saldo_credit_baru[] = 0;
@@ -2302,7 +2298,6 @@ class Asset extends CI_Controller
 
 				// debit
 				$detail_coa_beban[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_beban[$i]])->row_array();
-				$anggaran_beban[] = $detail_coa_beban[$i]['anggaran'];
 				$posisi_beban[] = $detail_coa_beban[$i]['posisi'];
 				$nominal_beban[] = $detail_coa_beban[$i]['nominal'];
 				$substr_coa_beban[] = substr($coa_beban[$i], 0, 1);
@@ -2332,7 +2327,6 @@ class Asset extends CI_Controller
 				// update coa credit
 				$detail_coa_persediaan[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_persediaan[$i]])->row_array();
 				$posisi_persediaan[] = $detail_coa_persediaan[$i]['posisi'];
-				$anggaran_persediaan[] = $detail_coa_persediaan[$i]['anggaran'];
 				$nominal_persediaan[] = $detail_coa_persediaan[$i]['nominal'];
 				$substr_coa_persediaan[] = substr($coa_persediaan[$i], 0, 1);
 				$saldo_persediaan_baru[] = 0;
@@ -2508,7 +2502,6 @@ class Asset extends CI_Controller
 					$item[] = $this->db->get_where('item_list', ['Id' => $po_detail[$i]['item']])->row_array();
 					// Update coa debit
 					$detail_coa_hutang[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $po_detail[$i]['kredit']])->row_array();
-					$anggaran_hutang[] = $detail_coa_hutang[$i]['anggaran'];
 					$posisi_hutang[] = $detail_coa_hutang[$i]['posisi'];
 					$nominal_hutang[] = $detail_coa_hutang[$i]['nominal'];
 					$substr_coa_hutang[] = substr($po_detail[$i]['kredit'], 0, 1);
@@ -2538,7 +2531,6 @@ class Asset extends CI_Controller
 					// update coa credit
 					$detail_coa_kas[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kas])->row_array();
 					$posisi_kas[] = $detail_coa_kas[$i]['posisi'];
-					$anggaran_kas[] = $detail_coa_kas[$i]['anggaran'];
 					$nominal_kas[] = $detail_coa_kas[$i]['nominal'];
 					$substr_coa_kas[] = substr($coa_kas, 0, 1);
 					$saldo_kas_baru[] = 0;
@@ -2706,7 +2698,6 @@ class Asset extends CI_Controller
 					$item[] = $this->db->get_where('item_list', ['Id' => $po_detail[$i][$j]['item']])->row_array();
 					// Update coa debit
 					$detail_coa_hutang[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $po_detail[$i][$j]['kredit']])->row_array();
-					$anggaran_hutang[] = $detail_coa_hutang[$j]['anggaran'];
 					$posisi_hutang[] = $detail_coa_hutang[$j]['posisi'];
 					$nominal_hutang[] = $detail_coa_hutang[$j]['nominal'];
 					$substr_coa_hutang[] = substr($po_detail[$i][$j]['kredit'], 0, 1);
@@ -2735,7 +2726,6 @@ class Asset extends CI_Controller
 					// update coa credit
 					$detail_coa_kas[] = $this->cb->get_where('v_coa_all', ['no_sbb' => $coa_kas])->row_array();
 					$posisi_kas[] = $detail_coa_kas[$j]['posisi'];
-					$anggaran_kas[] = $detail_coa_kas[$j]['anggaran'];
 					$nominal_kas[] = $detail_coa_kas[$j]['nominal'];
 					$substr_coa_kas[] = substr($coa_kas, 0, 1);
 					$saldo_kas_baru[] = 0;
