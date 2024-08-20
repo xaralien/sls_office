@@ -125,4 +125,134 @@ class M_coa extends CI_Model
     {
         return $this->cb->from('v_coa_all')->where($kolom, $key)->count_all_results();
     }
+
+
+    public function list_saldo()
+    {
+        return $this->cb->order_by('periode', 'DESC')->get('saldo_awal')->result();
+    }
+
+    public function showSaldo($slug)
+    {
+        return $this->cb->where('slug', $slug)->get('saldo_awal')->row_array();
+    }
+
+    public function showDetailSaldo($id)
+    {
+        return $this->cb->from('saldo_awal_detail s')->join('v_coa_all v', 's.no_sbb = v.no_sbb')->where('id_saldo_awal', $id)->get()->result();
+    }
+
+    // Fungsi untuk menyimpan saldo awal ke tabel saldo_awal_neraca
+    public function insert_saldo_awal($data)
+    {
+        return $this->cb->insert('saldo_awal', $data);
+    }
+
+    // Fungsi untuk mendapatkan saldo awal berdasarkan bulan tertentu
+    public function get_saldo_awal($bulan)
+    {
+        $this->cb->select('*');
+        $this->cb->from('saldo_awal');
+        $this->cb->where('periode', $bulan);
+        $query = $this->cb->get();
+        return $query->row_array();
+    }
+
+    public function calculate_saldo_awal($bulan, $tahun)
+    {
+        $bulan = (int) $bulan;
+        $tahun = (int) $tahun;
+
+        $query = $this->cb->query("
+            SELECT 
+                coa.no_sbb, coa.nama_perkiraan, coa.posisi, coa.table_source,
+                SUM(
+                    CASE 
+                        WHEN coa.posisi = 'AKTIVA' AND jn.akun_debit = coa.no_sbb THEN jn.jumlah_debit
+                        WHEN coa.posisi = 'AKTIVA' AND jn.akun_kredit = coa.no_sbb THEN -jn.jumlah_kredit
+                        WHEN coa.posisi = 'PASIVA' AND jn.akun_kredit = coa.no_sbb THEN jn.jumlah_kredit
+                        WHEN coa.posisi = 'PASIVA' AND jn.akun_debit = coa.no_sbb THEN -jn.jumlah_debit
+                        ELSE 0
+                    END
+                ) AS saldo_awal
+            FROM 
+                v_coa_all coa
+            LEFT JOIN 
+                jurnal_neraca jn ON coa.no_sbb = jn.akun_debit OR coa.no_sbb = jn.akun_kredit
+            WHERE 
+                MONTH(jn.tanggal) = '$bulan' AND YEAR(jn.tanggal) = '$tahun'
+            GROUP BY 
+                coa.no_sbb
+            ORDER BY 
+                coa.no_sbb ASC
+        ");
+        // echo '<pre>';
+        // print_r($query->result_array());
+        // echo '</pre>';
+        // exit;
+        return $query->result();
+    }
+
+    public function cek_saldo_awal($bulan)
+    {
+        return $this->cb->where('periode', $bulan)->get('saldo_awal')->row_array();
+    }
+
+    public function getNeracaByDate($table, $posisi, $tanggal_akhir)
+    {
+        $date = new DateTime($tanggal_akhir);
+        $tanggal_awal = $date->format('Y-m') . '-01';
+
+        if ($posisi == "AKTIVA") {
+
+            $query = $this->cb->query("
+            SELECT 
+                coa.no_sbb, coa.nama_perkiraan, coa.posisi,
+                SUM(
+                    CASE 
+                        WHEN coa.posisi = 'AKTIVA' AND jn.akun_debit = coa.no_sbb THEN jn.jumlah_debit
+                        WHEN coa.posisi = 'AKTIVA' AND jn.akun_kredit = coa.no_sbb THEN -jn.jumlah_kredit
+                        ELSE 0
+                    END
+                ) AS saldo_awal
+            FROM 
+                v_coa_all coa
+            LEFT JOIN 
+                jurnal_neraca jn ON coa.no_sbb = jn.akun_debit OR coa.no_sbb = jn.akun_kredit
+            WHERE 
+                jn.tanggal BETWEEN '$tanggal_awal' AND '$tanggal_akhir'
+                AND coa.table_source = '$table' AND coa.posisi = '$posisi'
+            GROUP BY 
+                coa.no_sbb
+            ORDER BY 
+                coa.no_sbb ASC
+        ");
+        } else if ($posisi == "PASIVA") {
+
+            $query = $this->cb->query("
+            SELECT 
+                coa.no_sbb, coa.nama_perkiraan, coa.posisi,
+                SUM(
+                    CASE 
+                        WHEN coa.posisi = 'PASIVA' AND jn.akun_kredit = coa.no_sbb THEN jn.jumlah_kredit
+                        WHEN coa.posisi = 'PASIVA' AND jn.akun_debit = coa.no_sbb THEN -jn.jumlah_debit
+                        ELSE 0
+                    END
+                ) AS saldo_awal
+            FROM 
+                v_coa_all coa
+            LEFT JOIN 
+                jurnal_neraca jn ON coa.no_sbb = jn.akun_debit OR coa.no_sbb = jn.akun_kredit
+            WHERE 
+                jn.tanggal BETWEEN '$tanggal_awal' AND '$tanggal_akhir'
+                AND coa.table_source = '$table' AND coa.posisi = '$posisi'
+            GROUP BY 
+                coa.no_sbb
+            ORDER BY 
+                coa.no_sbb ASC
+        ");
+        }
+
+        return $query->result();
+    }
 }

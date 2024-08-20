@@ -70,12 +70,12 @@ class Financial extends CI_Controller
 
     public function store_financial_entry($jenis = NULL)
     {
-        if ($jenis == "debit") {
+        if ($jenis == "multi_kredit") {
             $coa_debit = $this->input->post('neraca_debit');
             $coa_kredit = $this->input->post('accounts');
             $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('nominals'));
             $jenis_fe = $jenis;
-        } else if ($jenis == "kredit") {
+        } else if ($jenis == "multi_debit") {
             $coa_debit = $this->input->post('accounts');
             $coa_kredit = $this->input->post('neraca_kredit');
             $nominal = preg_replace('/[^a-zA-Z0-9\']/', '', $this->input->post('nominals'));
@@ -109,6 +109,7 @@ class Financial extends CI_Controller
                 'file_name' => $newFileName,
             ];
 
+            $file_path = $upload_path . $newFileName;
             $this->load->library('upload', $config);
 
             if (!$this->upload->do_upload('file_upload')) {
@@ -117,14 +118,13 @@ class Financial extends CI_Controller
             }
         }
 
-
         $data = [
             'coa_debit' => json_encode($coa_debit),
             'coa_kredit' => json_encode($coa_kredit),
             'nominal' => json_encode($nominal),
             'keterangan' => $keterangan,
             'tanggal_transaksi' => $tanggal,
-            'file_path' => isset($file) ? $upload_path . $newFileName : null,
+            'file_path' => (isset($file_path)) ? $file_path : null,
             'created_by' => $this->session->userdata('nip'),
             'slug' => $slug,
             'no_urut' => $bilangan,
@@ -442,7 +442,6 @@ class Financial extends CI_Controller
         $diskon = $this->input->post('diskon');
         $ppn = $this->input->post('ppn');
         $nominal = $this->convertToNumber($this->input->post('nominal'));
-        // $besaran_diskon = $this->convertToNumber($this->input->post('besaran_diskon'));
         $besaran_diskon = 0;
         $besaran_ppn = $this->convertToNumber($this->input->post('besaran_ppn'));
         $besaran_pph = $this->convertToNumber($this->input->post('besaran_pph'));
@@ -521,9 +520,9 @@ class Financial extends CI_Controller
 
                 if ($insert) {
 
-                    // Jurnal 1: 1104003 - PENDAPATAN YANG MASIH HARUS DITERIMA bertambah, 4101001 - PENDAPATAN AKAN DITERIMA (sebesar bruto)
+                    // Jurnal 1: 1104003 - PENDAPATAN YANG MASIH HARUS DITERIMA bertambah, 4101002 - PENDAPATAN AKAN DITERIMA (sebesar bruto)
                     $coa_debit = "1104003";
-                    $coa_kredit = "4101001";
+                    $coa_kredit = "4101002";
 
                     $this->posting($coa_debit, $coa_kredit, $keterangan, $bruto, $tgl_invoice);
 
@@ -1321,5 +1320,393 @@ class Financial extends CI_Controller
         } else if ($jenis == "customer") {
             redirect('customer');
         }
+    }
+
+    public function closing($slug = NULL)
+    {
+        $nip = $this->session->userdata('nip');
+
+        // Fetch counts using CodeIgniter's query builder to prevent SQL injection
+        $this->db->select('COUNT(Id) as count');
+        $this->db->from('memo');
+        $this->db->where("(nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%')");
+        $this->db->where("`read` NOT LIKE '%$nip%'");
+        $result = $this->db->get()->row()->count;
+
+        $this->db->select('COUNT(id) as count');
+        $this->db->from('task');
+        $this->db->where("(`member` LIKE '%$nip%' OR `pic` LIKE '%$nip%')");
+        $this->db->where('activity', '1');
+        $result2 = $this->db->get()->row()->count;
+
+        if ($slug) {
+            $title = "Detail saldo";
+            $saldo = $this->m_coa->get_saldo_awal($slug);
+            $coa = json_decode($saldo['coa']);
+        } else if ($this->input->post('periode')) {
+            $title = "Detail saldo";
+            $saldo = $this->m_coa->get_saldo_awal($this->input->post('periode'));
+            $coa = json_decode($saldo['coa']);
+        } else {
+            $title = "Saldo awal";
+            $saldo = $this->m_coa->list_saldo();
+            $coa = '';
+        }
+        $page = ($slug) ? 'v_saldo_view' : 'v_saldo_awal';
+
+        $data = [
+            'title' => $title,
+            'saldo' => $saldo,
+            'coa' => ($coa) ? $coa : '',
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'title' => "List CoA",
+            'pages' => "pages/financial/" . $page,
+        ];
+
+        // echo $data['pages'];
+        // exit;
+
+        $this->load->view('index', $data);
+    }
+
+    public function save_saldo_awal()
+    {
+        $periode = $this->input->post('periode');
+
+        $cek = $this->m_coa->cek_saldo_awal($periode);
+
+        $date = new DateTime($periode);
+
+        $bulan = $date->format('m');
+        $tahun = $date->format('Y');
+
+        $last_periode = new DateTime($periode);
+        $last_periode = $last_periode->modify('-1 month');
+        $last_periode = $last_periode->format('Y-m');
+
+        if (!$cek) {
+            $getLastPeriod = $this->m_coa->cek_saldo_awal($last_periode);
+
+            if (empty($getLastPeriod)) {
+                $updated_saldo_awal = $this->m_coa->calculate_saldo_awal($bulan, $tahun);
+            } else {
+                $coaLastPeriod = json_decode($getLastPeriod['coa']);
+                $saldo_bulan_ini = $this->m_coa->calculate_saldo_awal($bulan, $tahun);
+
+                $saldo_awal_map = [];
+                foreach ($coaLastPeriod as $saldo_awal) {
+                    $saldo_awal_map[$saldo_awal->no_sbb] = $saldo_awal;
+                }
+
+                foreach ($saldo_bulan_ini as $saldo_baru) {
+                    if (isset($saldo_awal_map[$saldo_baru->no_sbb])) {
+                        $saldo_awal_map[$saldo_baru->no_sbb]->saldo_awal += (float) $saldo_baru->saldo_awal;
+                    } else {
+                        $saldo_awal_map[$saldo_baru->no_sbb] = (object) [
+                            'no_sbb' => $saldo_baru->no_sbb,
+                            'saldo_awal' => (float) $saldo_baru->saldo_awal,
+                            'posisi' => $saldo_baru->posisi,
+                            'table_source' => $saldo_baru->table_source,
+                        ];
+                    }
+                }
+                $updated_saldo_awal = array_values($saldo_awal_map);
+            }
+
+            $nextMonth = ($date->modify('+1 month'));
+            $nextMonth = $date->format('Y-m');
+
+            $data = [
+                'periode' => $periode,
+                'created_by' => $this->session->userdata('nip'),
+                'created_at' => date('Y-m-d H:i:s'),
+                'slug' => 'saldo-awal-' . $nextMonth,
+                'coa' => json_encode($updated_saldo_awal),
+                'keterangan' => 'Saldo awal ' . format_indo($nextMonth)
+            ];
+
+            $this->m_coa->insert_saldo_awal($data);
+
+            $this->session->set_flashdata('message_name', 'Closing bulan ' . format_indo($periode) . 'Saldo awal periode ' . format_indo($nextMonth) . ' berhasil ditetapkan');
+        } else {
+            $this->session->set_flashdata('message_error', 'Closing bulan ' . format_indo($periode) . ' sudah ditetapkan sebelumnya');
+        }
+
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+
+    public function reportByDate()
+    {
+        $nip = $this->session->userdata('nip');
+
+        // Fetch counts
+        $result = $this->db->query("SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');")->row()->{'COUNT(Id)'};
+        $result2 = $this->db->query("SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` LIKE '%$nip%') AND activity='1'")->row()->{'COUNT(id)'};
+
+        $per_tanggal = ($this->input->post('per_tanggal') ? $this->input->post('per_tanggal') : date('Y-m-d'));
+
+        $data = [
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'per_tanggal' => $per_tanggal
+        ];
+
+        $jenis_laporan = $this->input->post('jenis_laporan');
+
+        if ($jenis_laporan) {
+            if ($jenis_laporan == "neraca") {
+                $this->prepareNeracaReportByDate($data, $per_tanggal);
+            } else if ($jenis_laporan == "laba_rugi") {
+                $this->prepareLabaRugiReportByDate($data, $per_tanggal);
+            }
+        } else {
+            $this->prepareNeracaReportByDate($data, $per_tanggal);
+        }
+    }
+
+    private function prepareNeracaReportByDate($data, $tanggal)
+    {
+        $date = new DateTime($tanggal);
+
+        $date->modify('first day of previous month');
+        $periode = $date->format('Y-m');
+
+        $cek = $this->m_coa->cek_saldo_awal($periode);
+
+        if ($cek) {
+            $coaLastPeriod = json_decode($cek['coa']);
+            $filteredCoaAktiva = array_filter($coaLastPeriod, function ($item) {
+                return $item->posisi === 'AKTIVA' && $item->table_source === 't_coa_sbb';
+            });
+
+            $activa = $this->m_coa->getNeracaByDate('t_coa_sbb', 'AKTIVA', $tanggal, $periode);
+            $pasiva = $this->m_coa->getNeracaByDate('t_coa_sbb', 'PASIVA', $tanggal, $periode);
+            $pendapatan = $this->m_coa->getNeracaByDate('t_coalr_sbb', 'PASIVA', $tanggal, $periode);
+            $beban = $this->m_coa->getNeracaByDate('t_coalr_sbb', 'AKTIVA', $tanggal, $periode);
+
+            // Part Aktiva
+            $combinedActiva = [];
+
+            foreach ($activa as $item) {
+                if (!isset($combinedActiva[$item->no_sbb])) {
+                    $combinedActiva[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedActiva[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            foreach ($filteredCoaAktiva as $item) {
+                if (!isset($combinedActiva[$item->no_sbb])) {
+                    $combinedActiva[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedActiva[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+
+            usort($combinedActiva, function ($a, $b) {
+                return strcmp($a->no_sbb, $b->no_sbb);
+            });
+            $total_activa = array_sum(array_column($combinedActiva, 'saldo_awal'));
+
+
+            // Part Pasiva
+            $filteredCoaPasiva = array_filter($coaLastPeriod, function ($item) {
+                return $item->posisi === 'PASIVA' && $item->table_source === 't_coa_sbb';
+            });
+
+            $combinedPasiva = [];
+
+            foreach ($pasiva as $item) {
+                if (!isset($combinedPasiva[$item->no_sbb])) {
+                    $combinedPasiva[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedPasiva[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            foreach ($filteredCoaPasiva as $item) {
+                if (!isset($combinedPasiva[$item->no_sbb])) {
+                    $combinedPasiva[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedPasiva[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+
+            usort($combinedPasiva, function ($a, $b) {
+                return strcmp($a->no_sbb, $b->no_sbb);
+            });
+            $total_pasiva = array_sum(array_column($combinedPasiva, 'saldo_awal'));
+
+            // Part Pendapatan
+            $filteredCoaPendapatan = array_filter($coaLastPeriod, function ($item) {
+                return $item->posisi === 'PASIVA' && $item->table_source === 't_coalr_sbb';
+            });
+            $combinedPendapatan = [];
+
+            foreach ($pendapatan as $item) {
+                if (!isset($combinedPendapatan[$item->no_sbb])) {
+                    $combinedPendapatan[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedPendapatan[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            foreach ($filteredCoaPendapatan as $item) {
+                if (!isset($combinedPendapatan[$item->no_sbb])) {
+                    $combinedPendapatan[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedPendapatan[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            $total_pendapatan = array_sum(array_column($combinedPendapatan, 'saldo_awal'));
+
+            // Part Beban
+            $filteredCoaBeban = array_filter($coaLastPeriod, function ($item) {
+                return $item->posisi === 'AKTIVA' && $item->table_source === 't_coalr_sbb';
+            });
+
+            $combinedBeban = [];
+
+            foreach ($beban as $item) {
+                if (!isset($combinedBeban[$item->no_sbb])) {
+                    $combinedBeban[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedBeban[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            foreach ($filteredCoaBeban as $item) {
+                if (!isset($combinedBeban[$item->no_sbb])) {
+                    $combinedBeban[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedBeban[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            $total_beban = array_sum(array_column($combinedBeban, 'saldo_awal'));
+
+
+            $laba = $total_pendapatan - $total_beban;
+            $sum_pasiva = $total_pasiva + $laba;
+            $data['activa'] = $combinedActiva;
+            $data['sum_activa'] = $total_activa;
+            $data['pasiva'] = $combinedPasiva;
+            $data['laba'] = $laba;
+            $data['sum_pasiva'] = $sum_pasiva;
+            $data['neraca'] = $sum_pasiva - $total_activa;
+        } else {
+            $this->session->set_flashdata('message_error', 'Closing bulan ' . format_indo($periode) . ' tidak ditemukan');
+        }
+        $data['title'] = 'Neraca per tanggal ' . format_indo($tanggal);
+        $data['pages'] = 'pages/financial/v_neraca_by_date';
+
+        $this->load->view('index', $data);
+    }
+
+    private function prepareLabaRugiReportByDate($data, $tanggal)
+    {
+        $date = new DateTime($tanggal);
+
+        $date->modify('first day of previous month');
+        $periode = $date->format('Y-m');
+
+        $cek = $this->m_coa->cek_saldo_awal($periode);
+
+        if ($cek) {
+            $coaLastPeriod = json_decode($cek['coa']);
+
+            $pendapatan = $this->m_coa->getNeracaByDate('t_coalr_sbb', 'PASIVA', $tanggal, $periode);
+            $beban = $this->m_coa->getNeracaByDate('t_coalr_sbb', 'AKTIVA', $tanggal, $periode);
+
+            // Part Pendapatan
+            $filteredCoaPendapatan = array_filter($coaLastPeriod, function ($item) {
+                return $item->posisi === 'PASIVA' && $item->table_source === 't_coalr_sbb';
+            });
+            $combinedPendapatan = [];
+
+            foreach ($pendapatan as $item) {
+                if (!isset($combinedPendapatan[$item->no_sbb])) {
+                    $combinedPendapatan[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedPendapatan[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            foreach ($filteredCoaPendapatan as $item) {
+                if (!isset($combinedPendapatan[$item->no_sbb])) {
+                    $combinedPendapatan[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedPendapatan[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            $total_pendapatan = array_sum(array_column($combinedPendapatan, 'saldo_awal'));
+
+            // Part Beban
+            $filteredCoaBeban = array_filter($coaLastPeriod, function ($item) {
+                return $item->posisi === 'AKTIVA' && $item->table_source === 't_coalr_sbb';
+            });
+
+            $combinedBeban = [];
+
+            foreach ($beban as $item) {
+                if (!isset($combinedBeban[$item->no_sbb])) {
+                    $combinedBeban[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedBeban[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            foreach ($filteredCoaBeban as $item) {
+                if (!isset($combinedBeban[$item->no_sbb])) {
+                    $combinedBeban[$item->no_sbb] = (object) [
+                        'no_sbb' => $item->no_sbb,
+                        'saldo_awal' => $item->saldo_awal,
+                    ];
+                } else {
+                    $combinedBeban[$item->no_sbb]->saldo_awal += $item->saldo_awal;
+                }
+            }
+            $total_beban = array_sum(array_column($combinedBeban, 'saldo_awal'));
+
+            $data['biaya'] = $combinedBeban;
+            $data['pendapatan'] = $combinedPendapatan;
+            $data['sum_biaya'] = $total_beban;
+            $data['sum_pendapatan'] = $total_pendapatan;
+            $data['total_pendapatan'] = $total_pendapatan - $total_beban;
+        } else {
+            $this->session->set_flashdata('message_error', 'Closing bulan ' . format_indo($periode) . ' tidak ditemukan');
+        }
+
+        $data['title'] = 'Laba rugi per tanggal ' . format_indo($tanggal);
+        $data['pages'] = 'pages/financial/v_labarugi_by_date';
+
+        $this->load->view('index', $data);
     }
 }

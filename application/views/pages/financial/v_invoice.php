@@ -90,7 +90,7 @@
                         <div class="col-md-1"></div>
                     </div>
                     <div class="table-responsive">
-                        <table id="datatable" class="table table-striped" style="width:100%">
+                        <table id="" class="table table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>No.</th>

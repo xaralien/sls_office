@@ -305,6 +305,25 @@
 				}
 			}
 		});
+		const flashdata = $(".flash-data").data("flashdata");
+		if (flashdata) {
+			Swal.fire({
+				title: "Success!! ",
+				text: '<?= $this->session->flashdata('message_name') ?>',
+				type: "success",
+				icon: "success",
+			});
+		}
+
+		const flashdata_error = $(".flash-data-error").data("flashdata");
+		if (flashdata_error) {
+			Swal.fire({
+				title: "Error!! ",
+				text: flashdata_error,
+				type: "error",
+				icon: "error",
+			});
+		}
 	</script>
 </body>
 

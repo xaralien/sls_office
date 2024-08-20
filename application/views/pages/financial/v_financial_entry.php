@@ -16,11 +16,11 @@
                             </button>
                             <ul class="dropdown-menu" role="menu">
                                 <li>
-                                    <a href="<?= base_url('financial/financial_entry/debit') ?>">1 debit, banyak kredit
+                                    <a href="<?= base_url('financial/financial_entry/debit') ?>">Multi Kredit
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="<?= base_url('financial/financial_entry/kredit') ?>">1 kredit, banyak debit
+                                    <a href="<?= base_url('financial/financial_entry/kredit') ?>">Multi Debit
                                     </a>
                                 </li>
                             </ul>
@@ -139,25 +139,4 @@
             templateSelection: formatStateKredit
         });
     });
-
-    // const flashdata = $(".flash-data").data("flashdata");
-    // if (flashdata) {
-    //     Swal.fire({
-    //         title: "Success!! ",
-    //         text: '<?= $this->session->flashdata('message_name') ?>',
-    //         type: "success",
-    //         icon: "success",
-    //     });
-    // }
-
-    // const flashdata_error = $(".flash-data-error").data("flashdata");
-    // // const flashdata_error = $('.flash-data').data('flashdata');
-    // if (flashdata_error) {
-    //     Swal.fire({
-    //         title: "Error!! ",
-    //         text: flashdata_error,
-    //         type: "error",
-    //         icon: "error",
-    //     });
-    // }
 </script>

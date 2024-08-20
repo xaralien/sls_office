@@ -20,11 +20,11 @@
                             </button>
                             <ul class="dropdown-menu" role="menu">
                                 <li>
-                                    <a href="<?= base_url('financial/financial_entry/debit') ?>">1 debit, banyak kredit
+                                    <a href="<?= base_url('financial/financial_entry/debit') ?>">Multi Kredit
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="<?= base_url('financial/financial_entry/kredit') ?>">1 kredit, banyak debit
+                                    <a href="<?= base_url('financial/financial_entry/kredit') ?>">Multi Debit
                                     </a>
                                 </li>
                             </ul>
@@ -33,7 +33,7 @@
                 </div>
                 <div class="x_content">
                     <!-- <br> -->
-                    <form class="form-label-left input_mask" method="POST" action="<?= base_url('financial/store_financial_entry/kredit') ?>" enctype="multipart/form-data">
+                    <form class="form-label-left input_mask" method="POST" action="<?= base_url('financial/store_financial_entry/multi_debit') ?>" enctype="multipart/form-data">
 
 
                         <table class="table">

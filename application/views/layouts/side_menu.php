@@ -197,13 +197,19 @@
                     <?php }
                     if (strpos($a, '809') !== false) { ?>
                         <li>
-                            <a href="<?= base_url(); ?>financial/showreport">Neraca L/R</a>
+                            <a href="<?= base_url(); ?>financial/showreport">Neraca L/R (current)</a>
+                        </li>
+                        <li>
+                            <a href="<?= base_url(); ?>financial/reportByDate">Neraca L/R (by date)</a>
                         </li>
                         <li>
                             <a href="<?= base_url(); ?>financial/coa_report">Arus Kas</a>
                         </li>
                         <li>
                             <a href="<?= base_url(); ?>financial/list_coa">List CoA</a>
+                        </li>
+                        <li>
+                            <a href="<?= base_url(); ?>financial/closing">Closing EoM</a>
                         </li>
                     <?php } ?>
                     <?php

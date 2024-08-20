@@ -206,22 +206,6 @@
         return parts.join(",");
     }
 
-    // <?php
-        // if ($this->session->flashdata('message_name')) {
-        // 
-        ?>
-    //     Swal.fire({
-    //         title: "Success!! ",
-    //         text: '<?= $this->session->flashdata('message_name') ?>',
-    //         type: "success",
-    //         icon: "success",
-    //     });
-    // <?php
-        //     // $this->session->sess_destroy('message_name');
-        //     unset($_SESSION['message_name']);
-        // } 
-        ?>
-
     const flashdata = $(".flash-data").data("flashdata");
     if (flashdata) {
         Swal.fire({
