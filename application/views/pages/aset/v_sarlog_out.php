@@ -91,7 +91,7 @@
                                       <tr>
                                         <th>No.</th>
                                         <th>Item</th>
-                                        <th>Detail</th>
+                                        <th>Unit</th>
                                         <th>Qty</th>
                                         <th>UOI</th>
                                         <th>Price</th>
@@ -105,11 +105,12 @@
                                       $no = 1;
                                       foreach ($detail as $row) {
                                         $item = $this->db->get_where('item_list', ['Id' => $row['item']])->row_array();
+                                        $unit = $this->db->get_where('asset_list', ['Id' => $row['asset']])->row_array();
                                       ?>
                                         <tr>
                                           <td><?= $no++ ?></td>
                                           <td><?= $item['nama'] ?></td>
-                                          <td></td>
+                                          <td><?= $unit['nama_asset'] ?></td>
                                           <td><?= $row['qty'] ?></td>
                                           <td><?= $row['uoi'] ?></td>
                                           <td><?= number_format($row['price'], 0) ?></td>

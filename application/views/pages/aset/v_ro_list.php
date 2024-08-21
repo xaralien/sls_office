@@ -83,7 +83,7 @@
                                       <tr>
                                         <th width="20px">No.</th>
                                         <th>Item</th>
-                                        <th>Detail</th>
+                                        <th>Unit</th>
                                         <th width="25px">Qty</th>
                                         <th>UOI</th>
                                         <th>Price</th>
@@ -98,6 +98,7 @@
                                       $no = 1;
                                       foreach ($detail as $row) {
                                         $item = $this->db->get_where('item_list', ['Id' => $row['item']])->row_array();
+                                        $unit = $this->db->get_where('asset_list', ['Id' => $row['asset']])->row_array();
                                         // $this->db->where_in('Id', json_decode($row['detail']));
                                         // $item_detail = $this->db->get('item_detail')->result_array();
                                         // $item_detail = $this->db->get_where('item_detail', ['kode_item' => $item['Id']])->result_array();
@@ -105,16 +106,7 @@
                                         <tr>
                                           <td><?= $no++ ?></td>
                                           <td><?= $item['nama'] ?></td>
-                                          <td>
-                                            <!-- <?php if ($item_detail) { ?>
-                                              <ul>
-                                                <?php foreach ($item_detail as $id) {
-                                                ?>
-                                                  <li><?= $id['serial_number'] ?></li>
-                                                <?php } ?>
-                                              </ul>
-                                            <?php } ?> -->
-                                          </td>
+                                          <td><?= $unit['nama_asset'] ?></td>
                                           <td><?= $row['qty'] ?></td>
                                           <td><?= $row['uoi'] ?></td>
                                           <td><?= number_format($row['price'], 0) ?></td>
