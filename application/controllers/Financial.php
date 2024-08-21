@@ -350,7 +350,7 @@ class Financial extends CI_Controller
             'count_inbox' => $result,
             'count_inbox2' => $result2,
             'coa' => $this->m_coa->list_coa(),
-            'coa_kas' => $this->m_coa->getCoaByCode('1101'),
+            'coa_kas' => $this->m_coa->getCoaByCode('1102'),
             'coa_pendapatan' => $this->m_coa->getCoaByCode('410'),
             'keyword' => $keyword,
             'title' => "Invoice",

@@ -54,7 +54,7 @@
             <div class="x_panel card">
                 <div class="x_content">
                     <div class="table-responsive">
-                        <table id="datatable" class="table table-striped table-bordered" style="width:100%">
+                        <table id="" class="table table-striped table-bordered" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Nama</th>

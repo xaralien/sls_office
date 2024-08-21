@@ -186,7 +186,7 @@
                                                                             <div class="col-sm-6 col-xs-12">
                                                                                 <div class="form-group">
                                                                                     <label for="coa_pendapatan" class="form-label">CoA Kas</label>
-                                                                                    <select name="coa_pendapatan" id="no_coa<?= $i['Id'] ?>" class="form-control select2" style="width: 100%" required>
+                                                                                    <select name="coa_pendapatan" id="coa_pendapatan<?= $i['Id'] ?>" class="form-control select2" style="width: 100%" required>
                                                                                         <option value="">:: Pilih CoA Pendapatan</option>
                                                                                         <?php
                                                                                         foreach ($coa_pendapatan as $cp) :

@@ -78,7 +78,7 @@
                         <div class="col-md-6 col-xs-12">
                             <h2 class="text-center">Activa</h2>
                             <p class="text-right">Total: <strong><?= number_format($sum_activa) ?></strong></p>
-                            <table id="datatable" class="table" style="width:100%">
+                            <table id="" class="table" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>No. Coa</th>
@@ -105,7 +105,7 @@
                                 <h2 class="text-center">Pasiva</h2>
                                 <p class="text-right">Total: <strong><?= number_format($sum_pasiva) ?></strong></p>
                             </div>
-                            <table id="datatable" class="table" style="width:100%">
+                            <table id="" class="table" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>No. Coa</th>
