@@ -56,6 +56,7 @@
                                     foreach ($po->result_array() as $value) {
                                     ?>
                                         <tr>
+                                            <td scoope="row"><?= ++$page; ?></td>
                                             <td scope="row"><?= $value['no_po'] ?></td>
                                             <td scope="row"><?= $value['nama_vendor'] ?></td>
                                             <td scope="row"><?= tgl_indo(date('Y-m-d', strtotime($value['tgl_pengajuan']))) ?></td>

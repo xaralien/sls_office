@@ -734,6 +734,7 @@ class Asset extends CI_Controller
 			$this->pagination->initialize($config);
 			$page = ($this->input->get('page')) ? (($this->input->get('page') - 1) * $config['per_page']) : 0;
 			$data['pagination'] = $this->pagination->create_links();
+			$data['page'] = $page;
 
 			//inbox notif
 			$sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
