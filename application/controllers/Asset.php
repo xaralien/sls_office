@@ -3500,7 +3500,13 @@ class Asset extends CI_Controller
 	public function getSerialNumber()
 	{
 		$id = $this->input->post('id');
-		$serial = $this->db->get_where('item_detail', ['kode_item' => $id, 'status' => 'O', 'status' => 'RO'])->result();
+		// $this->db->where(['kode_item' => $id]);
+		// $this->db->or_where('status', 'O');
+		// $this->db->or_where('status', 'RO');
+		// $serial = $this->db->get_where('item_detail', ['kode_item' => $id, 'status' => 'O', 'status' => 'RO'])->result();
+		// $serial = $this->db->get('item_detail')->result();
+		$sql = "SELECT * FROM item_detail WHERE kode_item = '$id' and (item_detail.status = 'O' OR item_detail.status = 'RO')";
+		$serial = $this->db->query($sql)->result();
 		$option = "";
 		if ($serial) {
 			foreach ($serial as $row) {

@@ -216,7 +216,7 @@
                       $direksi = $this->db->get_where('users', ['level_jabatan > ' => 4])->result_array();
                       foreach ($direksi as $d) {
                       ?>
-                        <option value="<?= $d['nip'] ?>"><?= $d['nama'] ?></option>
+                        <option value="<?= $d['nip'] ?>" <?= $d['nip'] == $detail['direksi'] ? 'selected' : '' ?>><?= $d['nama'] ?></option>
                       <?php } ?>
                     </select>
                   </div>

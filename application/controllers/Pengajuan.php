@@ -650,12 +650,13 @@ class Pengajuan extends CI_Controller
         } else {
           $posisi = 'Diarahkan ke pembayaran';
           $nama_direksi = null;
-          for ($i = 0; $i < count($rows); $i++) {
-            $this->cb->where('Id', $id_item[$i]);
-            $this->cb->update('t_pengajuan_detail', [
-              'debit' => $coa_debit[$i]
-            ]);
-          }
+        }
+
+        for ($i = 0; $i < count($rows); $i++) {
+          $this->cb->where('Id', $id_item[$i]);
+          $this->cb->update('t_pengajuan_detail', [
+            'debit' => $coa_debit[$i]
+          ]);
         }
       } else {
         $posisi = 'Ditolak oleh keuangan';
