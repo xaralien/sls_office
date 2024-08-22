@@ -75,7 +75,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
+	'hostname' => 'kodesis.id',
 	'username' => 'kodesisi_sls',
 	'password' => 'sls123!@#',
 	'database' => 'kodesisi_sls_core',
@@ -97,7 +97,7 @@ $db['default'] = array(
 
 $db['corebank'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
+	'hostname' => 'kodesis.id',
 	'username' => 'kodesisi_sls',
 	'password' => 'sls123!@#',
 	'database' => 'kodesisi_sls_corebank',
