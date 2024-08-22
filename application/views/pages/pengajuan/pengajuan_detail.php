@@ -1123,7 +1123,7 @@
                     <?php if ($detail['date_close'] == null) { ?>
                       <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d') ?>">
                     <?php } else { ?>
-                      <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= $detail('date_close') ?>">
+                      <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= date('Y-m-d', strtotime($detail['date_close'])) ?>" readonly>
                     <?php } ?>
                   </div>
                   <div class="form-group">

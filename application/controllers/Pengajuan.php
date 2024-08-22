@@ -1008,8 +1008,8 @@ class Pengajuan extends CI_Controller
           if ($beban[$i]['posisi'] == "AKTIVA") {
             $nominal_beban_baru[$i] = $beban[$i]['nominal'] + $item[$i]['total'];
           }
-          if ($kas[$i]['posisi'] == "PASIVA") {
-            $nominal_kas_baru[$i] = $kas[$i]['nominal'] - $item[$i]['total'];
+          if ($beban[$i]['posisi'] == "PASIVA") {
+            $nominal_beban_baru[$i] = $beban[$i]['nominal'] - $item[$i]['total'];
           }
 
           // $nominal_um_baru[$i] = $um[$i]['nominal'] - $item[$i]['total'];
@@ -1047,7 +1047,7 @@ class Pengajuan extends CI_Controller
 
           // Debit
           if ($beban[$i]['posisi'] == "AKTIVA") {
-            $nominal_beban_baru[$i] = $beban[$i]['nominal'] + abs($selisih[$i]);
+            $nominal_beban_baru[$i] = $nominal_beban_baru[$i] + abs($selisih[$i]);
           }
           if ($kas[$i]['posisi'] == "PASIVA") {
             $nominal_beban_baru[$i] = $nominal_beban_baru[$i] - abs($selisih[$i]);
@@ -1067,9 +1067,9 @@ class Pengajuan extends CI_Controller
           $jurnal = [
             'tanggal' => $pengajuan['created_at'],
             'akun_debit' => $coa_beban[$i],
-            'jumlah_debit' => $selisih[$i],
+            'jumlah_debit' => abs($selisih[$i]),
             'akun_kredit' => $kas[$i]['no_sbb'],
-            'jumlah_kredit' => $selisih[$i],
+            'jumlah_kredit' => abs($selisih[$i]),
             'saldo_debit' => $nominal_beban_baru[$i],
             'saldo_kredit' => $nominal_kas_baru[$i],
             'keterangan' => $item[$i]['item'],
@@ -1104,7 +1104,7 @@ class Pengajuan extends CI_Controller
           $this->cb->update($tabel_um[$i], ['nominal' => $nominal_um_baru[$i]]);
 
           $this->cb->where([$kolom_beban[$i] => $coa_beban[$i]]);
-          $this->cb->update($tabel_beban[$i], ['nominal' => $nominal_beban_baru[$i], 'anggaran' => $anggaran_beban_baru[$i]]);
+          $this->cb->update($tabel_beban[$i], ['nominal' => $nominal_beban_baru[$i]]);
 
           // create jurnal
           $jurnal = [
