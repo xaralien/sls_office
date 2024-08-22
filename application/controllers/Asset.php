@@ -2487,16 +2487,22 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$config2 = [
-					'image_library' => 'gd2',
-					'source_image' => './upload/po/' . $upload['file_name'],
-					'create_thumb' => false,
-					'maintain_ratio' => false,
-					'quality' => '75%',
-				];
+				$file = $_FILES['bukti-repair']['name'];
+				$ext = pathinfo($file, PATHINFO_EXTENSION);
+				if ($ext != 'pdf') {
+					$config2 = [
+						'image_library' => 'gd2',
+						'source_image' => './upload/po/' . $upload['file_name'],
+						'create_thumb' => false,
+						'maintain_ratio' => false,
+						'quality' => '75%',
+						'width' => '100%',
+						'heigth' => '100%'
+					];
 
-				$this->load->library('image_lib', $config2);
-				$this->image_lib->resize();
+					$this->load->library('image_lib', $config2);
+					$this->image_lib->resize();
+				}
 
 				for ($i = 0; $i < count($rows); $i++) {
 					$po_detail[] = $this->cb->get_where('t_po_detail', ['Id' => $id_item[$i]])->row_array();
@@ -2963,16 +2969,22 @@ class Asset extends CI_Controller
 			];
 		} else {
 			$image = $this->upload->data();
-			$config2 = [
-				'image_library' => 'gd2',
-				'source_image' => './upload/bukti-close/' . $image['file_name'],
-				'create_thumb' => false,
-				'maintain_ratio' => false,
-				'quality' => '75%',
-			];
+			$file = $_FILES['bukti-repair']['name'];
+			$ext = pathinfo($file, PATHINFO_EXTENSION);
+			if ($ext != 'pdf') {
+				$config2 = [
+					'image_library' => 'gd2',
+					'source_image' => './upload/bukti-close/' . $image['file_name'],
+					'create_thumb' => false,
+					'maintain_ratio' => false,
+					'quality' => '75%',
+					'width' => '100%',
+					'heigth' => '100%'
+				];
 
-			$this->load->library('image_lib', $config2);
-			$this->image_lib->resize();
+				$this->load->library('image_lib', $config2);
+				$this->image_lib->resize();
+			}
 
 			$update = [
 				'image_close' => $image['file_name'],
@@ -3551,16 +3563,23 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$config2 = [
-					'image_library' => 'gd2',
-					'source_image' => './upload/bukti-repair/' . $upload['file_name'],
-					'create_thumb' => false,
-					'maintain_ratio' => false,
-					'quality' => '75%',
-				];
+				$file = $_FILES['bukti-repair']['name'];
+				$ext = pathinfo($file, PATHINFO_EXTENSION);
 
-				$this->load->library('image_lib', $config2);
-				$this->image_lib->resize();
+				if ($ext != 'pdf') {
+					$config2 = [
+						'image_library' => 'gd2',
+						'source_image' => './upload/bukti-repair/' . $upload['file_name'],
+						'create_thumb' => false,
+						'maintain_ratio' => false,
+						'quality' => '75%',
+						'width' => '100%',
+						'heigth' => '100%'
+					];
+
+					$this->load->library('image_lib', $config2);
+					$this->image_lib->resize();
+				}
 
 				$asset_list = $this->db->get_where('asset_list', ['Id' => $asset])->row_array();
 				$insert = [
@@ -3596,6 +3615,8 @@ class Asset extends CI_Controller
 					'stok_akhir' => $stok_baru,
 					'user' => $this->session->userdata('nip'),
 					'jenis' => 'REPAIR IN',
+					'asset_id' => $asset,
+					'harga' => 0,
 					'serial_number' => json_encode($array_serial),
 					'keterangan' => $asset_list['nama_asset']
 				];
@@ -3680,16 +3701,23 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$config2 = [
-					'image_library' => 'gd2',
-					'source_image' => './upload/bukti-serah/' . $upload['file_name'],
-					'create_thumb' => false,
-					'maintain_ratio' => false,
-					'quality' => '75%',
-				];
+				$file = $_FILES['bukti-repair']['name'];
+				$ext = pathinfo($file, PATHINFO_EXTENSION);
+				if ($ext != 'pdf') {
+					$config2 = [
+						'image_library' => 'gd2',
+						'source_image' => './upload/bukti-serah/' . $upload['file_name'],
+						'create_thumb' => false,
+						'maintain_ratio' => false,
+						'quality' => '75%',
+						'width' => '100%',
+						'heigth' => '100%'
+					];
 
-				$this->load->library('image_lib', $config2);
-				$this->image_lib->resize();
+
+					$this->load->library('image_lib', $config2);
+					$this->image_lib->resize();
+				}
 
 				$insert = [
 					'user' => $this->session->userdata('nip'),
@@ -3781,16 +3809,22 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$config2 = [
-					'image_library' => 'gd2',
-					'source_image' => './upload/bukti-musnah/' . $upload['file_name'],
-					'create_thumb' => false,
-					'maintain_ratio' => false,
-					'quality' => '75%',
-				];
+				$file = $_FILES['bukti-repair']['name'];
+				$ext = pathinfo($file, PATHINFO_EXTENSION);
+				if ($ext != 'pdf') {
+					$config2 = [
+						'image_library' => 'gd2',
+						'source_image' => './upload/bukti-musnah/' . $upload['file_name'],
+						'create_thumb' => false,
+						'maintain_ratio' => false,
+						'quality' => '75%',
+						'width' => '100%',
+						'heigth' => '100%'
+					];
 
-				$this->load->library('image_lib', $config2);
-				$this->image_lib->resize();
+					$this->load->library('image_lib', $config2);
+					$this->image_lib->resize();
+				}
 
 				$item_detail = $this->db->get_where('item_detail', ['Id' => $serial_number])->row_array();
 				$insert = [
