@@ -2487,7 +2487,7 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$file = $_FILES['bukti-repair']['name'];
+				$file = $_FILES['bukti-bayar']['name'];
 				$ext = pathinfo($file, PATHINFO_EXTENSION);
 				if ($ext != 'pdf') {
 					$config2 = [
@@ -2969,7 +2969,7 @@ class Asset extends CI_Controller
 			];
 		} else {
 			$image = $this->upload->data();
-			$file = $_FILES['bukti-repair']['name'];
+			$file = $_FILES['image_close']['name'];
 			$ext = pathinfo($file, PATHINFO_EXTENSION);
 			if ($ext != 'pdf') {
 				$config2 = [
@@ -3701,7 +3701,7 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$file = $_FILES['bukti-repair']['name'];
+				$file = $_FILES['bukti-serah']['name'];
 				$ext = pathinfo($file, PATHINFO_EXTENSION);
 				if ($ext != 'pdf') {
 					$config2 = [
@@ -3809,7 +3809,7 @@ class Asset extends CI_Controller
 				];
 			} else {
 				$upload = $this->upload->data();
-				$file = $_FILES['bukti-repair']['name'];
+				$file = $_FILES['bukti']['name'];
 				$ext = pathinfo($file, PATHINFO_EXTENSION);
 				if ($ext != 'pdf') {
 					$config2 = [
