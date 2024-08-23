@@ -1367,7 +1367,7 @@ class Asset extends CI_Controller
 
 					if ($ppn == 1) {
 						$nominal_ppn = $po['total'] * 0.11;
-						$ppn_masukan = $this->cb->get_where('v_coa_all', ['no_sbb' => '15211'])->row_array();
+						$ppn_masukan = $this->cb->get_where('v_coa_all', ['no_sbb' => '1108007'])->row_array();
 						$nominal_ppn_masukan = $ppn_masukan['nominal'];
 						$nominal_ppn_masukan_baru = $nominal_ppn_masukan + $nominal_ppn;
 						$this->cb->where('no_sbb', $ppn_masukan['no_sbb']);
