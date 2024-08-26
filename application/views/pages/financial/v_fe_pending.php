@@ -90,7 +90,7 @@
                                                             </div>
                                                             <div class="modal-body">
                                                                 <div class="row">
-                                                                    <?php if ($i['jenis_fe'] == "debit") { ?>
+                                                                    <?php if ($i['jenis_fe'] == "multi_kredit") { ?>
                                                                         <!-- CoA Debit Section -->
                                                                         <div class="col-md-12 col-sm-12">
                                                                             <div class="form-group">
@@ -138,7 +138,7 @@
                                                                                 } ?>
                                                                             </div>
                                                                         </div>
-                                                                    <?php } else if ($i['jenis_fe'] == "kredit") {
+                                                                    <?php } else if ($i['jenis_fe'] == "multi_debit") {
                                                                         $nominal_array = json_decode($i['nominal'], true); ?>
                                                                         <!-- CoA Debit Section -->
                                                                         <div class="col-md-12 col-sm-12">

@@ -40,7 +40,7 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table id="datatable" class="table table-bordered" style="width:100%">
+                            <table id="" class="table table-bordered" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th class="text-right" colspan="2">Total:</th>
