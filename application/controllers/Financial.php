@@ -210,7 +210,7 @@ class Financial extends CI_Controller
         $keterangan = $fe['keterangan'];
         $tanggal_transaksi = $fe['tanggal_transaksi'];
 
-        if ($fe['jenis_fe'] == "debit") {
+        if ($fe['jenis_fe'] == "multi_kredit") {
             $coa_debit = json_decode($fe['coa_debit'], true);
             $coa_kredit = json_decode($fe['coa_kredit'], true);
             $nominal = json_decode($fe['nominal'], true);
@@ -220,7 +220,7 @@ class Financial extends CI_Controller
                     $this->posting($coa_debit, $coa_kredit[$i], $keterangan, $nominal[$i], $tanggal_transaksi);
                 }
             }
-        } else if ($fe['jenis_fe'] == "kredit") {
+        } else if ($fe['jenis_fe'] == "multi_debit") {
             $coa_debit = json_decode($fe['coa_debit'], true);
             $coa_kredit = json_decode($fe['coa_kredit'], true);
             $nominal = json_decode($fe['nominal'], true);
