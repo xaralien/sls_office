@@ -3270,11 +3270,13 @@ class Asset extends CI_Controller
 		$alamat = $this->input->post('alamat');
 		$email = $this->input->post('email');
 		$tlp = $this->input->post('tlp');
+		$kode = $this->input->post('kode');
 
 		$this->form_validation->set_rules('nama', 'nama vendor', 'required|trim', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('alamat', 'alamat', 'required|trim', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('email', 'alamat', 'required|valid_email|trim', ['required' => '%s wajib diisi!', 'valid_email' => 'email tidak valid']);
 		$this->form_validation->set_rules('tlp', 'No. tlp', 'required|trim|numeric', ['required' => '%s wajib diisi!', 'numeric' => '%s harus berisi angka']);
+		$this->form_validation->set_rules('kode', 'Kode vendor', 'required|trim|max_length[5]', ['required' => '%s wajib diisi', 'max_length' => '%s maksimal %d karakter']);
 
 		if ($this->form_validation->run() == FALSE) {
 			$response = [
@@ -3287,7 +3289,8 @@ class Asset extends CI_Controller
 				'nama' => $nama,
 				'alamat' => $alamat,
 				'email' => $email,
-				'no_telpon' => $tlp
+				'no_telpon' => $tlp,
+				'kode' => $kode
 			];
 
 			$this->db->where('Id', $id);
@@ -3330,11 +3333,13 @@ class Asset extends CI_Controller
 		$alamat = $this->input->post('alamat');
 		$email = $this->input->post('email');
 		$tlp = $this->input->post('tlp');
+		$kode = $this->input->post('kode');
 
 		$this->form_validation->set_rules('nama', 'nama vendor', 'required|trim', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('alamat', 'alamat', 'required|trim', ['required' => '%s wajib diisi!']);
 		$this->form_validation->set_rules('email', 'alamat', 'required|valid_email|trim', ['required' => '%s wajib diisi!', 'valid_email' => 'email tidak valid']);
 		$this->form_validation->set_rules('tlp', 'No. tlp', 'required|trim|numeric', ['required' => '%s wajib diisi!', 'numeric' => '%s harus berisi angka']);
+		$this->form_validation->set_rules('kode', 'Kode vendor', 'required|trim|max_length[5]', ['required' => '%s wajib diisi', 'max_length' => '%s maksimal %d karakter']);
 
 		if ($this->form_validation->run() == FALSE) {
 			$response = [
@@ -3347,7 +3352,8 @@ class Asset extends CI_Controller
 				'nama' => $nama,
 				'alamat' => $alamat,
 				'email' => $email,
-				'no_telpon' => $tlp
+				'no_telpon' => $tlp,
+				'kode' => $kode
 			];
 
 			$this->db->insert('t_vendors', $insert);

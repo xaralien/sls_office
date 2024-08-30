@@ -34,6 +34,10 @@
                     <label for="nama">No. Telpon</label>
                     <input type="text" class="form-control" name="tlp" id="tlp" value="<?= $vendor['no_telpon'] ?>">
                   </div>
+                  <div class="form-group">
+                    <label for="nama">Kode Vendor</label>
+                    <input type="text" class="form-control" name="kode" id="kode" value="<?= $vendor['kode'] ?>">
+                  </div>
                   <div class="row">
                     <a href="<?= base_url('asset/vendors') ?>" class="btn btn-warning"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</a>
                     <button class="btn btn-primary btn-submit" type="submit"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
@@ -58,6 +62,10 @@
                   <div class="form-group">
                     <label for="nama">No. Telpon</label>
                     <input type="text" class="form-control" name="tlp" id="tlp">
+                  </div>
+                  <div class="form-group">
+                    <label for="nama">Kode Vendor</label>
+                    <input type="text" class="form-control" name="kode" id="kode">
                   </div>
                   <div class="row">
                     <a href="<?= base_url('asset/vendors') ?>" class="btn btn-warning"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</a>
