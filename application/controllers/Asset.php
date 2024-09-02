@@ -1163,7 +1163,7 @@ class Asset extends CI_Controller
 		} else {
 			$po = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
 			if ($status == 1) {
-				$posisi = 'diajukan kepada direktur utama';
+				$posisi = 'disetujui untuk diproses';
 			} else {
 				$posisi = 'ditolak oleh direktur operasional';
 			}
@@ -1173,7 +1173,6 @@ class Asset extends CI_Controller
 				'posisi' => $posisi,
 				'date_direksi_ops' => $tgl,
 				'catatan_direksi_ops' => $catatan,
-				'dirut' => 'SLS0003'
 			];
 
 			$this->cb->where('Id', $id);
@@ -1186,13 +1185,14 @@ class Asset extends CI_Controller
 
 			$nama_session = $this->session->userdata('nama');
 
+			$sarlog = $this->db->get_where('users', ['nip' => $po['sarlog']])->row_array();
+
 			if ($status == 1) {
-				$msg = "Pemberitahuan Purchase Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$po[no_po]* sudah disetujui oleh *$nama_session* sebagai Direktur Operasional.\nSelanjutnya pengajuan anda akan diajukan kepada Direktur Utama.\n\n*Catatan* : $catatan";
+				$msg = "Pemberitahuan Purchase Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$po[no_po]* sudah disetujui oleh *$nama_session* sebagai Direktur Operasional.\n\n*Catatan* : $catatan";
 				$this->api_whatsapp->wa_notif($msg, $user['phone']);
 
-				$msgdireksi = "There's a new Purchase Order\n\nNo : *$po[no_po]*\nFrom : *$user[nama]*\n\nMohon untuk segera diproses.";
-
-				$this->api_whatsapp->wa_notif($msgdireksi, $direksi['phone']);
+				$msgsarlog = "Pemberitahuan Purchase Order\n\nHallo *$sarlog[nama]*, Purchase Order dengan No. *$po[no_po]* sudah disetujui oleh *$nama_session* sebagai Direktur Operasional.\nMohon untuk segera diproses lebih lanjut.\n*Catatan* : $catatan";
+				$this->api_whatsapp->wa_notif($msgsarlog, $sarlog['phone']);
 			} else if ($status == 2) {
 				$msg = "Pemberitahuan Purchase Order\n\nHallo *$user[nama]*, Pengajuan anda dengan No. *$po[no_po]* diminta untuk direvisi oleh *$nama_session* sebagai Direktur Operasional.\n\n*Catatan* : $catatan";
 				$this->api_whatsapp->wa_notif($msg, $user['phone']);
@@ -3167,7 +3167,7 @@ class Asset extends CI_Controller
 	public function print($id)
 	{
 		$data['po'] = $this->cb->get_where('t_po', ['Id' => $id])->row_array();
-		if ($data['po']['status_sarlog'] == 1 and $data['po']['status_direksi_ops'] == 1 and $data['po']['status_dirut'] == 1) {
+		if ($data['po']['status_sarlog'] == 1 and $data['po']['status_direksi_ops'] == 1) {
 			// filename dari pdf ketika didownload
 			// $file_pdf = 'Purchase Order Item In. ' . $data['po']['no_po'];
 

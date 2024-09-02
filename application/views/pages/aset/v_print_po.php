@@ -166,42 +166,34 @@
       <td rowspan="1" colspan="7" class="border-none"></td>
     </tr>
     <tr class="border-none text-center">
-      <td colspan="2" class="border-none">Dibuat Oleh,</td>
-      <td colspan="2" class="border-none">Diketahui Oleh,</td>
-      <td colspan="2" class="border-none">Diketahui Oleh,</td>
-      <td colspan="2" class="border-none">Disetujui Oleh,</td>
+      <td colspan="3" class="border-none">Dibuat Oleh,</td>
+      <td colspan="3" class="border-none">Diketahui Oleh,</td>
+      <td colspan="3" class="border-none">Disetujui Oleh,</td>
     </tr>
     <tr>
-      <td colspan="2" class="border-none text-center">
+      <td colspan="3" class="border-none text-center">
         <img src="<?= base_url('assets/ttd/') . $po['user'] . '.png' ?>" alt="" width="100">
       </td>
-      <td colspan="2" class="border-none text-center">
+      <td colspan="3" class="border-none text-center">
         <?php if ($po['status_sarlog'] == 1) { ?>
           <img src="<?= base_url('assets/ttd/') . $po['sarlog'] . '.png' ?>" alt="" width="100">
         <?php } ?>
       </td>
-      <td colspan="2" class="border-none text-center">
+      <td colspan="3" class="border-none text-center">
         <?php if ($po['status_direksi_ops'] == 1) { ?>
           <img src="<?= base_url('assets/ttd/') . $po['direksi_ops'] . '.png' ?>" alt="" width="150">
         <?php } ?>
       </td>
-      <td colspan="2" class="border-none text-center">
-        <?php if ($po['status_dirut'] == 1) { ?>
-          <img src="<?= base_url('assets/ttd/') . $po['dirut'] . '.png' ?>" alt="" width="150">
-        <?php } ?>
-      </td>
     </tr>
     <tr class="border-none text-center">
-      <td colspan="2" class="border-none"><b><u><?= $user['nama'] ?></u></b></td>
-      <td colspan="2" class="border-none"><b><u><?= $sarlog['nama'] ?></u></b></td>
-      <td colspan="2" class="border-none"><b><u><?= $dirops['nama'] ?></u></b></td>
-      <td colspan="2" class="border-none"><b><u><?= $dirut['nama'] ?></u></b></td>
+      <td colspan="3" class="border-none"><b><u><?= $user['nama'] ?></u></b></td>
+      <td colspan="3" class="border-none"><b><u><?= $sarlog['nama'] ?></u></b></td>
+      <td colspan="3" class="border-none"><b><u><?= $dirops['nama'] ?></u></b></td>
     </tr>
     <tr class="border-none text-center">
-      <td colspan="2" class="border-none"><?= $user['nama_jabatan'] ?></td>
-      <td colspan="2" class="border-none"><?= $sarlog['nama_jabatan'] ?></td>
-      <td colspan="2" class="border-none"><?= $dirops['nama_jabatan'] ?></td>
-      <td colspan="2" class="border-none"><?= $dirut['nama_jabatan'] ?></td>
+      <td colspan="3" class="border-none"><?= $user['nama_jabatan'] ?></td>
+      <td colspan="3" class="border-none"><?= $sarlog['nama_jabatan'] ?></td>
+      <td colspan="3" class="border-none"><?= $dirops['nama_jabatan'] ?></td>
     </tr>
   </table>
 

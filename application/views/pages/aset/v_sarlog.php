@@ -163,14 +163,14 @@
                   </td>
                   <td scope="row">
                     <button type="button" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#myModal<?= $value['Id'] ?>">View</button>
-                    <?php if ($value['status_dirut'] == 1) { ?>
+                    <?php if ($value['status_direksi_ops'] == 1) { ?>
                       <a href="<?= base_url('asset/print/' . $value['Id']) ?>" class="btn btn-primary btn-xs" target="_blank">Print</a>
                     <?php } ?>
-                    <?php if ($value['status_dirut'] == 1 && $value['posisi'] == 'disetujui untuk diproses') { ?>
+                    <?php if ($value['status_direksi_ops'] == 1 && $value['posisi'] == 'disetujui untuk diproses') { ?>
                       <a href="<?= base_url('asset/process/' . $value['Id']) ?>" class="btn btn-success btn-xs">Process</a>
                       <a href="<?= base_url('asset/revisi/' . $value['Id']) ?>" class="btn btn-danger btn-xs">Revisi</a>
                     <?php } ?>
-                    <?php if ($value['status_pembayaran'] == 0 && $value['status_dirut'] == 1 && $value['jenis_pembayaran'] == 'hutang') { ?>
+                    <?php if ($value['status_pembayaran'] == 0 && $value['status_direksi_ops'] == 1 && $value['jenis_pembayaran'] == 'hutang') { ?>
                       <a href="<?= base_url('asset/bayar/' . $value['Id']) ?>" class="btn btn-success btn-xs">Bayar</a>
                     <?php } ?>
                     <!-- Modal Detail -->
