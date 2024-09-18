@@ -235,13 +235,15 @@ class Asset extends CI_Controller
 			];
 		} else {
 			$item = $this->db->get_where('item_list', ['Id' => $id_item])->row_array();
-			$detail = $this->db->get_where('item_detail', ['kode_item' => $id_item, 'status' => 'A'])->num_rows();
+			$query = "SELECT * FROM item_detail WHERE kode_item = '$id_item' AND (status = 'A' OR status = 'R')";
+			$detail = $this->db->query($query)->num_rows();
+			// $detail = $this->db->get_where('item_detail', ['kode_item' => $id_item, 'status' => 'A'])->num_rows();
 
 			if ($detail >= $item['stok']) {
 				$response = [
 					'success' => false,
 					'status' => '401',
-					'msg' => 'Detail melebihi stok tersedia',
+					'msg' => 'Detail serial number melebihi stok tersedia',
 				];
 
 				echo json_encode($response);
