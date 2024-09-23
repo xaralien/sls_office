@@ -3,7 +3,6 @@
 class M_coa extends CI_Model
 {
     // $this->cb untuk koneksi ke database corebank
-
     public function list_coa()
     {
         return $this->cb->order_by('no_sbb', 'ASC')->get('v_coa_all')->result();
@@ -29,9 +28,9 @@ class M_coa extends CI_Model
         return $this->cb->insert('jurnal_neraca', $data);
     }
 
-    public function getNeraca($table, $posisi)
+    public function getNeraca($table, $posisi, $kolom_order)
     {
-        return $this->cb->where('nominal !=', '0')->where('posisi', $posisi)->get($table)->result();
+        return $this->cb->where('nominal !=', '0')->where('posisi', $posisi)->order_by($kolom_order, 'ASC')->get($table)->result();
     }
 
     public function getSumNeraca($table, $posisi)
@@ -39,23 +38,37 @@ class M_coa extends CI_Model
         return $this->cb->select_sum('nominal')->where('posisi', $posisi)->get($table)->row_array();
     }
 
-    public function getPasivaWithLaba($table)
+    public function getPasivaWithLaba($table, $kolom_order)
     {
-        $pasiva = $this->cb->where('posisi', 'PASIVA')->where('nominal !=', '0')->or_where('no_sbb', '3201001')->get($table)->result();
+        $pasiva = $this->cb->where('posisi', 'PASIVA')->where('nominal !=', '0')->or_where('no_sbb', '3103001')->order_by($kolom_order, 'ASC')->get($table)->result();
 
         return $pasiva;
     }
 
     public function getCoaReport($no_coa, $from, $to)
     {
-        return $this->cb->where('tanggal >=', $from)->where('tanggal <=', $to)->where('akun_debit', $no_coa)->or_where('akun_kredit', $no_coa)
-            ->order_by('id', 'DESC')
-            ->get('jurnal_neraca')->result();
+        $this->cb->where('tanggal >=', $from)->where('tanggal <=', $to);
+
+        if ($no_coa != "ALL") {
+            $this->cb->where('akun_debit', $no_coa)->or_where('akun_kredit', $no_coa);
+        }
+
+        $this->cb->order_by('id', 'DESC');
+        // echo '<pre>';
+        // print_r($no_coa);
+        // echo '</pre>';
+        // exit;
+        return $this->cb->get('jurnal_neraca')->result();
     }
 
     public function getCoa($no_coa)
     {
-        return $this->cb->where('no_sbb', $no_coa)->get('v_coa_all')->row_array();
+        if ($no_coa == "ALL") {
+            $this->cb->select('nama_perkiraan, no_sbb');
+            return $this->cb->get('v_coa_all')->result();
+        } else {
+            return $this->cb->where('no_sbb', $no_coa)->get('v_coa_all')->row_array();
+        }
     }
 
     public function getCoaByCode($code)

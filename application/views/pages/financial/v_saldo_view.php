@@ -24,7 +24,7 @@
                         <div class="row" style="margin-top: 10px;">
                             <div class="col-md-12 col-xs-12">
 
-                                <table id="datatable" class="table table-stripped" style="width:100%">
+                                <table id="" class="table table-stripped" style="width:100%">
                                     <thead>
                                         <tr>
                                             <th class="text-center">No. CoA</th>

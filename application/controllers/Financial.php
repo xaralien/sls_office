@@ -750,6 +750,7 @@ class Financial extends CI_Controller
 
     public function showNeracaTersimpan($id)
     {
+        $print = $this->uri->segment(4);
         $nip = $this->session->userdata('nip');
 
         // Fetch counts
@@ -775,8 +776,11 @@ class Financial extends CI_Controller
         // print_r($data);
         // echo '</pre>';
         // exit;
-
-        $this->load->view('index', $data);
+        if ($print == "print") {
+            $this->load->view('pages/financial/v_cetak_neraca', $data);
+        } else {
+            $this->load->view('index', $data);
+        }
     }
 
     public function showLRTersimpan($id)
@@ -839,8 +843,8 @@ class Financial extends CI_Controller
 
     private function prepareNeracaReport(&$data)
     {
-        $data['activa'] = $this->m_coa->getNeraca('t_coa_sbb', 'AKTIVA');
-        $data['pasiva'] = $this->m_coa->getPasivaWithLaba('t_coa_sbb');
+        $data['activa'] = $this->m_coa->getNeraca('t_coa_sbb', 'AKTIVA', 'no_sbb');
+        $data['pasiva'] = $this->m_coa->getPasivaWithLaba('t_coa_sbb', 'no_sbb');
 
         $total_pasiva = array_sum(array_column($data['pasiva'], 'nominal'));
         $data['pendapatan'] = $this->m_coa->getSumNeraca('t_coalr_sbb', 'PASIVA')['nominal'];
@@ -860,8 +864,8 @@ class Financial extends CI_Controller
 
     private function prepareLabaRugiReport(&$data)
     {
-        $data['biaya'] = $this->m_coa->getNeraca('t_coalr_sbb', 'AKTIVA');
-        $data['pendapatan'] = $this->m_coa->getNeraca('t_coalr_sbb', 'PASIVA');
+        $data['biaya'] = $this->m_coa->getNeraca('t_coalr_sbb', 'AKTIVA', 'no_lr_sbb');
+        $data['pendapatan'] = $this->m_coa->getNeraca('t_coalr_sbb', 'PASIVA', 'no_lr_sbb');
 
         $data['sum_biaya'] = $this->m_coa->getSumNeraca('t_coalr_sbb', 'AKTIVA')['nominal'];
         $data['sum_pendapatan'] = $this->m_coa->getSumNeraca('t_coalr_sbb', 'PASIVA')['nominal'];
@@ -889,6 +893,11 @@ class Financial extends CI_Controller
         }, $data['coa']));
 
         $data['detail_coa'] = $this->m_coa->getCoa($no_coa);
+
+        // echo '<pre>';
+        // print_r($data['coa']);
+        // echo '</pre>';
+        // exit;
 
         // $this->load->view('report_per_coa', $data);
         $data['title'] = $no_coa;
@@ -924,6 +933,11 @@ class Financial extends CI_Controller
 
         $json_activa = json_encode($data['activa']);
         $json_pasiva = json_encode($data['pasiva']);
+
+        // echo '<pre>';
+        // print_r($json_pasiva);
+        // echo '</pre>';
+        // exit;
 
         $insert = [
             'tanggal_simpan' => date('Y-m-d H:i:s'),

@@ -76,12 +76,12 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6 col-xs-12">
+                        <div class="col-md-12 col-xs-12">
                             <div class="row justify-content-between">
                                 <h2 class="text-center">Pendapatan</h2>
                                 <p class="text-right">Total: <strong><?= number_format($sum_pendapatan) ?></strong></p>
                             </div>
-                            <table id="datatable" class="table" style="width:100%">
+                            <table id="" class="table" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>No. Coa</th>
@@ -91,22 +91,32 @@
                                 </thead>
                                 <tbody>
                                     <?php
-                                    foreach ($pendapatan as $p) :
+                                    if ($pendapatan) {
+
+                                        foreach ($pendapatan as $p) :
                                     ?>
+                                            <tr>
+                                                <td><?= $p->no_lr_sbb ?></td>
+                                                <td><?= $p->nama_perkiraan ?></td>
+                                                <td class="text-right"><?= number_format($p->nominal) ?></td>
+                                            </tr>
+                                        <?php
+                                        endforeach;
+                                    } else {
+                                        ?>
                                         <tr>
-                                            <td><?= $p->no_lr_sbb ?></td>
-                                            <td><?= $p->nama_perkiraan ?></td>
-                                            <td class="text-right"><?= number_format($p->nominal) ?></td>
+                                            <td colspan="3">Tidak ada data pendapatan yang ditampilkan.</td>
                                         </tr>
                                     <?php
-                                    endforeach; ?>
+                                    }
+                                    ?>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-6 col-xs-12">
+                        <div class="col-md-12 col-xs-12">
                             <h2 class="text-center">Biaya</h2>
                             <p class="text-right">Total: <strong><?= number_format($sum_biaya) ?></strong></p>
-                            <table id="datatable" class="table" style="width:100%">
+                            <table id="" class="table" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>No. Coa</th>
@@ -116,15 +126,21 @@
                                 </thead>
                                 <tbody>
                                     <?php
-                                    foreach ($biaya as $a) :
-                                    ?>
+                                    if ($biaya) {
+                                        foreach ($biaya as $a) : ?>
+                                            <tr>
+                                                <td><?= $a->no_lr_sbb ?></td>
+                                                <td><?= $a->nama_perkiraan ?></td>
+                                                <td class="text-right"><?= number_format($a->nominal) ?></td>
+                                            </tr>
+                                        <?php
+                                        endforeach;
+                                    } else { ?>
                                         <tr>
-                                            <td><?= $a->no_lr_sbb ?></td>
-                                            <td><?= $a->nama_perkiraan ?></td>
-                                            <td class="text-right"><?= number_format($a->nominal) ?></td>
+                                            <td colspan="3">Tidak ada data biaya yang ditampilkan.</td>
                                         </tr>
                                     <?php
-                                    endforeach; ?>
+                                    } ?>
                                 </tbody>
                             </table>
                         </div>

@@ -18,6 +18,7 @@
                                     <label for="" class="form-label">No. CoA</label>
                                     <select name="no_coa" id="no_coa" class="form-control select2" style="width: 100%;">
                                         <option value="">:: Pilih nomor coa</option>
+                                        <option <?= ($this->input->post('no_coa') == 'ALL') ? "selected" : "" ?> value="ALL">ALL COA</option>
                                         <?php
                                         foreach ($coas as $c) {
                                         ?>
@@ -39,17 +40,18 @@
                                 <button type="submit" class="btn btn-primary" style="margin-top: 24px;">Lihat</button>
                             </div>
                         </form>
-                        <div class="table-responsive">
+                        <div class="table-responsive mt-3">
                             <table id="" class="table table-bordered" style="width:100%">
                                 <thead>
-                                    <tr>
+                                    <!-- <tr>
                                         <th class="text-right" colspan="2">Total:</th>
                                         <th class="text-right"><?= number_format($sum_debit) ?></th>
                                         <th class="text-right"><?= number_format($sum_kredit) ?></th>
-                                    </tr>
+                                    </tr> -->
                                     <tr>
                                         <th class="text-center">#</th>
                                         <th class="text-center">Tanggal</th>
+                                        <th class="text-center">CoA</th>
                                         <th class="text-center">Debit</th>
                                         <th class="text-center">Kredit</th>
                                         <th class="text-center">Saldo Akhir</th>
@@ -59,21 +61,52 @@
                                 <tbody>
                                     <?php
                                     $no = 1;
-                                    foreach ($coa as $a) :
-                                    ?>
+                                    if ($coa) {
+                                        if ($this->input->post('no_coa') == "ALL") {
+                                            foreach ($coa as $a) :
+                                                $nama_debit = $this->m_coa->getCoa($a->akun_debit)['nama_perkiraan'];
+                                                $nama_kredit = $this->m_coa->getCoa($a->akun_kredit)['nama_perkiraan']; ?>
+                                                <tr>
+                                                    <td><?= $no++ ?></td>
+                                                    <td><?= format_indo($a->tanggal) ?></td>
+                                                    <td><?= $a->akun_debit ?> - <?= $nama_debit ?></td>
+                                                    <td class="text-right"><?= number_format($a->jumlah_debit) ?></td>
+                                                    <td class="text-right"><?= '0' ?></td>
+                                                    <td class="text-right"><?= number_format($a->saldo_debit) ?></td>
+                                                    <td style="white-space: pre-line;"><?= $a->keterangan ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><?= $no++ ?></td>
+                                                    <td><?= format_indo($a->tanggal) ?></td>
+                                                    <td><?= $a->akun_kredit ?> - <?= $nama_kredit ?></td>
+                                                    <td class="text-right"><?= '0' ?></td>
+                                                    <td class="text-right"><?= number_format($a->jumlah_kredit) ?></td>
+                                                    <td class="text-right"><?= number_format($a->saldo_kredit) ?></td>
+                                                    <td style="white-space: pre-line;"><?= $a->keterangan ?></td>
+                                                </tr>
+                                            <?php
+                                            endforeach;
+                                        } else {
+                                            foreach ($coa as $a) : ?>
+                                                <tr>
+                                                    <td><?= $no++ ?></td>
+                                                    <td><?= format_indo($a->tanggal) ?></td>
+                                                    <td class="text-right"><?= ($a->akun_debit == $detail_coa['no_sbb']) ? (($a->jumlah_debit) ? number_format($a->jumlah_debit) : '0') : '0' ?></td>
+                                                    <td class="text-right"><?= ($a->akun_kredit == $detail_coa['no_sbb']) ? (($a->jumlah_kredit) ? number_format($a->jumlah_kredit) : '0') : '0' ?></td>
+                                                    <td class="text-right"><?= ($a->akun_kredit == $detail_coa['no_sbb']) ? (($a->saldo_kredit) ? number_format($a->saldo_kredit) :  '0') : (($a->saldo_debit) ? number_format($a->saldo_debit) : '0') ?></td>
+                                                    <td style="white-space: pre-line;"><?= $a->keterangan ?></td>
+                                                </tr>
+                                        <?php
+                                            endforeach;
+                                        }
+                                    } else {
+                                        ?>
                                         <tr>
-                                            <td><?= $no++ ?></td>
-                                            <td><?= format_indo($a->tanggal) ?></td>
-                                            <!-- <td><?= ($a->akun_debit == $detail_coa['no_sbb']) ? $a->akun_debit : $a->akun_kredit ?></td> -->
-                                            <td class="text-right"><?= ($a->akun_debit == $detail_coa['no_sbb']) ? (($a->jumlah_debit) ? number_format($a->jumlah_debit) : '0') : '0' ?></td>
-                                            <!-- <td class="text-right"><?= ($a->akun_debit == $detail_coa['no_sbb']) ? (($a->saldo_debit) ? number_format($a->saldo_debit) : '0') : '0' ?></td> -->
-                                            <td class="text-right"><?= ($a->akun_kredit == $detail_coa['no_sbb']) ? (($a->jumlah_kredit) ? number_format($a->jumlah_kredit) : '0') : '0' ?></td>
-                                            <!-- <td class="text-right"><?= ($a->akun_kredit == $detail_coa['no_sbb']) ? (($a->saldo_kredit) ? number_format($a->saldo_kredit) : '0') : '0' ?></td> -->
-                                            <td class="text-right"><?= ($a->akun_kredit == $detail_coa['no_sbb']) ? (($a->saldo_kredit) ? number_format($a->saldo_kredit) :  '0') : (($a->saldo_debit) ? number_format($a->saldo_debit) : '0') ?></td>
-                                            <td style="white-space: pre-line;"><?= $a->keterangan ?></td>
+                                            <td colspan="6">Tidak ada data arus kas yang ditampilkan.</td>
                                         </tr>
                                     <?php
-                                    endforeach; ?>
+                                    }
+                                    ?>
                                 </tbody>
                             </table>
                         </div>
@@ -88,6 +121,7 @@
                                         <label for="" class="form-label">No. CoA </label>
                                         <select name="no_coa" id="no_coa" class="form-control select2" style="width: 100%;">
                                             <option value="">:: Pilih nomor coa</option>
+                                            <option value="ALL">ALL COA</option>
                                             <?php
                                             foreach ($coas as $c) {
                                             ?>
@@ -132,7 +166,7 @@
             Swal.fire({
                 title: "Loading...",
                 timerProgressBar: true,
-                allowOutsideClick: false,
+                owOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading()
                 },

@@ -90,10 +90,10 @@
                         </table>
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
-                            <h6>*klik kode untuk lihat neraca tersimpan</h6>
+                        <div class="col-md-12 col-xs-12">
+                            <!-- <h6>*klik kode untuk lihat neraca tersimpan</h6> -->
                         </div>
-                        <div class="col-md-6 text-right">
+                        <div class="col-md-12 col-xs-12 text-right">
                             <?= $this->pagination->create_links() ?>
                         </div>
                     </div>

@@ -120,7 +120,7 @@
                                         <tr>
                                             <td><?= $p->no_sbb ?></td>
                                             <td><?= $p->nama_perkiraan ?></td>
-                                            <td class="text-right"><?= number_format(($p->no_sbb == '3201001') ? $laba : $p->nominal) ?></td>
+                                            <td class="text-right"><?= number_format(($p->no_sbb == '3103001') ? $laba : $p->nominal) ?></td>
                                         </tr>
                                     <?php
                                     endforeach; ?>
@@ -160,25 +160,3 @@
         </div>
     </div>
 </div>
-<script>
-    const flashdata = $(".flash-data").data("flashdata");
-    if (flashdata) {
-        Swal.fire({
-            title: "Success!! ",
-            text: '<?= $this->session->flashdata('message_name') ?>',
-            type: "success",
-            icon: "success",
-        });
-    }
-
-    const flashdata_error = $(".flash-data-error").data("flashdata");
-    // const flashdata_error = $('.flash-data').data('flashdata');
-    if (flashdata_error) {
-        Swal.fire({
-            title: "Error!! ",
-            text: flashdata_error,
-            type: "error",
-            icon: "error",
-        });
-    }
-</script>

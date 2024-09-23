@@ -40,7 +40,7 @@
                 </div>
                 <div class="x_content">
                     <div class="table-responsive">
-                        <table id="datatable" class="table table-striped" style="width:100%">
+                        <table id="" class="table table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>No.</th>
@@ -48,6 +48,7 @@
                                     <th>Tanggal simpan</th>
                                     <th>Keterangan</th>
                                     <th>User</th>
+                                    <!-- <th>Cetak</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,6 +62,9 @@
                                             <td><?= format_indo($i['tanggal_simpan']) ?></td>
                                             <td style="white-space: pre-line;"><?= ($i['keterangan']) ?></td>
                                             <td><?= isset($i['created_by_name']) ? $i['created_by_name'] : 'N/A' ?></td>
+                                            <!-- <td>
+                                                <a href="<?= base_url('financial/showNeracaTersimpan/' . $i['slug'] . '/print') ?>" class="btn btn-success btn-xs"><i class="fa fa-print"></i> Cetak</a>
+                                            </td> -->
                                         </tr>
 
                                     <?php
