@@ -144,7 +144,7 @@ class M_asset extends CI_Model
 	function count_po($keyword, $where, $filter)
 	{
 		$this->cb->select('a.no_po, a.ppn, a.vendor, a.tgl_pengajuan, a.posisi, a.total, a.status_sarlog, a.status_direksi_ops, a.status_dirut, a.Id, a.catatan_sarlog, a.catatan_direksi_ops, a.catatan_dirut, a.keterangan, a.bukti_bayar, a.user, a.date_bayar, a.date_proses, a.jenis_pembayaran, a.status_pembayaran, b.nama');
-		$this->cb->from('t_po as a')->where($where);
+		$this->cb->from('t_po as a');
 		$this->cb->join($this->db->database . '.t_vendors as b', 'a.vendor = b.Id');
 		$this->cb->join($this->db->database . '.users as c', 'a.user = c.nip');
 		if ($keyword) {
@@ -157,7 +157,11 @@ class M_asset extends CI_Model
 			$this->cb->or_like('a.referensi', $keyword, 'both');
 			$this->cb->where($where);
 		}
-		$po = $this->cb->order_by('a.tgl_pengajuan', 'DESC')->get()->num_rows();
+		if ($filter) {
+			$this->cb->where('a.vendor', $filter);
+		}
+		$this->cb->where($where);
+		$po = $this->cb->get()->num_rows();
 
 		return $po;
 	}

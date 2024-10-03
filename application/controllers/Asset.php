@@ -780,7 +780,7 @@ class Asset extends CI_Controller
 			$filter = $this->input->get('vendor');
 			$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
 			$config['base_url'] = base_url('asset/sarlog');
-			$config['total_rows'] = $this->m_asset->count_po($keyword, ['a.status_sarlog' => 0], $filter);
+			$config['total_rows'] = $this->m_asset->count_po($keyword, [], $filter);
 			$config['per_page'] = 20;
 			$config['uri_segment'] = 3;
 			$config['num_links'] = 3;
