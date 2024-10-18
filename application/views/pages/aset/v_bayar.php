@@ -17,9 +17,10 @@
                     <th>Item</th>
                     <th>Qty</th>
                     <th>UOI</th>
+                    <th>Satuan</th>
                     <th>Harga</th>
                     <th>Total</th>
-                    <th>Ket</th>
+                    <th width="300px">Ket</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -34,17 +35,18 @@
                       <td><?= $detail['nama'] . ' | ' . $detail['nomor'] ?></td>
                       <td><?= $i['qty'] ?></td>
                       <td><?= $i['uoi'] ?></td>
+                      <td><?= $i['satuan'] ?></td>
                       <td><?= number_format($i['price']) ?></td>
                       <td><?= number_format($i['total']) ?></td>
                       <td><?= $i['keterangan'] ?></td>
                     </tr>
                   <?php } ?>
                   <tr>
-                    <td align="right" colspan="4"><b>SUB TOTAL</b></td>
+                    <td align="right" colspan="5"><b>SUB TOTAL</b></td>
                     <td><?= number_format($po['total']) ?></td>
                   </tr>
                   <tr>
-                    <td align="right" colspan="4"><b>PPN 11%</b></td>
+                    <td align="right" colspan="5"><b>PPN 11%</b></td>
                     <td>
                       <?php if ($po['ppn']) {
                         $ppn = $po['total'] * 0.11;
@@ -56,7 +58,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <td align="right" colspan="4"><b>TOTAL</b></td>
+                    <td align="right" colspan="5"><b>TOTAL</b></td>
                     <td>
                       <?php
                       $total = $po['total'] + $ppn;

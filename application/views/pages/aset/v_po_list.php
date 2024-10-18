@@ -104,9 +104,10 @@
                                                                                 <th>Item</th>
                                                                                 <th width="25px">Qty</th>
                                                                                 <th>UOI</th>
+                                                                                <th width="25px">Satuan</th>
                                                                                 <th>Price</th>
                                                                                 <th>Total</th>
-                                                                                <th>Ket</th>
+                                                                                <th width="300px">Ket</th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
@@ -121,21 +122,22 @@
                                                                                     <td><?= $item['nama'] . ' | ' . $item['nomor'] ?></td>
                                                                                     <td><?= $row['qty'] ?></td>
                                                                                     <td><?= $row['uoi'] ?></td>
+                                                                                    <td><?= $row['satuan'] ?></td>
                                                                                     <td><?= number_format($row['price'], 0) ?></td>
                                                                                     <td><?= number_format($row['total'], 0) ?></td>
                                                                                     <td><?= $row['keterangan'] ?></td>
                                                                                 </tr>
                                                                             <?php } ?>
                                                                             <tr>
-                                                                                <td colspan="5" align="right"><strong>SUB TOTAL</strong></td>
+                                                                                <td colspan="6" align="right"><strong>SUB TOTAL</strong></td>
                                                                                 <td><?= number_format($value['total']) ?></td>
                                                                             </tr>
                                                                             <tr>
-                                                                                <td colspan="5" align="right"><strong>PPN 11%</strong></td>
+                                                                                <td colspan="6" align="right"><strong>PPN 11%</strong></td>
                                                                                 <td><?= number_format($ppn) ?></td>
                                                                             </tr>
                                                                             <tr>
-                                                                                <td colspan="5" align="right"><strong>TOTAL</strong></td>
+                                                                                <td colspan="6" align="right"><strong>TOTAL</strong></td>
                                                                                 <td><?= number_format($ppn + $value['total']) ?></td>
                                                                             </tr>
                                                                         </tbody>
