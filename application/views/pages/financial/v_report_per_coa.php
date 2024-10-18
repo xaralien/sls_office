@@ -48,15 +48,34 @@
                                         <th class="text-right"><?= number_format($sum_debit) ?></th>
                                         <th class="text-right"><?= number_format($sum_kredit) ?></th>
                                     </tr> -->
-                                    <tr>
-                                        <th class="text-center">#</th>
-                                        <th class="text-center">Tanggal</th>
-                                        <th class="text-center">CoA</th>
-                                        <th class="text-center">Debit</th>
-                                        <th class="text-center">Kredit</th>
-                                        <th class="text-center">Saldo Akhir</th>
-                                        <th class="text-center">Keterangan</th>
-                                    </tr>
+                                    <?php
+                                    if ($this->input->post('no_coa') == "ALL") {
+                                    ?>
+                                        <tr>
+                                            <th class="text-center">#</th>
+                                            <th class="text-center">Tanggal</th>
+                                            <th class="text-center">CoA</th>
+                                            <th class="text-center">Debit</th>
+                                            <th class="text-center">Kredit</th>
+                                            <th class="text-center">Saldo Akhir</th>
+                                            <th class="text-center">Keterangan</th>
+                                        </tr>
+                                    <?php
+
+                                    } else {
+                                    ?>
+
+                                        <tr>
+                                            <th class="text-center">#</th>
+                                            <th class="text-center">Tanggal</th>
+                                            <th class="text-center">Debit</th>
+                                            <th class="text-center">Kredit</th>
+                                            <th class="text-center">Saldo Akhir</th>
+                                            <th class="text-center">Keterangan</th>
+                                        </tr>
+                                    <?php
+
+                                    }  ?>
                                 </thead>
                                 <tbody>
                                     <?php

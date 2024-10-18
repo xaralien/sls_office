@@ -2007,7 +2007,7 @@ class Asset extends CI_Controller
 		$keyword = htmlspecialchars($this->input->get('keyword') ?? '', ENT_QUOTES, 'UTF-8');
 		$config['base_url'] = base_url('asset/direksi_ops_out');
 		$config['total_rows'] = $this->m_asset->count_ro($keyword, ['status_sarlog' => 1, 'direksi_ops' => $nip]);
-		$config['per_page'] = 5;
+		$config['per_page'] = 10;
 		$config['uri_segment'] = 3;
 		$config['num_links'] = 3;
 		$config['enable_query_strings'] = TRUE;

@@ -105,7 +105,7 @@
                                             endif;
                                         endforeach; ?>
                                         <tr>
-                                            <td>32020</td>
+                                            <td>3103001</td>
                                             <td>LABA TAHUN BERJALAN</td>
                                             <td class="text-right"><?= number_format($laba) ?></td>
                                         </tr>

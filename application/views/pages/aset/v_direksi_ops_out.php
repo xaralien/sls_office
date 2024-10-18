@@ -196,6 +196,10 @@
               </tbody>
             </table>
           </div>
+
+          <div class="row text-center">
+            <?= $pagination ?>
+          </div>
         </div>
       </div>
     </div>

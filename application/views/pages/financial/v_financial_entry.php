@@ -107,7 +107,7 @@
         });
 
         function formatState(state, colorAktiva, colorPasiva, signAktiva, signPasiva) {
-            // console.log(state)
+            console.log(state.id)
             if (!state.id) {
                 return state.text;
             }
@@ -121,7 +121,7 @@
         };
 
         function formatStateDebit(state) {
-            // console.log(state)
+            console.log(state)
             return formatState(state, '#2ecc71', '#ff7675', '(+)', '(-)');
         }
 
