@@ -83,6 +83,7 @@
                               <option value="DRUM">DRUM</option>
                               <option value="GALON">GALON</option>
                               <option value="LUSIN">LUSIN</option>
+                              <option value="KG">KG</option>
                             </select>
                           </div>
                         </td>
@@ -182,6 +183,7 @@
                               <option value="DRUM" <?= $row['uoi'] == 'DRUM' ? 'selected' : '' ?>>DRUM</option>
                               <option value="GALON" <?= $row['uoi'] == 'GALON' ? 'selected' : '' ?>>GALON</option>
                               <option value="LUSIN" <?= $row['uoi'] == 'LUSIN' ? 'selected' : '' ?>>LUSIN</option>
+                              <option value="LUSIN" <?= $row['uoi'] == 'KG' ? 'selected' : '' ?>>KG</option>
                             </select>
                           </div>
                         </td>
@@ -247,7 +249,7 @@
 
     var rowCount = $(".baris").length;
     $('#add-more-form').click(function() {
-      var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"><div class="form-group"><label for="uoi" class="form-label">UOI</label><select name="uoi[]" id="uoi-' + rowCount + '" class="form-control"><option value="PCS">PCS</option><option value="SET">SET</option><option value="LITER">LITER</option><option value="TABUNG">TABUNG</option><option value="DRUM">DRUM</option><option value="GALON">GALON</option><option value="LUSIN">LUSIN</option></select></div></td> <td><input type="text" class="form-control uang" name="satuan[]" id="satuan"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><textarea name="ket[]" id="ket-' + rowCount + '" class="form-control"></textarea></td><td><button type="button" class="btn btn-danger btn-sm remove-form"><i class="fa fa-trash" aria-hidden="true"></i></button></td></tr>';
+      var row = '<tr class="baris"><td><input type="hidden" name="row[]" id="row"><select name="item[]" id="item-' + rowCount + '" class="form-control select2 item-out"><option value=""> :: Pilih Item :: </option><?php foreach ($item_list->result_array() as $il) { ?><option value="<?= $il['Id'] ?>"><?= $il['nama'] . " | " . $il['nomor'] ?></option><?php } ?></td><td><input type="text" class="form-control uang" name="qty[]" id="qty-' + rowCount + '"><div class="form-group"><label for="uoi" class="form-label">UOI</label><select name="uoi[]" id="uoi-' + rowCount + '" class="form-control"><option value="PCS">PCS</option><option value="SET">SET</option><option value="LITER">LITER</option><option value="TABUNG">TABUNG</option><option value="DRUM">DRUM</option><option value="GALON">GALON</option><option value="LUSIN">LUSIN</option><option value="KG">KG</option></select></div></td> <td><input type="text" class="form-control uang" name="satuan[]" id="satuan"></td><td><input type="text" class="form-control uang" name="harga[]" id="price-' + rowCount + '"></td><td><input type="text" class="form-control" name="total[]" id="total-' + rowCount + '" readonly></td><td><textarea name="ket[]" id="ket-' + rowCount + '" class="form-control"></textarea></td><td><button type="button" class="btn btn-danger btn-sm remove-form"><i class="fa fa-trash" aria-hidden="true"></i></button></td></tr>';
 
       var previousRow = $('.baris').last();
       rowCount++;
