@@ -187,7 +187,7 @@ class M_invoice extends CI_Model
             $this->cb->or_like('keterangan', $keyword);
         }
 
-        return $this->cb->from('financial_entry')->where('status_approval', '0')->count_all_results();
+        return $this->cb->from('financial_entry')->where('status_approval', '1')->count_all_results();
     }
 
     public function list_fe_approved($limit, $from, $keyword)
