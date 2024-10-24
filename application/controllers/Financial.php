@@ -203,6 +203,64 @@ class Financial extends CI_Controller
         $this->load->view('index', $data);
     }
 
+    public function approved_fe()
+    {
+        $keyword = trim($this->input->post('keyword', true) ?? '');
+
+        $config = [
+            'base_url' => site_url('financial/approved_fe'),
+            'total_rows' => $this->m_invoice->approved_fe_count($keyword),
+            'per_page' => 20,
+            'uri_segment' => 3,
+            'num_links' => 10,
+            'full_tag_open' => '<ul class="pagination" style="margin: 0 0">',
+            'full_tag_close' => '</ul>',
+            'first_link' => false,
+            'last_link' => false,
+            'first_tag_open' => '<li>',
+            'first_tag_close' => '</li>',
+            'prev_link' => '«',
+            'prev_tag_open' => '<li class="prev">',
+            'prev_tag_close' => '</li>',
+            'next_link' => '»',
+            'next_tag_open' => '<li>',
+            'next_tag_close' => '</li>',
+            'last_tag_open' => '<li>',
+            'last_tag_close' => '</li>',
+            'cur_tag_open' => '<li class="active"><a href="#">',
+            'cur_tag_close' => '</a></li>',
+            'num_tag_open' => '<li>',
+            'num_tag_close' => '</li>'
+        ];
+
+        $this->pagination->initialize($config);
+
+        $page = $this->uri->segment(3) ? $this->uri->segment(3) : 0;
+        $fes = $this->m_invoice->list_fe_approved($config["per_page"], $page, $keyword);
+
+        $nip = $this->session->userdata('nip');
+        $sql = "SELECT COUNT(Id) FROM memo WHERE (nip_kpd LIKE '%$nip%' OR nip_cc LIKE '%$nip%') AND (`read` NOT LIKE '%$nip%');";
+        $query = $this->db->query($sql);
+        $result = $query->row_array()['COUNT(Id)'];
+
+        $sql2 = "SELECT COUNT(id) FROM task WHERE (`member` LIKE '%$nip%' or `pic` like '%$nip%') and activity='1'";
+        $query2 = $this->db->query($sql2);
+        $result2 = $query2->row_array()['COUNT(id)'];
+
+        $data = [
+            'page' => $page,
+            'fes' => $fes,
+            'count_inbox' => $result,
+            'count_inbox2' => $result2,
+            'coa' => $this->m_coa->list_coa(),
+            'keyword' => $keyword,
+            'title' => "FE Pending",
+            'pages' => "pages/financial/v_fe_pending"
+        ];
+
+        $this->load->view('index', $data);
+    }
+
     public function approve_fe($slug)
     {
 
@@ -1395,46 +1453,48 @@ class Financial extends CI_Controller
         $last_periode = $last_periode->modify('-1 month');
         $last_periode = $last_periode->format('Y-m');
 
-        if (!$cek) {
-            $getLastPeriod = $this->m_coa->cek_saldo_awal($last_periode);
 
-            if (empty($getLastPeriod)) {
-                $updated_saldo_awal = $this->m_coa->calculate_saldo_awal($bulan, $tahun);
-            } else {
-                $coaLastPeriod = json_decode($getLastPeriod['coa']);
-                $saldo_bulan_ini = $this->m_coa->calculate_saldo_awal($bulan, $tahun);
+        $getLastPeriod = $this->m_coa->cek_saldo_awal($last_periode);
 
-                $saldo_awal_map = [];
-                foreach ($coaLastPeriod as $saldo_awal) {
-                    $saldo_awal_map[$saldo_awal->no_sbb] = $saldo_awal;
-                }
+        if (empty($getLastPeriod)) {
+            $updated_saldo_awal = $this->m_coa->calculate_saldo_awal($bulan, $tahun);
+        } else {
+            $coaLastPeriod = json_decode($getLastPeriod['coa']);
+            $saldo_bulan_ini = $this->m_coa->calculate_saldo_awal($bulan, $tahun);
 
-                foreach ($saldo_bulan_ini as $saldo_baru) {
-                    if (isset($saldo_awal_map[$saldo_baru->no_sbb])) {
-                        $saldo_awal_map[$saldo_baru->no_sbb]->saldo_awal += (float) $saldo_baru->saldo_awal;
-                    } else {
-                        $saldo_awal_map[$saldo_baru->no_sbb] = (object) [
-                            'no_sbb' => $saldo_baru->no_sbb,
-                            'saldo_awal' => (float) $saldo_baru->saldo_awal,
-                            'posisi' => $saldo_baru->posisi,
-                            'table_source' => $saldo_baru->table_source,
-                        ];
-                    }
-                }
-                $updated_saldo_awal = array_values($saldo_awal_map);
+            $saldo_awal_map = [];
+            foreach ($coaLastPeriod as $saldo_awal) {
+                $saldo_awal_map[$saldo_awal->no_sbb] = $saldo_awal;
             }
 
-            $nextMonth = ($date->modify('+1 month'));
-            $nextMonth = $date->format('Y-m');
+            foreach ($saldo_bulan_ini as $saldo_baru) {
+                if (isset($saldo_awal_map[$saldo_baru->no_sbb])) {
+                    $saldo_awal_map[$saldo_baru->no_sbb]->saldo_awal += (float) $saldo_baru->saldo_awal;
+                } else {
+                    $saldo_awal_map[$saldo_baru->no_sbb] = (object) [
+                        'no_sbb' => $saldo_baru->no_sbb,
+                        'saldo_awal' => (float) $saldo_baru->saldo_awal,
+                        'posisi' => $saldo_baru->posisi,
+                        'table_source' => $saldo_baru->table_source,
+                    ];
+                }
+            }
+            $updated_saldo_awal = array_values($saldo_awal_map);
+        }
 
-            $data = [
-                'periode' => $periode,
-                'created_by' => $this->session->userdata('nip'),
-                'created_at' => date('Y-m-d H:i:s'),
-                'slug' => 'saldo-awal-' . $nextMonth,
-                'coa' => json_encode($updated_saldo_awal),
-                'keterangan' => 'Saldo awal ' . format_indo($nextMonth)
-            ];
+        $nextMonth = ($date->modify('+1 month'));
+        $nextMonth = $date->format('Y-m');
+
+        $data = [
+            'periode' => $periode,
+            'created_by' => $this->session->userdata('nip'),
+            'created_at' => date('Y-m-d H:i:s'),
+            'slug' => 'saldo-awal-' . $nextMonth,
+            'coa' => json_encode($updated_saldo_awal),
+            'keterangan' => 'Saldo awal ' . format_indo($nextMonth)
+        ];
+
+        if (!$cek) {
 
             $this->db->trans_begin();
 
@@ -1446,7 +1506,16 @@ class Financial extends CI_Controller
                 $this->session->set_flashdata('message_error', 'Gagal buat closing EoM. Silahkan coba lagi.');
             }
         } else {
-            $this->session->set_flashdata('message_error', 'Closing bulan ' . format_indo($periode) . ' sudah ditetapkan sebelumnya');
+
+            $this->db->trans_begin();
+
+            if ($this->m_coa->update_saldo_awal($periode, $data)) {
+                $this->db->trans_commit();
+                $this->session->set_flashdata('message_name', 'Closing bulan ' . format_indo($periode) . 'Saldo awal periode ' . format_indo($nextMonth) . ' berhasil ditetapkan');
+            } else {
+                $this->db->trans_rollback();
+                $this->session->set_flashdata('message_error', 'Gagal buat closing EoM. Silahkan coba lagi.');
+            }
         }
 
         redirect($_SERVER['HTTP_REFERER']);

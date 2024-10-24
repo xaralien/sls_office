@@ -180,6 +180,39 @@ class M_invoice extends CI_Model
         return $fes;
     }
 
+    public function approved_fe_count($keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('slug', $keyword);
+            $this->cb->or_like('keterangan', $keyword);
+        }
+
+        return $this->cb->from('financial_entry')->where('status_approval', '0')->count_all_results();
+    }
+
+    public function list_fe_approved($limit, $from, $keyword)
+    {
+        if ($keyword) {
+            $this->cb->like('slug', $keyword);
+            $this->cb->or_like('keterangan', $keyword);
+        }
+        $this->cb->where('status_approval', '1');
+
+        $fes = $this->cb->order_by('no_urut', 'DESC')->limit($limit, $from)->get('financial_entry')->result_array();
+
+        // Ambil semua user dari database bdl_core
+        $users = $this->db->select('id, nip, nama')->get('users')->result_array();
+        $user_map = array_column($users, 'nama', 'nip');  // Menggunakan nama pengguna sebagai nama kolom
+
+        // Gabungkan hasil query
+        foreach ($fes as &$fe) {
+            $fe['created_by_name'] = isset($user_map[$fe['created_by']]) ? $user_map[$fe['created_by']] : null;
+            $fe['approve_by_name'] = isset($user_map[$fe['approve_by']]) ? $user_map[$fe['approve_by']] : null;
+        }
+
+        return $fes;
+    }
+
     public function update_fe($data, $slug)
     {
         return $this->cb->where('slug', $slug)->update('financial_entry', $data);

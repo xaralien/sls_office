@@ -184,6 +184,9 @@
                         <li>
                             <a href="<?= base_url(); ?>financial/fe_pending">FE Pending</a>
                         </li>
+                        <li>
+                            <a href="<?= base_url(); ?>financial/approved_fe">Approved FE</a>
+                        </li>
                     <?php }
                     if (strpos($a, '807') !== false) { ?>
                         <li>
