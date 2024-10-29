@@ -1583,6 +1583,7 @@ class Financial extends CI_Controller
                     $combinedActiva[$item->no_sbb]->saldo_awal += $item->saldo_awal;
                 }
             }
+
             foreach ($filteredCoaAktiva as $item) {
                 if (!isset($combinedActiva[$item->no_sbb])) {
                     $combinedActiva[$item->no_sbb] = (object) [
@@ -1598,7 +1599,6 @@ class Financial extends CI_Controller
                 return strcmp($a->no_sbb, $b->no_sbb);
             });
             $total_activa = array_sum(array_column($combinedActiva, 'saldo_awal'));
-
 
             // Part Pasiva
             $filteredCoaPasiva = array_filter($coaLastPeriod, function ($item) {

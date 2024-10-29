@@ -50,14 +50,13 @@ class M_coa extends CI_Model
         $this->cb->where('tanggal >=', $from)->where('tanggal <=', $to);
 
         if ($no_coa != "ALL") {
+            $this->cb->group_start();
             $this->cb->where('akun_debit', $no_coa)->or_where('akun_kredit', $no_coa);
+            $this->cb->group_end();
         }
 
-        $this->cb->order_by('id', 'DESC');
-        // echo '<pre>';
-        // print_r($no_coa);
-        // echo '</pre>';
-        // exit;
+        $this->cb->order_by('tanggal', 'DESC');
+
         return $this->cb->get('jurnal_neraca')->result();
     }
 
@@ -185,7 +184,7 @@ class M_coa extends CI_Model
             SELECT 
                 coa.no_sbb, coa.nama_perkiraan, coa.posisi, coa.table_source,
                 SUM(
-                    CASE 
+                    CASE WHEN jn.akun_debit = jn.akun_kredit THEN 0
                         WHEN coa.posisi = 'AKTIVA' AND jn.akun_debit = coa.no_sbb THEN jn.jumlah_debit
                         WHEN coa.posisi = 'AKTIVA' AND jn.akun_kredit = coa.no_sbb THEN -jn.jumlah_kredit
                         WHEN coa.posisi = 'PASIVA' AND jn.akun_kredit = coa.no_sbb THEN jn.jumlah_kredit
@@ -204,10 +203,7 @@ class M_coa extends CI_Model
             ORDER BY 
                 coa.no_sbb ASC
         ");
-        // echo '<pre>';
-        // print_r($query->result_array());
-        // echo '</pre>';
-        // exit;
+
         return $query->result();
     }
 
@@ -228,6 +224,7 @@ class M_coa extends CI_Model
                 coa.no_sbb, coa.nama_perkiraan, coa.posisi,
                 SUM(
                     CASE 
+                        WHEN jn.akun_debit = jn.akun_kredit THEN 0
                         WHEN coa.posisi = 'AKTIVA' AND jn.akun_debit = coa.no_sbb THEN jn.jumlah_debit
                         WHEN coa.posisi = 'AKTIVA' AND jn.akun_kredit = coa.no_sbb THEN -jn.jumlah_kredit
                         ELSE 0
@@ -238,7 +235,7 @@ class M_coa extends CI_Model
             LEFT JOIN 
                 jurnal_neraca jn ON coa.no_sbb = jn.akun_debit OR coa.no_sbb = jn.akun_kredit
             WHERE 
-                jn.tanggal BETWEEN '$tanggal_awal' AND '$tanggal_akhir'
+                (jn.tanggal BETWEEN '$tanggal_awal' AND '$tanggal_akhir')
                 AND coa.table_source = '$table' AND coa.posisi = '$posisi'
             GROUP BY 
                 coa.no_sbb
@@ -252,6 +249,7 @@ class M_coa extends CI_Model
                 coa.no_sbb, coa.nama_perkiraan, coa.posisi,
                 SUM(
                     CASE 
+                        WHEN jn.akun_debit = jn.akun_kredit THEN 0
                         WHEN coa.posisi = 'PASIVA' AND jn.akun_kredit = coa.no_sbb THEN jn.jumlah_kredit
                         WHEN coa.posisi = 'PASIVA' AND jn.akun_debit = coa.no_sbb THEN -jn.jumlah_debit
                         ELSE 0
