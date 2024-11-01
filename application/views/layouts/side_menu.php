@@ -239,6 +239,12 @@
                             <a href="<?= base_url(); ?>pengajuan/approval_direksi">Approval Direksi</a>
                         </li>
                     <?php } ?>
+                    <li>
+                        <a href="<?= base_url(); ?>ritasi/list">Ritasi</a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url(); ?>bbm/list">BBM</a>
+                    </li>
                 </ul>
             </li>
         <?php } ?>

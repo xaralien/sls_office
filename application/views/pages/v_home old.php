@@ -63,74 +63,9 @@
             </div>
         <?php } ?>
         <br>
-
-        <!-- <div class="header" style="margin-left: 1%">
-            <h2>Total penggunaan spare part</h2>
-            <hr>
-        </div> -->
-        <div class="row justify-content-center">
-            <div class="col-md-4 col-sm-6 col-xs-12">
-                <div id="chart_div_spare_part"></div>
-            </div>
-            <div class="col-md-4 col-sm-6 col-xs-12">
-                <div id="chart_div_tonase"></div>
-            </div>
-            <div class="col-md-4 col-sm-6 col-xs-12">
-                <div id="chart_div_bbm"></div>
-            </div>
-        </div>
-        <br>
-        <div class="row">
-            <!-- <div class="col-md-4 col-sm-6 col-xs-12">
-                <div class="x_panel tile fixed_height_300">
-                    <div class="x_title">
-                        <h2><i class="fa fa-envelope-o"></i> Total Penggunaan Spare part</h2>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="x_content">
-                        <h4>Total Sparepart : <?php
-                                                if (!empty($total_sparepart->total_sum)) {
-                                                    echo $total_sparepart->total_sum;
-                                                } else {
-                                                    echo '0';
-                                                }
-                                                ?></h4><br>
-                        <?php
-                        if (!empty($total_sparepart_perbulan)) {
-                            foreach ($total_sparepart_perbulan as $tsp) {
-                        ?>
-                                <a href="<?= base_url('task/task') ?>">
-                                    <div class="widget_summary">
-                                        <div class="w_left w_25">
-                                            <span><?= $tsp->month_year ?></span>
-                                        </div>
-                                        <div class="w_center w_55">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-blue-sky" role="progressbar" aria-valuenow="46.288209606987" aria-valuemin="0" aria-valuemax="100" style="width: <?= $tsp->total_sum ?>%;">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="w_right w_20">
-                                            <span><?= $tsp->total_sum ?></span>
-                                        </div>
-                                        <div class="clearfix"></div>
-                                    </div>
-                                </a>
-                            <?php
-                            }
-                        } else {
-                            ?>
-                            <span>Tidak Ada Yang Keluar</span>
-
-                        <?php
-                        }
-                        ?>
-                    </div>
-                </div>
-            </div> -->
-        </div>
         <div class="row">
             <div class="col-md-8 col-sm-8 col-xs-12">
+
                 <div class="row">
                     <!-- <div class="col-md-6 col-sm-6 col-xs-12">
 									<div class="x_panel tile fixed_height_300">
@@ -308,9 +243,14 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="clearfix"></div>
+
+
+
                 </div>
             </div>
+
         </div>
         <!-- Start content-->
 
@@ -319,112 +259,3 @@
     <br><br>
     <br><br>
 </div>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<?php
-// Initialize the data array with headers for Google Charts
-$chart_data_spare_part = [['Month', 'Biaya Total Spare Parts']];
-
-// Loop through the database results and populate the chart data array
-foreach ($total_sparepart_perbulan as $row) {
-    $chart_data_spare_part[] = [$row->month_year, (int)$row->total_sum];
-}
-
-$chart_data_tonase = [['Month', 'Total Tonase']];
-
-// Loop through the database results and populate the chart data array
-foreach ($total_tonase as $row) {
-    $chart_data_tonase[] = [$row->month_year, (int)$row->total_sum];
-}
-
-$chart_data_bbm = [['Month', 'Total Biaya BBM']];
-
-// Loop through the database results and populate the chart data array
-foreach ($total_bbm as $row) {
-    $chart_data_bbm[] = [$row->month_year, (int)$row->total_sum];
-}
-?>
-<script type="text/javascript">
-    // Load the Google Charts API
-    google.charts.load('current', {
-        'packages': ['corechart']
-    });
-
-    // Callback function to draw the chart
-    google.charts.setOnLoadCallback(drawChart_sparepart);
-
-    function drawChart_sparepart() {
-        // Create the data table using PHP
-        var data = google.visualization.arrayToDataTable(<?php echo json_encode($chart_data_spare_part); ?>);
-
-        // Set chart options
-        var options = {
-            title: 'Biaya Total Spare Parts Per Month',
-            chartArea: {
-                width: '50%'
-            },
-            hAxis: {
-                title: 'Biaya Total Spare Parts',
-                minValue: 0
-            },
-            vAxis: {
-                title: 'Month'
-            }
-        };
-
-        // Instantiate and draw the chart
-        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div_spare_part'));
-        chart.draw(data, options);
-    }
-
-    google.charts.setOnLoadCallback(drawChart_tonase);
-
-    function drawChart_tonase() {
-        // Create the data table using PHP
-        var data = google.visualization.arrayToDataTable(<?php echo json_encode($chart_data_tonase); ?>);
-
-        // Set chart options
-        var options = {
-            title: 'Total Tonase Per Month',
-            chartArea: {
-                width: '50%'
-            },
-            hAxis: {
-                title: 'Total Tonase',
-                minValue: 0
-            },
-            vAxis: {
-                title: 'Month'
-            }
-        };
-
-        // Instantiate and draw the chart
-        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div_tonase'));
-        chart.draw(data, options);
-    }
-
-    google.charts.setOnLoadCallback(drawChart_bbm);
-
-    function drawChart_bbm() {
-        // Create the data table using PHP
-        var data = google.visualization.arrayToDataTable(<?php echo json_encode($chart_data_bbm); ?>);
-
-        // Set chart options
-        var options = {
-            title: 'Biaya Total BBM Per Month',
-            chartArea: {
-                width: '50%'
-            },
-            hAxis: {
-                title: 'Biaya Total BBM',
-                minValue: 0
-            },
-            vAxis: {
-                title: 'Month'
-            }
-        };
-
-        // Instantiate and draw the chart
-        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div_bbm'));
-        chart.draw(data, options);
-    }
-</script>
