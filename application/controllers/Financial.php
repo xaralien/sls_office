@@ -1344,28 +1344,37 @@ class Financial extends CI_Controller
 
             $substr_coa = substr($no_sbb, 0, 1);
 
-            // cek tabel
-            if ($substr_coa == "1" || $substr_coa == "2" || $substr_coa == "3") {
-                $tabel = "t_coa_sbb";
-            } else if ($substr_coa == "4" || $substr_coa == "5" || $substr_coa == "6" || $substr_coa == "7" || $substr_coa == "8" || $substr_coa == "9") {
-                $tabel = "t_coalr_sbb";
-            } else {
-                $this->session->set_flashdata('message_error', 'Format nomor CoA ' . $no_sbb . ' tidak sesuai.');
-                redirect($_SERVER['HTTP_REFERER']);
-            }
-
             if ($substr_coa == "1" || $substr_coa == "5" || $substr_coa == "6" || $substr_coa == "7" || $substr_coa == "5" || $substr_coa == "6") {
                 $posisi = 'AKTIVA';
             } else {
                 $posisi = 'PASIVA';
             }
 
-            $data = [
-                'no_bb' => $no_bb,
-                'no_sbb' => $no_sbb,
-                'nama_perkiraan' => $nama_coa,
-                'posisi' => $posisi,
-            ];
+
+
+            // cek tabel
+            if ($substr_coa == "1" || $substr_coa == "2" || $substr_coa == "3") {
+                $tabel = "t_coa_sbb";
+
+                $data = [
+                    'no_bb' => $no_bb,
+                    'no_sbb' => $no_sbb,
+                    'nama_perkiraan' => $nama_coa,
+                    'posisi' => $posisi,
+                ];
+            } else if ($substr_coa == "4" || $substr_coa == "5" || $substr_coa == "6" || $substr_coa == "7" || $substr_coa == "8" || $substr_coa == "9") {
+                $tabel = "t_coalr_sbb";
+                $data = [
+                    'no_lr_bb' => $no_bb,
+                    'no_lr_sbb' => $no_sbb,
+                    'nama_perkiraan' => $nama_coa,
+                    'posisi' => $posisi,
+                ];
+            } else {
+                $this->session->set_flashdata('message_error', 'Format nomor CoA ' . $no_sbb . ' tidak sesuai.');
+                redirect($_SERVER['HTTP_REFERER']);
+            }
+
 
             $this->db->trans_begin();
 
