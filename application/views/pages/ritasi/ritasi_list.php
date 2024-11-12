@@ -25,16 +25,15 @@
                                     <th scope="col">No.</th>
                                     <th scope="col">No. Lambung</th>
                                     <th scope="col">Nama Driver</th>
-                                    <!-- <th scope="col">RIT</th> -->
                                     <th scope="col">Tanggal</th>
-                                    <!-- <th scope="col">KM</th> -->
                                     <th scope="col">Shift</th>
                                     <th scope="col">Jam</th>
                                     <th scope="col">HM Awal</th>
                                     <th scope="col">HM Akhir</th>
                                     <th scope="col">KM Awal</th>
                                     <th scope="col">KM Akhir</th>
-                                    <!-- <th scope="col">User</th> -->
+                                    <th scope="col">Tonase</th>
+                                    <th scope="col">Harga</th>
                                     <th scope="col">#</th>
                                 </tr>
                             </thead>
@@ -53,10 +52,12 @@
                                             <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['tanggal'] ?></a></td>
                                             <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['shift'] ?></a></td>
                                             <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['jam_awal'] ?> - <?= $value['jam_akhir'] ?></a></td>
-                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['hm_awal'] ?></a></td>
-                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['hm_akhir'] ?></a></td>
-                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['km_awal'] ?></a></td>
-                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= $value['km_akhir'] ?></a></td>
+                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= number_format($value['hm_awal']) ?></a></td>
+                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= number_format($value['hm_akhir']) ?></a></td>
+                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= number_format($value['km_awal']) ?></a></td>
+                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= number_format($value['km_akhir']) ?></a></td>
+                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)"><?= number_format($value['hm_akhir'] - $value['hm_awal']) ?></a></td>
+                                            <td scope="row"><a class="clickable_table" onclick="Lihat_Detail(<?= $value['Id'] ?>)">Rp. <?= number_format($value['harga']) ?></a></td>
                                             <td scope="row">
                                                 <a href="<?= base_url('ritasi/ubah/' . $value['Id']) ?>" class="btn btn-success btn-xs">Update</a>
                                                 <a href="<?= base_url('ritasi/hapus/' . $value['Id']) ?>" class="btn btn-danger btn-xs delete-btn">delete</a>
@@ -177,12 +178,9 @@
                                     <th scope="col">No.</th>
                                     <th scope="col">Lokasi Loading</th>
                                     <th scope="col">Tujuan</th>
-                                    <!-- <th scope="col">RIT</th> -->
                                     <th scope="col">Jam</th>
-                                    <!-- <th scope="col">KM</th> -->
                                     <th scope="col">HM</th>
                                     <th scope="col">KM</th>
-                                    <!-- <th scope="col">User</th> -->
                                     <th scope="col">#</th>
                                 </tr>
                             </thead>

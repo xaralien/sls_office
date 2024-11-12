@@ -138,6 +138,7 @@ class Ritasi extends CI_Controller
         $hm_akhir = $this->input->post('hm_akhir');
         $km_awal = $this->input->post('km_awal');
         $km_akhir = $this->input->post('km_akhir');
+        $harga = $this->input->post('harga');
 
         $now = date('Y-m-d H:i:s');
 
@@ -169,8 +170,9 @@ class Ritasi extends CI_Controller
             'jam_akhir' => $jam_akhir,
             'hm_awal' => $hm_awal,
             'hm_akhir' => $hm_akhir,
-            'km_awal' => $hm_awal,
-            'km_akhir' => $hm_akhir,
+            'km_awal' => $km_awal,
+            'km_akhir' => $km_akhir,
+            'harga' => $harga,
         ];
 
         $this->cb->insert('t_ritasi', $ritasi);
@@ -219,36 +221,51 @@ class Ritasi extends CI_Controller
 
     public function update($id)
     {
-        $pos = $this->input->post('pos');
-        $no_lambung = $this->input->post('no_lambung');
-        $driver = $this->input->post('driver');
-        $muatan_isi = $this->input->post('muatan_isi');
-        $muatan_kosong = $this->input->post('muatan_kosong');
+        $tanggal = $this->input->post('tanggal');
+        $nomor_lambung = $this->input->post('nomor_lambung');
+        $nama_driver = $this->input->post('nama_driver');
+        $shift = $this->input->post('shift');
+        $jam_awal = $this->input->post('jam_awal');
+        $jam_akhir = $this->input->post('jam_akhir');
+        $hm_awal = $this->input->post('hm_awal');
+        $hm_akhir = $this->input->post('hm_akhir');
+        $km_awal = $this->input->post('km_awal');
+        $km_akhir = $this->input->post('km_akhir');
         $harga = $this->input->post('harga');
-        $created_at = date('Y-m-d H:i:s');
 
-        $this->form_validation->set_rules('pos', 'Pos', 'required');
-        $this->form_validation->set_rules('no_lambung', 'Nomor Lambung', 'required');
-        $this->form_validation->set_rules('driver', 'Nama Driver', 'required');
-        $this->form_validation->set_rules('muatan_isi', 'Muatan Isi', 'required');
-        $this->form_validation->set_rules('muatan_kosong', 'Muatan Kosong', 'required');
-        $this->form_validation->set_rules('harga', 'Harga', 'required');
+        $now = date('Y-m-d H:i:s');
 
-        $tonase = $muatan_isi - $muatan_kosong;
+        $this->form_validation->set_rules('tanggal', 'Tanggal', 'required');
+        $this->form_validation->set_rules('nomor_lambung', 'Nomor Lambung', 'required');
+        $this->form_validation->set_rules('nama_driver', 'Nama Driver', 'required');
+        $this->form_validation->set_rules('shift', 'Shift', 'required');
+        $this->form_validation->set_rules('jam_awal', 'Jam Awal', 'required');
+        $this->form_validation->set_rules('jam_akhir', 'Jam Akhir', 'required');
+        $this->form_validation->set_rules('hm_awal', 'HM Awal', 'required');
+        $this->form_validation->set_rules('hm_akhir', 'HM Akhir', 'required');
+        $this->form_validation->set_rules('km_awal', 'KM Awal', 'required');
+        $this->form_validation->set_rules('km_akhir', 'KM Akhir', 'required');
 
-
+        // if (strtotime($tanggal) != strtotime($now)) {
+        //     $created_at = $tanggal;
+        // } else {
+        //     $created_at = date('Y-m-d H:i:s');
+        // }
 
         $user = $this->db->get_where('users', ['nip' => $this->session->userdata('nip')])->row_array();
         $ritasi = [
-            'pos' => $pos,
-            'no_lambung' => $no_lambung,
-            'user_nip' => $user['nip'],
-            'driver' => $driver,
-            'muatan_isi' => $muatan_isi,
-            'muatan_kosong' => $muatan_kosong,
-            'tonase' => $tonase,
+            'nomor_lambung' => $nomor_lambung,
+            // 'user_nip' => $user['nip'],
+            'nama_driver' => $nama_driver,
+            'tanggal' => $tanggal,
+            'shift' => $shift,
+            'jam_awal' => $jam_awal,
+            'jam_akhir' => $jam_akhir,
+            'hm_awal' => $hm_awal,
+            'hm_akhir' => $hm_akhir,
+            'km_awal' => $km_awal,
+            'km_akhir' => $km_akhir,
             'harga' => $harga,
-            'created_at' => $created_at,
         ];
         $this->cb->where(['id' => $id]);
         $this->cb->update('t_ritasi', $ritasi);

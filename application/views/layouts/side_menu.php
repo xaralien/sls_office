@@ -6,6 +6,7 @@
             <ul class="nav child_menu">
                 <li><a href="<?php echo base_url(); ?>home">Dashboard</a></li>
                 <!-- <li><a href="<?php echo base_url(); ?>home/banner">Banner</a></li> -->
+                <li><a href="<?php echo base_url(); ?>Detail_No_Lambung/list">Detail No Lambung</a></li>
             </ul>
         </li>
         <?php $a = $this->session->userdata('level');

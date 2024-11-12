@@ -1,6 +1,6 @@
 <style>
     @media screen and (max-width:991px) {
-        table.table.table-ritasi {
+        table.table.table-bbm {
             width: 1200px !important;
             max-width: none !important;
         }
@@ -22,21 +22,40 @@
                 <div class="x_title">
                     <div class="row">
                         <div class="col-md-8 col-sm-12 col-xs-12">
-                            <h2>Create Ritasi</h2>
+                            <h2>Create Bbm</h2>
                         </div>
                         <div class="col-md-4 col-sm-12 col-xs-12" style="text-align: right;">
-                            <a class="btn btn-primary" href="<?= base_url('ritasi/list') ?>">
+                            <a class="btn btn-primary" href="<?= base_url('bbm/list') ?>">
                                 &lt; Back</a>
                         </div>
                     </div>
                 </div>
                 <div class="x_content">
-                    <?php if (!$this->uri->segment(3)) { ?>
-                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('ritasi/insert') ?>" enctype="multipart/form-data" id="form-ritasi">
+                    <?php if ($this->uri->segment(2) == 'ubah_harga_bbm') { ?>
+                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('bbm/update_harga/') ?>" enctype="multipart/form-data" id="form-bbm">
+                            <div class="row" style="margin-bottom: 30px">
+                                <!-- <div class="col-md-2 col-sm-4 col-xs-12">
+                                    <label for="tanggal" class="form-label">Tanggal</label>
+                                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
+                                </div> -->
+                                <div class="col-md-3 col-sm-4 col-xs-12">
+                                    <label for="bbm" class="form-label">Harga BBM</label>
+                                    <input type="number" class="form-control" name="bbm" id="bbm" value="<?= $bbm['bbm'] ?>">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12 text-end">
+                                    <a href="<?= base_url('bbm/list') ?>" class="btn btn-warning">Back</a>
+                                    <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    <?php } else if (!$this->uri->segment(3)) { ?>
+                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('bbm/insert') ?>" enctype="multipart/form-data" id="form-bbm">
                             <div class="row" style="margin-bottom: 20px;">
                                 <div class="col-md-3 col-sm-4 col-xs-12">
                                     <label for="metode" class="form-label">Tanggal</label>
-                                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
+                                    <input type="date" class="form-control" name="tanggal" id="tanggal">
                                 </div>
                             </div>
                             <div class="row" style="margin-bottom: 30px">
@@ -49,60 +68,31 @@
                                     <input type="text" class="form-control" name="nomor_lambung" id="nomor_lambung">
                                 </div>
                                 <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Nama Driver</label>
-                                    <input type="text" class="form-control" name="nama_driver" id="nama_driver">
+                                    <label for="metode" class="form-label">Total Harga</label>
+                                    <input type="text" class="form-control" name="total_harga" id="total_harga">
                                 </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Shift</label>
-                                    <!-- <input type="text" class="form-control" name="shift" id="shift"> -->
-                                    <select class="form-control" name="shift" id="shift">
-                                        <option selected disabled>-- Pilih Shift --</option>
-                                        <option value="Pagi/Siang">Pagi/Siang</option>
-                                        <option value="Sore/Malam">Sore/Malam</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Jam Awal</label>
-                                    <input type="time" class="form-control" name="jam_awal" id="jam_awal">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Jam Akhir</label>
-                                    <input type="time" class="form-control" name="jam_akhir" id="jam_akhir">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">HM Awal</label>
-                                    <input type="text" class="form-control" name="hm_awal" id="hm_awal">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">HM Akhir</label>
-                                    <input type="text" class="form-control" name="hm_akhir" id="hm_akhir">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">KM Awal</label>
-                                    <input type="text" class="form-control" name="km_awal" id="km_awal">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">KM Akhir</label>
-                                    <input type="text" class="form-control" name="km_akhir" id="km_akhir">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Harga</label>
-                                    <input type="text" class="form-control" name="harga" id="harga">
-                                </div>
+                                <!-- <div class="col-md-3 col-sm-4 col-xs-12">
+                                    <label for="metode" class="form-label">Total Liter</label>
+                                    <input type="text" class="form-control" name="total_liter" id="total_liter">
+                                </div> -->
+                                <!-- <div class="col-md-3 col-sm-4 col-xs-12">
+                                    <label for="metode" class="form-label">Harga per Liter</label>
+                                    <input type="text" class="form-control" name="harga_per_liter" id="harga_per_liter">
+                                </div> -->
                             </div>
                             <div class="row">
                                 <div class="col-lg-12 text-end">
-                                    <a href="<?= base_url('ritasi/list') ?>" class="btn btn-warning">Back</a>
+                                    <a href="<?= base_url('bbm/list') ?>" class="btn btn-warning">Back</a>
                                     <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
                                 </div>
                             </div>
                         </form>
                     <?php } else { ?>
-                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('ritasi/update/' . $this->uri->segment(3)) ?>" enctype="multipart/form-data" id="form-ritasi">
+                        <form class="form-horizontal form-label-left" method="POST" action="<?= base_url('bbm/update/' . $this->uri->segment(3)) ?>" enctype="multipart/form-data" id="form-bbm">
                             <div class="row" style="margin-bottom: 20px;">
                                 <div class="col-md-3 col-sm-4 col-xs-12">
                                     <label for="metode" class="form-label">Tanggal</label>
-                                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?php echo date('Y-m-d'); ?>">
+                                    <input type="date" class="form-control" name="tanggal" id="tanggal" value="<?= $bbm['tanggal'] ?>">
                                 </div>
                             </div>
                             <div class="row" style="margin-bottom: 30px">
@@ -112,53 +102,24 @@
                                 </div> -->
                                 <div class="col-md-3 col-sm-4 col-xs-12">
                                     <label for="no_rekening" class="form-label">No. Lambung</label>
-                                    <input type="text" class="form-control" name="nomor_lambung" id="nomor_lambung" value="<?= $ritasi['nomor_lambung'] ?>">
+                                    <input type="text" class="form-control" name="nomor_lambung" id="nomor_lambung" value="<?= $bbm['nomor_lambung'] ?>">
                                 </div>
                                 <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Nama Driver</label>
-                                    <input type="text" class="form-control" name="nama_driver" id="nama_driver" value="<?= $ritasi['nama_driver'] ?>">
+                                    <label for="metode" class="form-label">Total Harga</label>
+                                    <input type="text" class="form-control" name="total_harga" id="total_harga" value="<?= $bbm['total_harga'] ?>">
                                 </div>
                                 <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Shift</label>
-                                    <!-- <input type="text" class="form-control" name="shift" id="shift"> -->
-                                    <select class="form-control" name="shift" id="shift">
-                                        <option disabled>-- Pilih Shift --</option>
-                                        <option <?php if ($ritasi['shift'] === "Pagi/Siang") 'selected' ?> value="Pagi/Siang">Pagi/Siang</option>
-                                        <option <?php if ($ritasi['shift'] === 'Sore/Malam') 'selected' ?> value="Sore/Malam">Sore/Malam</option>
-                                    </select>
+                                    <label for="metode" class="form-label">Total Liter</label>
+                                    <input type="text" class="form-control" name="total_liter" id="total_liter" value="<?= $bbm['total_liter'] ?>">
                                 </div>
                                 <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Jam Awal</label>
-                                    <input type="time" class="form-control" name="jam_awal" id="jam_awal" value="<?= $ritasi['jam_awal'] ?>">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Jam Akhir</label>
-                                    <input type="time" class="form-control" name="jam_akhir" id="jam_akhir" value="<?= $ritasi['jam_akhir'] ?>">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">HM Awal</label>
-                                    <input type="text" class="form-control" name="hm_awal" id="hm_awal" value="<?= $ritasi['hm_awal'] ?>">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">HM Akhir</label>
-                                    <input type="text" class="form-control" name="hm_akhir" id="hm_akhir" value="<?= $ritasi['hm_akhir'] ?>">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">KM Awal</label>
-                                    <input type="text" class="form-control" name="km_awal" id="km_awal" value="<?= $ritasi['km_awal'] ?>">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">KM Akhir</label>
-                                    <input type="text" class="form-control" name="km_akhir" id="km_akhir" value="<?= $ritasi['km_akhir'] ?>">
-                                </div>
-                                <div class="col-md-3 col-sm-4 col-xs-12">
-                                    <label for="metode" class="form-label">Harga</label>
-                                    <input type="text" class="form-control" name="harga" id="harga" value="<?= $ritasi['harga'] ?>">
+                                    <label for="metode" class="form-label">Harga per Liter</label>
+                                    <input type="text" class="form-control" name="harga_per_liter" id="harga_per_liter" value="<?= $bbm['harga_per_liter'] ?>">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-lg-12 text-end">
-                                    <a href="<?= base_url('ritasi/list') ?>" class="btn btn-warning">Back</a>
+                                    <a href="<?= base_url('bbm/list') ?>" class="btn btn-warning">Back</a>
                                     <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
                                 </div>
                             </div>
@@ -187,8 +148,8 @@
         });
 
         $("button[id='btn-save']").click(function(e) {
-            var url = $('form[id="form-ritasi"]').attr("action");
-            var formData = new FormData($("form#form-ritasi")[0]);
+            var url = $('form[id="form-bbm"]').attr("action");
+            var formData = new FormData($("form#form-bbm")[0]);
             e.preventDefault();
             Swal.fire({
                 title: "Are you sure?",
